@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Speakers | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="stylesheet" href="css/speakers.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<i class="fa-solid fa-calendar-check"></i>
+
+<h2>EventAI</h2>
+
+</div>
+
+<ul>
+
+<li>
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+
+Dashboard
+
+</a>
+
+</li>
+
+<li>
+
+<a href="events.html">
+
+<i class="fa-solid fa-calendar-days"></i>
+
+Events
+
+</a>
+
+</li>
+
+<li>
+
+<a href="attendees.html">
+
+<i class="fa-solid fa-users"></i>
+
+Attendees
+
+</a>
+
+</li>
+
+<li>
+
+<a href="tickets.html">
+
+<i class="fa-solid fa-ticket"></i>
+
+Tickets
+
+</a>
+
+</li>
+
+<li>
+
+<a href="vendors.html">
+
+<i class="fa-solid fa-store"></i>
+
+Vendors
+
+</a>
+
+</li>
+
+<li class="active">
+
+<a href="speakers.html">
+
+<i class="fa-solid fa-microphone"></i>
+
+Speakers
+
+</a>
+
+</li>
+
+<li>
+
+<a href="analytics.html">
+
+<i class="fa-solid fa-chart-line"></i>
+
+Analytics
+
+</a>
+
+</li>
+
+<li>
+
+<a href="chatbot.html">
+
+<i class="fa-solid fa-robot"></i>
+
+AI Chatbot
+
+</a>
+
+</li>
+
+<li>
+
+<a href="#" id="logoutBtn">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</a>
+
+</li>
+
+</ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+<div>
+
+<h1>
+
+Speaker Management
+
+</h1>
+
+<p>
+
+Manage keynote speakers and guest speakers.
+
+</p>
+
+</div>
+
+<div class="user">
+
+<i class="fa-solid fa-user-circle"></i>
+
+<span id="loggedUserName">
+
+Administrator
+
+</span>
+
+</div>
+
+</header>
+<!-- ================= SPEAKER STATISTICS ================= -->
+
+<section class="cards">
+
+    <div class="card">
+
+        <i class="fa-solid fa-microphone"></i>
+
+        <h2 id="totalSpeakers">0</h2>
+
+        <p>Total Speakers</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-star"></i>
+
+        <h2 id="keynoteSpeakers">0</h2>
+
+        <p>Keynote Speakers</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2 id="assignedSpeakers">0</h2>
+
+        <p>Assigned to Events</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-building"></i>
+
+        <h2 id="organizations">0</h2>
+
+        <p>Organizations</p>
+
+    </div>
+
+</section>
+
+<!-- ================= ADD SPEAKER ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-user-plus"></i>
+
+            Add Speaker
+
+        </h2>
+
+    </div>
+
+    <form id="speakerForm">
+
+        <div class="form-grid">
+
+            <div class="input-group">
+
+                <label>Speaker Name</label>
+
+                <input
+
+                    type="text"
+
+                    id="speakerName"
+
+                    placeholder="Enter Speaker Name"
+
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Email</label>
+
+                <input
+
+                    type="email"
+
+                    id="speakerEmail"
+
+                    placeholder="Email Address"
+
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Phone</label>
+
+                <input
+
+                    type="text"
+
+                    id="speakerPhone"
+
+                    placeholder="Phone Number">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Organization</label>
+
+                <input
+
+                    type="text"
+
+                    id="speakerOrganization"
+
+                    placeholder="Company / Organization">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Expertise</label>
+
+                <select id="speakerExpertise">
+
+                    <option>Artificial Intelligence</option>
+
+                    <option>Cloud Computing</option>
+
+                    <option>Cyber Security</option>
+
+                    <option>Machine Learning</option>
+
+                    <option>Web Development</option>
+
+                    <option>Data Science</option>
+
+                    <option>IoT</option>
+
+                    <option>Blockchain</option>
+
+                    <option>Other</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Speaker Type</label>
+
+                <select id="speakerType">
+
+                    <option>Keynote</option>
+
+                    <option>Guest</option>
+
+                    <option>Panelist</option>
+
+                    <option>Workshop</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Assign Event</label>
+
+                <select id="speakerEvent">
+
+                    <option value="">Select Event</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Experience (Years)</label>
+
+                <input
+
+                    type="number"
+
+                    id="speakerExperience"
+
+                    min="0"
+
+                    placeholder="Years">
+
+            </div>
+
+        </div>
+
+        <div class="input-group">
+
+            <label>Short Bio</label>
+
+            <textarea
+
+                id="speakerBio"
+
+                rows="5"
+
+                placeholder="Speaker Biography"></textarea>
+
+        </div>
+
+        <button
+
+            type="submit"
+
+            class="primary-btn">
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Save Speaker
+
+        </button>
+
+    </form>
+
+</section>
+
+<!-- ================= SEARCH ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            Speaker Directory
+
+        </h2>
+
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+
+        <input
+
+            type="text"
+
+            id="searchSpeaker"
+
+            placeholder="Search Speaker..."
+
+            style="flex:1;padding:12px;">
+
+        <select id="filterExpertise">
+
+            <option value="All">
+
+                All Expertise
+
+            </option>
+
+            <option>Artificial Intelligence</option>
+
+            <option>Cloud Computing</option>
+
+            <option>Cyber Security</option>
+
+            <option>Machine Learning</option>
+
+            <option>Web Development</option>
+
+            <option>Data Science</option>
+
+            <option>IoT</option>
+
+            <option>Blockchain</option>
+
+        </select>
+
+    </div>
+    <!-- ================= SPEAKER TABLE ================= -->
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Name</th>
+
+                <th>Expertise</th>
+
+                <th>Organization</th>
+
+                <th>Assigned Event</th>
+
+                <th>Experience</th>
+
+                <th>Type</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="speakerTable">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ================= FEATURED SPEAKERS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-ranking-star"></i>
+
+            Featured Speakers
+
+        </h2>
+
+    </div>
+
+    <div id="featuredSpeakers" class="cards">
+
+        <!-- Dynamic -->
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+
+    style="
+
+        margin-top:40px;
+
+        text-align:center;
+
+        color:#64748B;
+
+        padding:20px;
+
+    ">
+
+    © 2026 EventAI | Speaker Management
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/speakers.js"></script>
+
+<script>
+
+const logoutBtn =
+
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

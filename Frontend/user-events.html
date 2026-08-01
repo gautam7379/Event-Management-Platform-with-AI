@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Browse Events | EventAI</title>
+
+    <link rel="stylesheet"
+          href="css/style.css">
+
+    <link rel="stylesheet"
+          href="css/dashboard.css">
+
+    <link rel="stylesheet"
+          href="css/tables.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+<!-- ================= USER SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li>
+
+            <a href="user-dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li class="active">
+
+            <a href="user-events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Browse Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="user-tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                My Tickets
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="profile.html">
+
+                <i class="fa-solid fa-user"></i>
+
+                Profile
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<main class="main-content">
+<!-- ================= TOPBAR ================= -->
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            <i class="fa-solid fa-calendar-days"></i>
+
+            Browse Events
+
+        </h1>
+
+        <p style="margin-top:8px;color:#64748B;">
+
+            Explore and register for upcoming events.
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span id="loggedUserName">
+
+            User
+
+        </span>
+
+    </div>
+
+</header>
+
+<!-- ================= USER STATISTICS ================= -->
+
+<section class="cards">
+
+    <!-- Available Events -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-calendar-days"></i>
+
+        <h2 id="availableEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Available Events
+
+        </p>
+
+    </div>
+
+    <!-- My Registrations -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-user-check"></i>
+
+        <h2 id="myRegistrations">
+
+            0
+
+        </h2>
+
+        <p>
+
+            My Registrations
+
+        </p>
+
+    </div>
+
+    <!-- My Tickets -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-ticket"></i>
+
+        <h2 id="myTickets">
+
+            0
+
+        </h2>
+
+        <p>
+
+            My Tickets
+
+        </p>
+
+    </div>
+
+    <!-- Upcoming Events -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-clock"></i>
+
+        <h2 id="upcomingEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Upcoming Events
+
+        </p>
+
+    </div>
+
+</section>
+<!-- ================= SEARCH & FILTER ================= -->
+
+<section class="recent-events">
+
+    <div
+        style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:20px;
+            margin-bottom:25px;
+        ">
+
+        <div
+            style="
+                display:flex;
+                gap:15px;
+                flex-wrap:wrap;
+            ">
+
+            <input
+                type="text"
+                id="searchEvent"
+                class="search-box"
+                placeholder="🔍 Search Events">
+
+            <select id="statusFilter">
+
+                <option value="All">
+                    All Status
+                </option>
+
+                <option value="Upcoming">
+                    Upcoming
+                </option>
+
+                <option value="Open">
+                    Open
+                </option>
+
+                <option value="Completed">
+                    Completed
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <!-- ================= EVENTS TABLE ================= -->
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Banner</th>
+
+                    <th>Event</th>
+
+                    <th>Category</th>
+
+                    <th>Date</th>
+
+                    <th>Venue</th>
+
+                    <th>Price</th>
+
+                    <th>Status</th>
+
+                    <th>View</th>
+
+                    <th>Register</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="eventTable">
+
+                <!-- Events loaded dynamically -->
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- ================= EMPTY STATE ================= -->
+
+    <div
+        id="emptyMessage"
+        class="empty-state"
+        style="display:none;">
+
+        <i class="fa-solid fa-calendar-xmark"></i>
+
+        <h2>
+
+            No Events Found
+
+        </h2>
+
+        <p>
+
+            There are currently no events available.
+
+        </p>
+
+    </div>
+
+</section>
+<!-- ================= VIEW EVENT MODAL ================= -->
+
+<div id="viewModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2>
+
+                <i class="fa-solid fa-eye"></i>
+
+                Event Details
+
+            </h2>
+
+            <span class="close"
+                  onclick="closeViewModal()">
+
+                &times;
+
+            </span>
+
+        </div>
+
+        <div id="viewContent">
+
+            <!-- Filled Dynamically -->
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+    style="
+        margin-top:40px;
+        text-align:center;
+        color:#64748B;
+        font-size:15px;
+        padding:20px;
+    ">
+
+    © 2026 EventAI |
+    AI Powered Event Management System
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/user-events.js"></script>
+
+<script>
+
+/* ===========================
+   CLOSE VIEW MODAL
+=========================== */
+
+function closeViewModal() {
+
+    document.getElementById("viewModal").style.display = "none";
+
+}
+
+/* ===========================
+   CLOSE MODAL ON OUTSIDE CLICK
+=========================== */
+
+window.onclick = function(event) {
+
+    const modal = document.getElementById("viewModal");
+
+    if (event.target === modal) {
+
+        modal.style.display = "none";
+
+    }
+
+};
+
+/* ===========================
+   ESC KEY CLOSE
+=========================== */
+
+document.addEventListener("keydown", function(event) {
+
+    if(event.key === "Escape"){
+
+        closeViewModal();
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>

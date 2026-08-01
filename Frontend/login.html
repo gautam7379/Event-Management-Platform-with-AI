@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="auth-container">
+
+        <div class="auth-left">
+
+            <h1>Welcome Back!</h1>
+
+            <p>
+                Login to manage events, attendees, tickets,
+                vendors and AI-powered analytics.
+            </p>
+
+            <i class="fa-solid fa-calendar-check"></i>
+
+        </div>
+
+        <div class="auth-right">
+
+            <div class="auth-box">
+
+                <h2>Login</h2>
+
+                <form id="loginForm">
+
+                    <div class="input-group">
+
+                        <label>Email</label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="Enter your email"
+                            required>
+
+                    </div>
+
+                    <div class="input-group">
+
+                        <label>Password</label>
+
+                        <div class="password-box">
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Enter password"
+                                required>
+
+                            <i
+                                class="fa-solid fa-eye"
+                                id="togglePassword">
+                            </i>
+
+                        </div>
+
+                    </div>
+
+                    <div class="options">
+
+                        <label>
+
+                            <input type="checkbox">
+
+                            Remember Me
+
+                        </label>
+
+                        <a href="#">Forgot Password?</a>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="primary-btn login-btn">
+
+                        Login
+
+                    </button>
+
+                </form>
+
+                <p class="bottom-text">
+
+                    Don't have an account?
+
+                    <a href="register.html">
+
+                        Register
+
+                    </a>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/auth.js"></script>
+
+</body>
+
+</html>

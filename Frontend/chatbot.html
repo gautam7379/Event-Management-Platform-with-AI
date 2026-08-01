@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Chatbot | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="stylesheet" href="css/chatbot.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li>
+
+            <a href="dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="attendees.html">
+
+                <i class="fa-solid fa-users"></i>
+
+                Attendees
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                Tickets
+
+            </a>
+
+        </li>
+
+        <li class="active">
+
+            <a href="chatbot.html">
+
+                <i class="fa-solid fa-robot"></i>
+
+                AI Chatbot
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="analytics.html">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                Analytics
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            AI Event Assistant
+
+        </h1>
+
+        <p>
+
+            Ask anything about your events.
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span id="loggedUserName">
+
+            Administrator
+
+        </span>
+
+    </div>
+
+</header>
+<!-- ================= CHATBOT ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-comments"></i>
+
+            EventAI Assistant
+
+        </h2>
+
+    </div>
+
+    <!-- ================= CHAT AREA ================= -->
+
+    <div id="chatContainer" class="chat-container">
+
+        <div class="bot-message">
+
+            <i class="fa-solid fa-robot"></i>
+
+            <div class="message">
+
+                👋 Hello! I'm <strong>EventAI Assistant</strong>.
+
+                <br><br>
+
+                I can answer questions about:
+
+                <ul>
+
+                    <li>Total Events</li>
+
+                    <li>Total Attendees</li>
+
+                    <li>Total Revenue</li>
+
+                    <li>Upcoming Events</li>
+
+                    <li>Most Popular Event</li>
+
+                    <li>Your Tickets</li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= QUICK QUESTIONS ================= -->
+
+    <div class="quick-questions">
+
+        <button onclick="askQuestion('How many events are there?')">
+
+            📅 Total Events
+
+        </button>
+
+        <button onclick="askQuestion('Show upcoming events')">
+
+            ⏳ Upcoming Events
+
+        </button>
+
+        <button onclick="askQuestion('Total revenue')">
+
+            💰 Revenue
+
+        </button>
+
+        <button onclick="askQuestion('Most popular event')">
+
+            🏆 Popular Event
+
+        </button>
+
+        <button onclick="askQuestion('How many attendees?')">
+
+            👥 Attendees
+
+        </button>
+
+        <button onclick="askQuestion('My tickets')">
+
+            🎟 My Tickets
+
+        </button>
+
+    </div>
+
+    <!-- ================= INPUT ================= -->
+
+    <div class="chat-input">
+
+        <input
+
+            type="text"
+
+            id="userInput"
+
+            placeholder="Ask EventAI something...">
+
+        <button
+
+            id="sendBtn">
+
+            <i class="fa-solid fa-paper-plane"></i>
+
+        </button>
+
+    </div>
+
+</section>
+<!-- ================= AI SUGGESTIONS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-lightbulb"></i>
+
+            Suggested Questions
+
+        </h2>
+
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <i class="fa-solid fa-calendar-days"></i>
+
+            <h3>
+
+                Events
+
+            </h3>
+
+            <p>
+
+                Ask about upcoming, completed or total events.
+
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-users"></i>
+
+            <h3>
+
+                Attendees
+
+            </h3>
+
+            <p>
+
+                Ask how many attendees are registered.
+
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-ticket"></i>
+
+            <h3>
+
+                Tickets
+
+            </h3>
+
+            <p>
+
+                Ask about your tickets or ticket statistics.
+
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-chart-line"></i>
+
+            <h3>
+
+                Analytics
+
+            </h3>
+
+            <p>
+
+                Ask about revenue and popular events.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+    style="
+        margin-top:40px;
+        text-align:center;
+        color:#64748B;
+        padding:20px;
+    ">
+
+    © 2026 EventAI |
+    AI Assistant
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/chatbot.js"></script>
+
+<script>
+
+const logoutBtn = document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

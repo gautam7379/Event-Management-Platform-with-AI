@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Sponsors | EventAI</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<link rel="stylesheet" href="css/dashboard.css">
+
+<link rel="stylesheet" href="css/sponsors.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<i class="fa-solid fa-calendar-check"></i>
+
+<h2>EventAI</h2>
+
+</div>
+
+<ul>
+
+<li>
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+
+Dashboard
+
+</a>
+
+</li>
+
+<li>
+
+<a href="events.html">
+
+<i class="fa-solid fa-calendar-days"></i>
+
+Events
+
+</a>
+
+</li>
+
+<li>
+
+<a href="attendees.html">
+
+<i class="fa-solid fa-users"></i>
+
+Attendees
+
+</a>
+
+</li>
+
+<li>
+
+<a href="tickets.html">
+
+<i class="fa-solid fa-ticket"></i>
+
+Tickets
+
+</a>
+
+</li>
+
+<li>
+
+<a href="vendors.html">
+
+<i class="fa-solid fa-store"></i>
+
+Vendors
+
+</a>
+
+</li>
+
+<li>
+
+<a href="speakers.html">
+
+<i class="fa-solid fa-microphone"></i>
+
+Speakers
+
+</a>
+
+</li>
+
+<li class="active">
+
+<a href="sponsors.html">
+
+<i class="fa-solid fa-handshake"></i>
+
+Sponsors
+
+</a>
+
+</li>
+
+<li>
+
+<a href="analytics.html">
+
+<i class="fa-solid fa-chart-line"></i>
+
+Analytics
+
+</a>
+
+</li>
+
+<li>
+
+<a href="#" id="logoutBtn">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</a>
+
+</li>
+
+</ul>
+
+</aside>
+
+<main class="main-content">
+
+<header class="topbar">
+
+<div>
+
+<h1>
+
+Sponsor Management
+
+</h1>
+
+<p>
+
+Manage sponsors and sponsorships.
+
+</p>
+
+</div>
+
+<div class="user">
+
+<i class="fa-solid fa-user-circle"></i>
+
+<span id="loggedUserName">
+
+Administrator
+
+</span>
+
+</div>
+
+</header>
+<!-- ================= SPONSOR STATISTICS ================= -->
+
+<section class="cards">
+
+    <div class="card">
+
+        <i class="fa-solid fa-handshake"></i>
+
+        <h2 id="totalSponsors">0</h2>
+
+        <p>Total Sponsors</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-crown"></i>
+
+        <h2 id="platinumSponsors">0</h2>
+
+        <p>Platinum Sponsors</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2 id="assignedSponsors">0</h2>
+
+        <p>Assigned Sponsors</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+
+        <h2 id="totalFunding">₹0</h2>
+
+        <p>Total Funding</p>
+
+    </div>
+
+</section>
+
+<!-- ================= ADD SPONSOR ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-circle-plus"></i>
+
+            Add Sponsor
+
+        </h2>
+
+    </div>
+
+    <form id="sponsorForm">
+
+        <div class="form-grid">
+
+            <div class="input-group">
+
+                <label>Sponsor Name</label>
+
+                <input
+                    type="text"
+                    id="sponsorName"
+                    placeholder="Sponsor Name"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Company</label>
+
+                <input
+                    type="text"
+                    id="companyName"
+                    placeholder="Company Name"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Email</label>
+
+                <input
+                    type="email"
+                    id="sponsorEmail"
+                    placeholder="Email Address">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Phone</label>
+
+                <input
+                    type="text"
+                    id="sponsorPhone"
+                    placeholder="Phone Number">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Sponsorship Level</label>
+
+                <select id="sponsorLevel">
+
+                    <option>Platinum</option>
+
+                    <option>Gold</option>
+
+                    <option>Silver</option>
+
+                    <option>Bronze</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Contribution Amount (₹)</label>
+
+                <input
+                    type="number"
+                    id="sponsorAmount"
+                    placeholder="Contribution">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Assign Event</label>
+
+                <select id="sponsorEvent">
+
+                    <option value="">Select Event</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Status</label>
+
+                <select id="sponsorStatus">
+
+                    <option>Active</option>
+
+                    <option>Pending</option>
+
+                    <option>Inactive</option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="input-group">
+
+            <label>Notes</label>
+
+            <textarea
+                id="sponsorNotes"
+                rows="4"
+                placeholder="Additional Notes"></textarea>
+
+        </div>
+
+        <button
+            type="submit"
+            class="primary-btn">
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Save Sponsor
+
+        </button>
+
+    </form>
+
+</section>
+
+<!-- ================= SEARCH ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            Sponsor Directory
+
+        </h2>
+
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+
+        <input
+
+            type="text"
+
+            id="searchSponsor"
+
+            placeholder="Search Sponsor..."
+
+            style="flex:1;padding:12px;">
+
+        <select id="filterLevel">
+
+            <option value="All">
+
+                All Levels
+
+            </option>
+
+            <option>Platinum</option>
+
+            <option>Gold</option>
+
+            <option>Silver</option>
+
+            <option>Bronze</option>
+
+        </select>
+
+    </div>
+    <!-- ================= SPONSOR TABLE ================= -->
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Sponsor</th>
+
+                <th>Company</th>
+
+                <th>Level</th>
+
+                <th>Event</th>
+
+                <th>Amount</th>
+
+                <th>Status</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="sponsorTable">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ================= TOP SPONSORS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-ranking-star"></i>
+
+            Top Sponsors
+
+        </h2>
+
+    </div>
+
+    <div id="topSponsors" class="cards">
+
+        <!-- Dynamic -->
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+
+    style="
+
+        margin-top:40px;
+
+        text-align:center;
+
+        color:#64748B;
+
+        padding:20px;
+
+    ">
+
+    © 2026 EventAI | Sponsor Management
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/sponsors.js"></script>
+
+<script>
+
+const logoutBtn =
+
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

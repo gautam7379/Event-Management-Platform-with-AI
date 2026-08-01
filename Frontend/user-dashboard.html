@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>User Dashboard | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li class="active">
+
+            <a href="user-dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="user-events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Browse Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="user-tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                My Tickets
+
+            </a>
+<li>
+
+    <a href="user-chatbot.html">
+
+        <i class="fa-solid fa-robot"></i>
+
+        AI Assistant
+
+    </a>
+
+</li>
+        </li>
+
+        <li>
+
+            <a href="profile.html">
+
+                <i class="fa-solid fa-user"></i>
+
+                Profile
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            Welcome,
+
+            <span id="loggedUserName">
+
+                User
+
+            </span>
+
+        </h1>
+
+        <p>
+
+            Manage your registrations and tickets.
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span>
+
+            User
+
+        </span>
+
+    </div>
+
+</header>
+<!-- ================= USER STATISTICS ================= -->
+
+<section class="cards">
+
+    <!-- Available Events -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-calendar-days"></i>
+
+        <h2 id="availableEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Available Events
+
+        </p>
+
+    </div>
+
+    <!-- My Registrations -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-user-check"></i>
+
+        <h2 id="myRegistrations">
+
+            0
+
+        </h2>
+
+        <p>
+
+            My Registrations
+
+        </p>
+
+    </div>
+
+    <!-- My Tickets -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-ticket"></i>
+
+        <h2 id="myTickets">
+
+            0
+
+        </h2>
+
+        <p>
+
+            My Tickets
+
+        </p>
+
+    </div>
+
+    <!-- Upcoming Events -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-clock"></i>
+
+        <h2 id="upcomingEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Upcoming Events
+
+        </p>
+
+    </div>
+
+</section>
+
+<!-- ================= MY EVENTS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-calendar-check"></i>
+
+            My Registered Events
+
+        </h2>
+
+        <a href="user-events.html" class="primary-btn">
+
+            Browse Events
+
+        </a>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Event</th>
+
+                <th>Date</th>
+
+                <th>Venue</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="myEventsTable">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+<!-- ================= MY TICKETS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-ticket"></i>
+
+            My Recent Tickets
+
+        </h2>
+
+        <a href="user-tickets.html" class="primary-btn">
+
+            View All
+
+        </a>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Ticket ID</th>
+
+                <th>Event</th>
+
+                <th>Date</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="myTicketsTable">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ================= UPCOMING EVENTS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-calendar-week"></i>
+
+            Upcoming Events
+
+        </h2>
+
+    </div>
+
+    <div id="upcomingEventsList">
+
+        <!-- Dynamic -->
+
+    </div>
+
+</section>
+
+<!-- ================= QUICK ACTIONS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-bolt"></i>
+
+            Quick Actions
+
+        </h2>
+
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <i class="fa-solid fa-calendar-plus"></i>
+
+            <h3>Browse Events</h3>
+
+            <p>
+
+                Explore all available events.
+
+            </p>
+
+            <a href="user-events.html"
+
+            class="primary-btn">
+
+                Browse
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-ticket"></i>
+
+            <h3>My Tickets</h3>
+
+            <p>
+
+                View your generated tickets.
+
+            </p>
+
+            <a href="user-tickets.html"
+
+            class="primary-btn">
+
+                Tickets
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-user"></i>
+
+            <h3>My Profile</h3>
+
+            <p>
+
+                Update your profile details.
+
+            </p>
+
+            <a href="profile.html"
+
+            class="primary-btn">
+
+                Profile
+
+            </a>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer style="text-align:center;
+            padding:20px;
+            color:#64748B;
+            margin-top:30px;">
+
+    © 2026 EventAI |
+    User Dashboard
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/user-dashboard.js"></script>
+
+<script>
+
+const logoutBtn =
+
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

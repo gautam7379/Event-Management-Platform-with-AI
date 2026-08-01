@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link rel="stylesheet" href="css/profile.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li>
+
+            <a href="user-dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Browse Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                My Tickets
+
+            </a>
+
+        </li>
+
+        <li class="active">
+
+            <a href="profile.html">
+
+                <i class="fa-solid fa-user"></i>
+
+                Profile
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            My Profile
+
+        </h1>
+
+        <p>
+
+            Manage your personal information.
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span id="loggedUserName">
+
+            User
+
+        </span>
+
+    </div>
+
+</header>
+<!-- ================= PROFILE ================= -->
+
+<div class="profile-container">
+
+    <!-- Left Profile Card -->
+
+    <div class="profile-card">
+
+        <div class="profile-image">
+
+            <img
+
+                id="profilePhoto"
+
+                src="https://ui-avatars.com/api/?name=User&background=2563EB&color=fff&size=200"
+
+                alt="Profile">
+
+            <label for="uploadPhoto" class="upload-btn">
+
+                <i class="fa-solid fa-camera"></i>
+
+            </label>
+
+            <input
+
+                type="file"
+
+                id="uploadPhoto"
+
+                accept="image/*"
+
+                hidden>
+
+        </div>
+
+        <h2 id="profileName">
+
+            User Name
+
+        </h2>
+
+        <p id="profileRole">
+
+            Event Participant
+
+        </p>
+
+        <div class="profile-stats">
+
+            <div>
+
+                <h3 id="registeredEvents">
+
+                    0
+
+                </h3>
+
+                <span>Events</span>
+
+            </div>
+
+            <div>
+
+                <h3 id="ticketCount">
+
+                    0
+
+                </h3>
+
+                <span>Tickets</span>
+
+            </div>
+
+            <div>
+
+                <h3 id="completedEvents">
+
+                    0
+
+                </h3>
+
+                <span>Completed</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Right Information -->
+
+    <div class="profile-details">
+
+        <h2>
+
+            Personal Information
+
+        </h2>
+
+        <form id="profileForm">
+
+            <div class="form-grid">
+
+                <div class="input-group">
+
+                    <label>
+
+                        Full Name
+
+                    </label>
+
+                    <input
+
+                        type="text"
+
+                        id="name">
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Email
+
+                    </label>
+
+                    <input
+
+                        type="email"
+
+                        id="email"
+
+                        readonly>
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Phone
+
+                    </label>
+
+                    <input
+
+                        type="text"
+
+                        id="phone"
+
+                        placeholder="+91 XXXXX XXXXX">
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Organization
+
+                    </label>
+
+                    <input
+
+                        type="text"
+
+                        id="organization"
+
+                        placeholder="Company / College">
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Designation
+
+                    </label>
+
+                    <input
+
+                        type="text"
+
+                        id="designation"
+
+                        placeholder="Student / Employee">
+
+                </div>
+
+                <div class="input-group">
+
+                    <label>
+
+                        Location
+
+                    </label>
+
+                    <input
+
+                        type="text"
+
+                        id="location"
+
+                        placeholder="City">
+
+                </div>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    Bio
+
+                </label>
+
+                <textarea
+
+                    id="bio"
+
+                    rows="5"
+
+                    placeholder="Tell us about yourself...">
+
+                </textarea>
+
+            </div>
+
+            <button
+
+                type="submit"
+
+                class="primary-btn">
+
+                <i class="fa-solid fa-floppy-disk"></i>
+
+                Save Profile
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+<!-- ================= PROFILE GRID ================= -->
+
+<div class="dashboard-grid">
+
+    <!-- ================= ACTIVITY ================= -->
+
+    <section class="recent-events">
+
+        <div class="section-header">
+
+            <h2>
+
+                <i class="fa-solid fa-clock-rotate-left"></i>
+
+                Recent Activity
+
+            </h2>
+
+        </div>
+
+        <ul id="activityTimeline" class="activity-list">
+
+            <!-- Dynamic -->
+
+        </ul>
+
+    </section>
+
+    <!-- ================= ACHIEVEMENTS ================= -->
+
+    <section class="recent-events">
+
+        <div class="section-header">
+
+            <h2>
+
+                <i class="fa-solid fa-award"></i>
+
+                Achievements
+
+            </h2>
+
+        </div>
+
+        <div class="cards">
+
+            <div class="card">
+
+                <i class="fa-solid fa-calendar-check"></i>
+
+                <h3 id="badgeEvents">
+
+                    0
+
+                </h3>
+
+                <p>
+
+                    Events Joined
+
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                <h3 id="badgeTickets">
+
+                    0
+
+                </h3>
+
+                <p>
+
+                    Tickets Generated
+
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <i class="fa-solid fa-star"></i>
+
+                <h3 id="badgeParticipation">
+
+                    Beginner
+
+                </h3>
+
+                <p>
+
+                    Participation Level
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- ================= RECENT TICKETS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-ticket"></i>
+
+            Recent Tickets
+
+        </h2>
+
+    </div>
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Ticket ID</th>
+
+                <th>Event</th>
+
+                <th>Date</th>
+
+                <th>Status</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="recentTickets">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+
+    style="
+
+        text-align:center;
+
+        margin-top:40px;
+
+        color:#64748B;
+
+        padding:20px;
+
+    ">
+
+    © 2026 EventAI | User Profile
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/profile.js"></script>
+
+<script>
+
+const logoutBtn =
+
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>
