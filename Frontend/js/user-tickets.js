@@ -353,25 +353,33 @@ View
             VIEW TICKET
 ========================================== */
 
-
 function viewTicket(ticketId){
 
+    const ticket = getTickets().find(
 
+        t => t.ticketId === ticketId
+
+    );
+
+    if(!ticket){
+
+        alert("Ticket not found.");
+
+        return;
+
+    }
 
     localStorage.setItem(
 
         "selectedTicket",
 
-        ticketId
+        JSON.stringify(ticket)
 
     );
-
-
 
     window.location.href =
 
     "ticket-view.html";
-
 
 }
 
