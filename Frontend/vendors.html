@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Vendors | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/vendors.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li>
+
+            <a href="dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="attendees.html">
+
+                <i class="fa-solid fa-users"></i>
+
+                Attendees
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                Tickets
+
+            </a>
+
+        </li>
+
+        <li class="active">
+
+            <a href="vendors.html">
+
+                <i class="fa-solid fa-store"></i>
+
+                Vendors
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="speakers.html">
+
+                <i class="fa-solid fa-microphone"></i>
+
+                Speakers
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="analytics.html">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                Analytics
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="chatbot.html">
+
+                <i class="fa-solid fa-robot"></i>
+
+                AI Chatbot
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            Vendor Management
+
+        </h1>
+
+        <p>
+
+            Manage vendors for all your events.
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span id="loggedUserName">
+
+            Administrator
+
+        </span>
+
+    </div>
+
+</header>
+<!-- ================= VENDOR STATISTICS ================= -->
+
+<section class="cards">
+
+    <div class="card">
+
+        <i class="fa-solid fa-store"></i>
+
+        <h2 id="totalVendors">0</h2>
+
+        <p>Total Vendors</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        <h2 id="activeVendors">0</h2>
+
+        <p>Active Vendors</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-briefcase"></i>
+
+        <h2 id="serviceCategories">0</h2>
+
+        <p>Categories</p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+
+        <h2 id="vendorBudget">₹0</h2>
+
+        <p>Total Budget</p>
+
+    </div>
+
+</section>
+
+<!-- ================= ADD VENDOR ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-plus"></i>
+
+            Add Vendor
+
+        </h2>
+
+    </div>
+
+    <form id="vendorForm">
+
+        <div class="form-grid">
+
+            <div class="input-group">
+
+                <label>Vendor Name</label>
+
+                <input
+                    type="text"
+                    id="vendorName"
+                    placeholder="Vendor Name"
+                    required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Category</label>
+
+                <select id="vendorCategory">
+
+                    <option value="Catering">Catering</option>
+
+                    <option value="Photography">Photography</option>
+
+                    <option value="Decoration">Decoration</option>
+
+                    <option value="Sound & Lighting">Sound & Lighting</option>
+
+                    <option value="Security">Security</option>
+
+                    <option value="Transport">Transport</option>
+
+                    <option value="Other">Other</option>
+
+                </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Contact Person</label>
+
+                <input
+                    type="text"
+                    id="vendorContact"
+                    placeholder="Contact Person">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Phone</label>
+
+                <input
+                    type="text"
+                    id="vendorPhone"
+                    placeholder="Phone Number">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Email</label>
+
+                <input
+                    type="email"
+                    id="vendorEmail"
+                    placeholder="Email">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Budget</label>
+
+                <input
+                    type="number"
+                    id="vendorBudgetInput"
+                    placeholder="Budget">
+
+            </div>
+
+        </div>
+
+        <button
+
+            type="submit"
+
+            class="primary-btn">
+
+            <i class="fa-solid fa-floppy-disk"></i>
+
+            Save Vendor
+
+        </button>
+
+    </form>
+
+</section>
+
+<!-- ================= SEARCH ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            Vendor Directory
+
+        </h2>
+
+    </div>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+
+        <input
+
+            type="text"
+
+            id="searchVendor"
+
+            placeholder="Search Vendor..."
+
+            style="flex:1;padding:12px;">
+
+        <select id="filterCategory">
+
+            <option value="All">
+
+                All Categories
+
+            </option>
+
+            <option value="Catering">
+
+                Catering
+
+            </option>
+
+            <option value="Photography">
+
+                Photography
+
+            </option>
+
+            <option value="Decoration">
+
+                Decoration
+
+            </option>
+
+            <option value="Sound & Lighting">
+
+                Sound & Lighting
+
+            </option>
+
+            <option value="Security">
+
+                Security
+
+            </option>
+
+            <option value="Transport">
+
+                Transport
+
+            </option>
+
+        </select>
+
+    </div>
+    <!-- ================= VENDOR TABLE ================= -->
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Vendor</th>
+
+                <th>Category</th>
+
+                <th>Contact</th>
+
+                <th>Phone</th>
+
+                <th>Budget</th>
+
+                <th>Status</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="vendorTable">
+
+            <!-- Dynamic -->
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ================= TOP VENDORS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-ranking-star"></i>
+
+            Top Vendors
+
+        </h2>
+
+    </div>
+
+    <div id="topVendors" class="cards">
+
+        <!-- Dynamic -->
+
+    </div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer
+
+    style="
+
+        margin-top:40px;
+
+        text-align:center;
+
+        color:#64748B;
+
+        padding:20px;
+
+    ">
+
+    © 2026 EventAI | Vendor Management
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/vendors.js"></script>
+
+<script>
+
+const logoutBtn =
+
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>

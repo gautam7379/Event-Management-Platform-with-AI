@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Event | EventAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/create-event.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>EventAI</span>
+    </div>
+
+    <nav class="nav">
+      <a href="dashboard.html"><i class="fa-solid fa-house"></i> Dashboard</a>
+      <a href="events.html" class="active"><i class="fa-solid fa-calendar-days"></i> Events</a>
+      <a href="attendees.html"><i class="fa-solid fa-users"></i> Attendees</a>
+      <a href="tickets.html"><i class="fa-solid fa-ticket"></i> Tickets</a>
+      <a href="vendors.html"><i class="fa-solid fa-store"></i> Vendors</a>
+      <a href="speakers.html"><i class="fa-solid fa-microphone"></i> Speakers</a>
+      <a href="sponsors.html"><i class="fa-solid fa-handshake"></i> Sponsors</a>
+      <a href="analytics.html"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+      <a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a>
+      <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <h1><i class="fa-solid fa-calendar-plus"></i> Create Event</h1>
+        <p>Add a new event to your dashboard.</p>
+      </div>
+
+      <div class="admin">
+        <i class="fa-solid fa-circle-user"></i>
+        <span>Administrator</span>
+      </div>
+    </div>
+
+    <div class="content-grid">
+
+      <!-- ============ FORM CARD ============ -->
+      <form id="createForm" class="card form-card" novalidate>
+
+        <fieldset>
+          <legend>Required details</legend>
+
+          <div class="field">
+            <label for="name">Event name <span class="req">*</span></label>
+            <input type="text" id="name" name="name" required placeholder="e.g. AI Summit 2026" autocomplete="off">
+            <small class="error" id="err-name"></small>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="date">Date <span class="req">*</span></label>
+              <input type="date" id="date" name="date" required>
+              <small class="error" id="err-date"></small>
+            </div>
+
+            <div class="field">
+              <label for="venue">Venue <span class="req">*</span></label>
+              <input type="text" id="venue" name="venue" required placeholder="e.g. Hyderabad">
+              <small class="error" id="err-venue"></small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Optional details <span class="legend-note">add now or edit later</span></legend>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="category">Category</label>
+              <input type="text" id="category" name="category" placeholder="Defaults to “General”">
+            </div>
+
+            <div class="field">
+              <label for="time">Time</label>
+              <input type="time" id="time" name="time" placeholder="Defaults to 10:00">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="price">Ticket price (₹)</label>
+              <input type="number" id="price" name="price" min="0" placeholder="Defaults to Free">
+            </div>
+
+            <div class="field">
+              <label for="capacity">Capacity</label>
+              <input type="number" id="capacity" name="capacity" min="0" placeholder="Defaults to 100">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="banner">Banner image URL</label>
+            <input type="url" id="banner" name="banner" placeholder="Defaults to a placeholder image">
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="Defaults to “Details coming soon.”"></textarea>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Create Event</button>
+        </div>
+
+      </form>
+
+      <!-- ============ LIVE PREVIEW CARD ============ -->
+      <aside class="card preview-card" aria-label="Live event preview">
+        <p class="preview-label">Preview</p>
+
+        <div class="preview-banner" id="previewThumb">
+          <i class="fa-solid fa-image"></i>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-top">
+            <h3 id="previewName">Your event name</h3>
+            <span class="badge upcoming" id="previewStamp">Upcoming</span>
+          </div>
+
+          <p class="preview-category" id="previewCategory">General</p>
+
+          <div class="preview-row">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span id="previewDate">—</span>
+            <span class="dot">•</span>
+            <span id="previewTime">10:00</span>
+          </div>
+
+          <div class="preview-row">
+            <i class="fa-solid fa-location-dot"></i>
+            <span id="previewVenue">—</span>
+          </div>
+
+          <div class="preview-stats">
+            <div>
+              <span class="stat-label">Price</span>
+              <span class="stat-value" id="previewPrice">Free</span>
+            </div>
+            <div>
+              <span class="stat-label">Capacity</span>
+              <span class="stat-value" id="previewSeats">100</span>
+            </div>
+            <div>
+              <span class="stat-label">Event ID</span>
+              <span class="stat-value" id="previewId">#1</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+
+  </main>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/create-event.js"></script>
+</body>
+</html>

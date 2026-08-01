@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Event Ticket</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<link rel="stylesheet" href="css/ticket.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="ticket">
+
+<div class="ticket-header">
+
+<h1>
+
+EVENTAI
+
+</h1>
+
+<p>
+
+Digital Event Ticket
+
+</p>
+
+</div>
+
+<div class="ticket-body">
+
+<h2 id="eventName"></h2>
+
+<p>
+
+<strong>Ticket Holder:</strong>
+
+<span id="ticketHolder"></span>
+
+</p>
+
+<p>
+
+<strong>Email:</strong>
+
+<span id="ticketEmail"></span>
+
+</p>
+
+<p>
+
+<strong>Date:</strong>
+
+<span id="ticketDate"></span>
+
+</p>
+
+<p>
+
+<strong>Venue:</strong>
+
+<span id="ticketVenue"></span>
+
+</p>
+
+<p>
+
+<strong>Ticket ID:</strong>
+
+<span id="ticketId"></span>
+
+</p>
+
+<div id="qrcode"></div>
+
+</div>
+
+<div class="ticket-footer">
+
+<button onclick="window.print()">
+
+Print Ticket
+
+</button>
+
+<button id="downloadPDF">
+
+Download PDF
+
+</button>
+
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="js/ticket-view.js"></script>
+
+</body>
+
+</html>

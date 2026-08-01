@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendees | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/tables.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <i class="fas fa-calendar-check"></i>
+            <h2>EventAI</h2>
+        </div>
+
+        <ul>
+
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+
+            <li><a href="events.html"><i class="fas fa-calendar"></i> Events</a></li>
+
+            <li><a href="create-event.html"><i class="fas fa-plus-circle"></i> Create Event</a></li>
+
+            <li class="active"><a href="attendees.html"><i class="fas fa-users"></i> Attendees</a></li>
+
+            <li><a href="tickets.html"><i class="fas fa-ticket-alt"></i> Tickets</a></li>
+
+            <li><a href="vendors.html"><i class="fas fa-store"></i> Vendors</a></li>
+
+            <li><a href="speakers.html"><i class="fas fa-microphone"></i> Speakers</a></li>
+
+            <li><a href="sponsors.html"><i class="fas fa-handshake"></i> Sponsors</a></li>
+
+            <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+
+            <li><a href="chatbot.html"><i class="fas fa-robot"></i> AI Assistant</a></li>
+
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+
+        </ul>
+
+    </aside>
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <h1>Attendees</h1>
+            <button 
+    class="primary-btn"
+    onclick="exportAttendeesCSV()">
+
+    <i class="fa-solid fa-file-csv"></i>
+
+    Export CSV
+
+</button>
+
+            <div class="topbar-actions">
+
+                <button id="addAttendeeBtn" class="btn-primary">
+
+                    <i class="fas fa-user-plus"></i>
+
+                    Register Attendee
+
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- Statistics -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <h3>Total Attendees</h3>
+
+                <h2 id="totalAttendees">0</h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Checked In</h3>
+
+                <h2 id="checkedIn">0</h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Pending</h3>
+
+                <h2 id="pending">0</h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Total Events</h3>
+
+                <h2 id="eventCount">0</h2>
+
+            </div>
+
+        </section>
+        <!-- Search & Filters -->
+
+        <section class="toolbar">
+
+            <div class="search-box">
+
+                <i class="fas fa-search"></i>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search attendee..."
+                >
+
+            </div>
+
+            <select id="eventFilter">
+
+                <option value="all">
+                    All Events
+                </option>
+
+            </select>
+
+            <select id="statusFilter">
+
+                <option value="all">
+                    All Status
+                </option>
+
+                <option value="Pending">
+                    Pending
+                </option>
+
+                <option value="Checked In">
+                    Checked In
+                </option>
+
+            </select>
+
+        </section>
+
+        <!-- Table -->
+
+        <section class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Name</th>
+
+                        <th>Email</th>
+
+                        <th>Phone</th>
+
+                        <th>Event</th>
+
+                        <th>Status</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="attendeeTable">
+
+                </tbody>
+
+            </table>
+
+        </section>
+
+        <!-- Register Attendee Modal -->
+
+        <div
+            class="modal"
+            id="attendeeModal"
+        >
+
+            <div class="modal-content">
+
+                <span
+                    id="closeModal"
+                    class="close"
+                >
+
+                    &times;
+
+                </span>
+
+                <h2>
+
+                    Register Attendee
+
+                </h2>
+
+                <div class="form-group">
+
+                    <label>Name</label>
+
+                    <input
+                        type="text"
+                        id="attendeeName"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Email</label>
+
+                    <input
+                        type="email"
+                        id="attendeeEmail"
+                    >
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Phone</label>
+
+                    <input
+                        type="text"
+                        id="attendeePhone"
+                    >
+
+                </div>
+                <div class="form-group">
+
+                    <label>Event</label>
+
+                    <select id="attendeeEvent">
+
+                        <option value="">Select Event</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Status</label>
+
+                    <select id="attendeeStatus">
+
+                        <option value="Pending">Pending</option>
+
+                        <option value="Checked In">Checked In</option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <button
+                        id="saveAttendee"
+                        class="btn-primary"
+                    >
+
+                        <i class="fas fa-save"></i>
+
+                        Save Attendee
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script src="js/attendees.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,272 @@
+/* ==========================================
+   TABLES & FORMS
+========================================== */
+
+.table-container{
+    width:100%;
+    overflow-x:auto;
+    margin-top:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+table thead{
+    background:#2563eb;
+    color:#fff;
+}
+
+table th{
+    padding:15px;
+    text-align:left;
+    font-size:15px;
+    font-weight:600;
+}
+
+table td{
+    padding:15px;
+    border-bottom:1px solid #eee;
+    font-size:14px;
+    color:#444;
+}
+
+table tbody tr:hover{
+    background:#f5f8ff;
+    transition:.3s;
+}
+
+/* ==============================
+   SEARCH BAR
+============================== */
+
+.search-box{
+    width:100%;
+    max-width:350px;
+    padding:12px 15px;
+    margin:20px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+    outline:none;
+    font-size:15px;
+}
+
+.search-box:focus{
+    border-color:#2563eb;
+}
+
+/* ==============================
+   FORMS
+============================== */
+
+form{
+    margin-top:20px;
+}
+
+.input-group{
+    margin-bottom:20px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+    color:#333;
+}
+
+.input-group input,
+.input-group textarea,
+.input-group select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+    font-size:15px;
+    transition:.3s;
+}
+
+.input-group input:focus,
+.input-group textarea:focus,
+.input-group select:focus{
+    border-color:#2563eb;
+}
+
+textarea{
+    resize:vertical;
+    min-height:120px;
+}
+
+/* ==============================
+   BUTTONS
+============================== */
+
+.primary-btn{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:12px 22px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    transition:.3s;
+}
+
+.primary-btn:hover{
+    background:#1d4ed8;
+}
+
+.edit-btn{
+    background:#f59e0b;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:5px;
+    transition:.3s;
+}
+
+.edit-btn:hover{
+    background:#d97706;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.delete-btn:hover{
+    background:#dc2626;
+}
+
+.view-btn{
+    background:#10b981;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.view-btn:hover{
+    background:#059669;
+}
+
+/* ==============================
+   STATUS BADGES
+============================== */
+
+.badge{
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.badge.active{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.badge.pending{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge.cancelled{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* ==============================
+   CHATBOT
+============================== */
+
+.chat-container{
+    display:flex;
+    flex-direction:column;
+    height:550px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    overflow:hidden;
+    background:#fff;
+}
+
+.chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:20px;
+    background:#f8fafc;
+}
+
+.bot-message,
+.user-message{
+    max-width:75%;
+    padding:12px 16px;
+    margin-bottom:15px;
+    border-radius:12px;
+    word-wrap:break-word;
+}
+
+.bot-message{
+    background:#e2e8f0;
+    align-self:flex-start;
+}
+
+.user-message{
+    background:#2563eb;
+    color:#fff;
+    margin-left:auto;
+}
+
+.chat-input{
+    display:flex;
+    border-top:1px solid #ddd;
+}
+
+.chat-input input{
+    flex:1;
+    border:none;
+    padding:15px;
+    outline:none;
+}
+
+.chat-input button{
+    border:none;
+    padding:0 20px;
+    background:#2563eb;
+    color:#fff;
+    cursor:pointer;
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media(max-width:768px){
+
+table{
+    min-width:700px;
+}
+
+.search-box{
+    max-width:100%;
+}
+
+.primary-btn{
+    width:100%;
+}
+
+}

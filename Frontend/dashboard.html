@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | EventAI</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+
+        <i class="fa-solid fa-calendar-check"></i>
+
+        <h2>EventAI</h2>
+
+    </div>
+
+    <ul>
+
+        <li class="active">
+
+            <a href="dashboard.html">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="events.html">
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Events
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="attendees.html">
+
+                <i class="fa-solid fa-users"></i>
+
+                Attendees
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="tickets.html">
+
+                <i class="fa-solid fa-ticket"></i>
+
+                Tickets
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="vendors.html">
+
+                <i class="fa-solid fa-store"></i>
+
+                Vendors
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="speakers.html">
+
+                <i class="fa-solid fa-microphone"></i>
+
+                Speakers
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="analytics.html">
+
+                <i class="fa-solid fa-chart-line"></i>
+
+                Analytics
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="chatbot.html">
+
+                <i class="fa-solid fa-robot"></i>
+
+                AI Chatbot
+
+            </a>
+
+        </li>
+
+        <li>
+
+            <a href="#" id="logoutBtn">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</aside>
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+    <div>
+
+        <h1>
+
+            Admin Dashboard
+
+        </h1>
+
+        <p>
+
+            Welcome back,
+
+            <strong id="loggedUserName">
+
+                Administrator
+
+            </strong>
+
+        </p>
+
+    </div>
+
+    <div class="user">
+
+        <i class="fa-solid fa-user-circle"></i>
+
+        <span id="userRole">
+
+            Admin
+
+        </span>
+
+    </div>
+
+</header>
+<!-- ================= DASHBOARD CARDS ================= -->
+
+<section class="cards">
+
+    <!-- Total Events -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-calendar-days"></i>
+
+        <h2 id="totalEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Total Events
+
+        </p>
+
+    </div>
+
+    <!-- Total Attendees -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-users"></i>
+
+        <h2 id="totalAttendees">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Total Attendees
+
+        </p>
+
+    </div>
+
+    <!-- Total Tickets -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-ticket"></i>
+
+        <h2 id="totalTickets">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Tickets Generated
+
+        </p>
+
+    </div>
+
+    <!-- Revenue -->
+
+    <div class="card">
+
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+
+        <h2 id="totalRevenue">
+
+            ₹0
+
+        </h2>
+
+        <p>
+
+            Total Revenue
+
+        </p>
+
+    </div>
+
+</section>
+
+<!-- ================= QUICK STATS ================= -->
+
+<section class="cards">
+
+    <div class="card">
+
+        <i class="fa-solid fa-hourglass-half"></i>
+
+        <h2 id="upcomingEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Upcoming Events
+
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        <h2 id="completedEvents">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Completed Events
+
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-user-check"></i>
+
+        <h2 id="checkedInCount">
+
+            0
+
+        </h2>
+
+        <p>
+
+            Checked-in Attendees
+
+        </p>
+
+    </div>
+
+    <div class="card">
+
+        <i class="fa-solid fa-chart-line"></i>
+
+        <h2 id="registrationRate">
+
+            0%
+
+        </h2>
+
+        <p>
+
+            Registration Rate
+
+        </p>
+
+    </div>
+
+</section>
+<!-- ================= MAIN DASHBOARD CONTENT ================= -->
+
+<div class="dashboard-grid">
+
+    <!-- ================= RECENT EVENTS ================= -->
+
+    <section class="recent-events">
+
+        <div class="section-header">
+
+            <h2>
+
+                <i class="fa-solid fa-calendar-days"></i>
+
+                Recent Events
+
+            </h2>
+
+        </div>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Event</th>
+
+                    <th>Date</th>
+
+                    <th>Venue</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="recentEventsTable">
+
+                <!-- Dynamic -->
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+    <!-- ================= ACTIVITY FEED ================= -->
+
+    <section class="recent-events">
+
+        <div class="section-header">
+
+            <h2>
+
+                <i class="fa-solid fa-clock-rotate-left"></i>
+
+                Recent Activity
+
+            </h2>
+
+        </div>
+
+        <ul id="activityList" class="activity-list">
+
+            <li>
+
+                No recent activity.
+
+            </li>
+
+        </ul>
+
+    </section>
+
+</div>
+
+<!-- ================= QUICK ACTIONS ================= -->
+
+<section class="recent-events">
+
+    <div class="section-header">
+
+        <h2>
+
+            <i class="fa-solid fa-bolt"></i>
+
+            Quick Actions
+
+        </h2>
+
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+
+            <i class="fa-solid fa-calendar-plus"></i>
+
+            <h3>Create Event</h3>
+
+            <p>Create and manage a new event.</p>
+
+            <a href="create-event.html" class="primary-btn">
+
+                Create
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-users"></i>
+
+            <h3>Manage Attendees</h3>
+
+            <p>View registrations and attendee details.</p>
+
+            <a href="attendees.html" class="primary-btn">
+
+                Open
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-ticket"></i>
+
+            <h3>Tickets</h3>
+
+            <p>Manage all generated event tickets.</p>
+
+            <a href="tickets.html" class="primary-btn">
+
+                View
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <i class="fa-solid fa-chart-line"></i>
+
+            <h3>Analytics</h3>
+
+            <p>Track revenue and event performance.</p>
+
+            <a href="analytics.html" class="primary-btn">
+
+                Analytics
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ================= FOOTER ================= -->
+
+<footer
+    style="
+        margin-top:40px;
+        text-align:center;
+        color:#64748B;
+        font-size:15px;
+        padding:20px;
+    ">
+
+    © 2026 EventAI |
+    AI Powered Event Management System
+
+</footer>
+
+</main>
+
+</div>
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/dashboard.js"></script>
+
+<script>
+
+/* ==========================================
+        LOGOUT BUTTON
+========================================== */
+
+const logoutBtn =
+
+    document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+    logoutBtn.addEventListener("click",function(e){
+
+        e.preventDefault();
+
+        logout();
+
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>
