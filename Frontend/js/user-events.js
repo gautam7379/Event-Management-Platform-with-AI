@@ -72,6 +72,38 @@ function saveTickets(tickets) {
 
 }
 
+/* ---------- NEW ---------- */
+
+function getSpeakers() {
+
+    return JSON.parse(
+
+        localStorage.getItem("speakers")
+
+    ) || [];
+
+}
+
+function getSponsors() {
+
+    return JSON.parse(
+
+        localStorage.getItem("sponsors")
+
+    ) || [];
+
+}
+
+function getVendors() {
+
+    return JSON.parse(
+
+        localStorage.getItem("vendors")
+
+    ) || [];
+
+}
+
 /* ==========================================
             CURRENT USER
 ========================================== */
@@ -110,35 +142,39 @@ let events = getEvents();
 
 const tableBody =
 
-    document.getElementById("eventTable");
+document.getElementById("eventTable");
 
 const emptyMessage =
 
-    document.getElementById("emptyMessage");
+document.getElementById("emptyMessage");
 
 const searchBox =
 
-    document.getElementById("searchEvent");
+document.getElementById("searchEvent");
 
 const statusFilter =
 
-    document.getElementById("statusFilter");
+document.getElementById("statusFilter");
 
 /* ==========================================
             LOAD USER
 ========================================== */
 
-function loadUser() {
+function loadUser(){
 
     const user =
 
-        document.getElementById("loggedUserName");
+    document.getElementById(
 
-    if (user) {
+        "loggedUserName"
+
+    );
+
+    if(user){
 
         user.textContent =
 
-            currentUser.name;
+        currentUser.name;
 
     }
 
@@ -148,32 +184,33 @@ function loadUser() {
             FORMAT DATE
 ========================================== */
 
-function formatDate(date) {
+function formatDate(date){
 
     return new Date(date)
 
-        .toLocaleDateString(
+    .toLocaleDateString(
 
-            "en-IN",
+        "en-IN",
 
-            {
+        {
 
-                day: "2-digit",
+            day:"2-digit",
 
-                month: "short",
+            month:"short",
 
-                year: "numeric"
+            year:"numeric"
 
-            }
+        }
 
-        );
+    );
 
 }
+
 /* ==========================================
             DASHBOARD STATISTICS
 ========================================== */
 
-function loadStatistics() {
+function loadStatistics(){
 
     const events = getEvents();
 
@@ -181,25 +218,15 @@ function loadStatistics() {
 
     const tickets = getTickets();
 
-    /* ---------- AVAILABLE EVENTS ---------- */
-
-    const availableEvents = events.filter(event =>
-
-        event.status !== "Completed"
-
-    ).length;
-
     document.getElementById(
 
         "availableEvents"
 
-    ).textContent = availableEvents;
+    ).textContent =
 
-    /* ---------- MY REGISTRATIONS ---------- */
+    events.filter(
 
-    const myRegistrations = attendees.filter(attendee =>
-
-        attendee.email === currentUser.email
+        event => event.status !== "Completed"
 
     ).length;
 
@@ -207,13 +234,13 @@ function loadStatistics() {
 
         "myRegistrations"
 
-    ).textContent = myRegistrations;
+    ).textContent =
 
-    /* ---------- MY TICKETS ---------- */
+    attendees.filter(
 
-    const myTickets = tickets.filter(ticket =>
+        attendee =>
 
-        ticket.email === currentUser.email
+        attendee.email === currentUser.email
 
     ).length;
 
@@ -221,13 +248,13 @@ function loadStatistics() {
 
         "myTickets"
 
-    ).textContent = myTickets;
+    ).textContent =
 
-    /* ---------- UPCOMING EVENTS ---------- */
+    tickets.filter(
 
-    const upcomingEvents = events.filter(event =>
+        ticket =>
 
-        event.status === "Upcoming"
+        ticket.email === currentUser.email
 
     ).length;
 
@@ -235,7 +262,15 @@ function loadStatistics() {
 
         "upcomingEvents"
 
-    ).textContent = upcomingEvents;
+    ).textContent =
+
+    events.filter(
+
+        event =>
+
+        event.status === "Upcoming"
+
+    ).length;
 
 }
 /* ==========================================
@@ -247,9 +282,6 @@ function renderEvents(eventList = events) {
     if (!tableBody) return;
 
     tableBody.innerHTML = "";
-
-
-    /* ---------- EMPTY STATE ---------- */
 
     if (eventList.length === 0) {
 
@@ -263,43 +295,39 @@ function renderEvents(eventList = events) {
 
     }
 
-
     if (emptyMessage) {
 
         emptyMessage.style.display = "none";
 
     }
 
-
-    /* ---------- EVENTS TABLE ---------- */
+    let html = "";
 
     eventList.forEach(event => {
 
+        let badgeClass = "upcoming";
 
-        const badgeClass =
+        if (event.status === "Completed") {
 
-            event.status === "Completed"
+            badgeClass = "completed";
 
-                ? "completed"
+        }
 
-                : event.status === "Open"
+        else if (event.status === "Open") {
 
-                ? "pending"
+            badgeClass = "pending";
 
-                : "upcoming";
+        }
 
-
-        const row = `
+        html += `
 
         <tr>
-
 
             <td>
 
                 #${event.id}
 
             </td>
-
 
             <td>
 
@@ -311,17 +339,19 @@ function renderEvents(eventList = events) {
 
                     class="event-banner"
 
-                    width="80"
-
-                    height="50"
-
                     style="
-                    border-radius:8px;
-                    object-fit:cover;
+
+                        width:80px;
+
+                        height:50px;
+
+                        object-fit:cover;
+
+                        border-radius:8px;
+
                     ">
 
             </td>
-
 
             <td>
 
@@ -333,13 +363,11 @@ function renderEvents(eventList = events) {
 
             </td>
 
-
             <td>
 
                 ${event.category}
 
             </td>
-
 
             <td>
 
@@ -355,26 +383,21 @@ function renderEvents(eventList = events) {
 
             </td>
 
-
             <td>
 
                 ${event.venue}
 
             </td>
 
-
             <td>
 
-                ${
-                    event.price > 0
+                ${event.price > 0
 
-                    ? `₹${event.price}`
+                    ? `₹${Number(event.price).toLocaleString("en-IN")}`
 
-                    : "Free"
-                }
+                    : "Free"}
 
             </td>
-
 
             <td>
 
@@ -385,7 +408,6 @@ function renderEvents(eventList = events) {
                 </span>
 
             </td>
-
 
             <td>
 
@@ -401,7 +423,6 @@ function renderEvents(eventList = events) {
 
             </td>
 
-
             <td>
 
                 <button
@@ -416,62 +437,53 @@ function renderEvents(eventList = events) {
 
             </td>
 
-
         </tr>
 
         `;
 
-
-        tableBody.innerHTML += row;
-
-
     });
 
+    tableBody.innerHTML = html;
+
 }
+
 /* ==========================================
             SEARCH & FILTER
 ========================================== */
 
 function filterEvents() {
 
-    const searchText =
+    const search =
 
-        searchBox.value
+        searchBox
 
-            .trim()
+        ? searchBox.value.trim().toLowerCase()
 
-            .toLowerCase();
-
+        : "";
 
     const status =
 
-        statusFilter.value;
+        statusFilter
 
+        ? statusFilter.value
 
-    const filteredEvents = events.filter(event => {
+        : "All";
 
+    const filtered = events.filter(event => {
 
-        const matchesSearch =
+        const matchSearch =
 
-            event.name.toLowerCase()
-
-                .includes(searchText)
-
-            ||
-
-            event.category.toLowerCase()
-
-                .includes(searchText)
+            event.name.toLowerCase().includes(search)
 
             ||
 
-            event.venue.toLowerCase()
+            event.category.toLowerCase().includes(search)
 
-                .includes(searchText);
+            ||
 
+            event.venue.toLowerCase().includes(search);
 
-
-        const matchesStatus =
+        const matchStatus =
 
             status === "All"
 
@@ -479,29 +491,16 @@ function filterEvents() {
 
             event.status === status;
 
-
-
-        return (
-
-            matchesSearch
-
-            &&
-
-            matchesStatus
-
-        );
-
+        return matchSearch && matchStatus;
 
     });
 
-
-    renderEvents(filteredEvents);
+    renderEvents(filtered);
 
 }
 
-
 /* ==========================================
-            SEARCH EVENT
+            EVENTS
 ========================================== */
 
 if (searchBox) {
@@ -515,11 +514,6 @@ if (searchBox) {
     );
 
 }
-
-
-/* ==========================================
-            STATUS FILTER
-========================================== */
 
 if (statusFilter) {
 
@@ -544,24 +538,63 @@ function viewEvent(id) {
 
     );
 
-
     if (!event) return;
 
+    /* ---------- GET RELATED DATA ---------- */
+
+    const speakers = getSpeakers().filter(
+
+        speaker => speaker.event === event.name
+
+    );
+
+    const sponsors = getSponsors().filter(
+
+        sponsor => sponsor.event === event.name
+
+    );
+
+    const vendors = getVendors().filter(
+
+        vendor => vendor.event === event.name
+
+    );
+
+    const speakerNames =
+
+        speakers.length
+
+        ? speakers.map(s => s.name).join(", ")
+
+        : "Not Assigned";
+
+    const sponsorNames =
+
+        sponsors.length
+
+        ? sponsors.map(s => s.name).join(", ")
+
+        : "Not Assigned";
+
+    const vendorNames =
+
+        vendors.length
+
+        ? vendors.map(v => v.name).join(", ")
+
+        : "Not Assigned";
+
+    /* ---------- VIEW MODAL ---------- */
 
     const viewContent =
 
         document.getElementById("viewContent");
 
-
     if (!viewContent) return;
-
-
 
     viewContent.innerHTML = `
 
-
         <div class="view-banner">
-
 
             <img
 
@@ -570,18 +603,20 @@ function viewEvent(id) {
                 alt="${event.name}"
 
                 style="
-                    width:100%;
-                    height:250px;
-                    object-fit:cover;
-                    border-radius:12px;
-                ">
 
+                    width:100%;
+
+                    height:250px;
+
+                    object-fit:cover;
+
+                    border-radius:12px;
+
+                ">
 
         </div>
 
-
         <br>
-
 
         <h2>
 
@@ -589,118 +624,125 @@ function viewEvent(id) {
 
         </h2>
 
-
         <br>
-
 
         <p>
 
-            <strong>Category:</strong>
+            <strong>Category :</strong>
 
             ${event.category}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Date:</strong>
+            <strong>Date :</strong>
 
             ${formatDate(event.date)}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Time:</strong>
+            <strong>Time :</strong>
 
             ${event.time}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Venue:</strong>
+            <strong>Venue :</strong>
 
             ${event.venue}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Price:</strong>
+            <strong>Speaker :</strong>
 
-            ${
-                event.price > 0
-
-                ? `₹${event.price}`
-
-                : "Free"
-            }
+            ${speakerNames}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Capacity:</strong>
+            <strong>Sponsor :</strong>
+
+            ${sponsorNames}
+
+        </p>
+
+        <br>
+
+        <p>
+
+            <strong>Vendor :</strong>
+
+            ${vendorNames}
+
+        </p>
+
+        <br>
+
+        <p>
+
+            <strong>Price :</strong>
+
+            ${event.price > 0
+                ? `₹${Number(event.price).toLocaleString("en-IN")}`
+                : "Free"}
+
+        </p>
+
+        <br>
+
+        <p>
+
+            <strong>Capacity :</strong>
 
             ${event.capacity}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Registered:</strong>
+            <strong>Registered :</strong>
 
             ${event.registered || 0}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Status:</strong>
+            <strong>Status :</strong>
 
             ${event.status}
 
         </p>
 
-
         <br>
-
 
         <p>
 
-            <strong>Description:</strong>
+            <strong>Description :</strong>
 
         </p>
-
 
         <p>
 
@@ -708,9 +750,7 @@ function viewEvent(id) {
 
         </p>
 
-
         <br>
-
 
         <button
 
@@ -718,17 +758,15 @@ function viewEvent(id) {
 
             onclick="registerEvent(${event.id})">
 
+            <i class="fa-solid fa-user-plus"></i>
+
             Register Now
 
         </button>
 
-
     `;
 
-
-
     document.getElementById("viewModal").style.display = "block";
-
 
 }
 /* ==========================================
@@ -737,15 +775,7 @@ function viewEvent(id) {
 
 function registerEvent(eventId) {
 
-
-    /* ---------- CHECK LOGIN ---------- */
-
-    const loggedIn =
-
-        localStorage.getItem("isLoggedIn");
-
-
-    if (!loggedIn) {
+    if (!localStorage.getItem("isLoggedIn")) {
 
         alert("Please login first.");
 
@@ -755,35 +785,23 @@ function registerEvent(eventId) {
 
     }
 
-
-
-    /* ---------- ROLE CHECK ---------- */
-
     if (currentUser.role !== "user") {
 
-        alert("Only users can register for events.");
+        alert("Only users can register.");
 
         return;
 
     }
 
-
-
     let attendees = getAttendees();
 
-
     let tickets = getTickets();
-
-
-
-    /* ---------- FIND EVENT ---------- */
 
     const event = events.find(
 
         e => e.id === eventId
 
     );
-
 
     if (!event) {
 
@@ -793,18 +811,15 @@ function registerEvent(eventId) {
 
     }
 
+    const alreadyRegistered = attendees.find(
 
+        attendee =>
 
-    /* ---------- DUPLICATE CHECK ---------- */
+            attendee.eventId === event.id &&
 
-    const alreadyRegistered = attendees.find(attendee =>
-
-        attendee.eventId === eventId &&
-
-        attendee.email === currentUser.email
+            attendee.email === currentUser.email
 
     );
-
 
     if (alreadyRegistered) {
 
@@ -814,190 +829,130 @@ function registerEvent(eventId) {
 
     }
 
-
-
     /* ---------- CREATE ATTENDEE ---------- */
 
     const attendee = {
-
 
         id:
 
             attendees.length > 0
 
-            ?
+            ? Math.max(...attendees.map(a => a.id || 0)) + 1
 
-            Math.max(
-
-                ...attendees.map(a => a.id || 0)
-
-            ) + 1
-
-            :
-
-            1,
-
+            : 1,
 
         eventId: event.id,
 
-
         eventName: event.name,
-
 
         name: currentUser.name,
 
-
         email: currentUser.email,
-
 
         phone: "-",
 
-
         status: "Registered",
-
 
         registrationDate:
 
             new Date().toLocaleDateString("en-IN")
 
-
     };
-
-
 
     attendees.push(attendee);
 
-
-
     saveAttendees(attendees);
 
-
-
-    /* ---------- UPDATE EVENT COUNT ---------- */
+    /* ---------- UPDATE EVENT ---------- */
 
     event.registered =
 
         (event.registered || 0) + 1;
 
-
-
     saveEvents(events);
-
-
 
     /* ---------- CREATE TICKET ---------- */
 
     const ticket = {
 
-
         id:
 
             tickets.length > 0
 
-            ?
+            ? Math.max(...tickets.map(t => t.id || 0)) + 1
 
-            Math.max(
-
-                ...tickets.map(t => t.id || 0)
-
-            ) + 1
-
-            :
-
-            1,
-
+            : 1,
 
         ticketId:
 
             "EVT-" +
 
-            String(Date.now()).slice(-6),
-
+            Date.now(),
 
         attendeeId:
 
             attendee.id,
 
-
         eventId:
 
             event.id,
-
 
         eventName:
 
             event.name,
 
-
         name:
 
             currentUser.name,
-
 
         email:
 
             currentUser.email,
 
-
         date:
 
             event.date,
-
 
         time:
 
             event.time,
 
-
         venue:
 
             event.venue,
-
 
         price:
 
             event.price,
 
-
         status:
 
             "Confirmed",
-
 
         issuedOn:
 
             new Date().toLocaleDateString("en-IN")
 
-
     };
-
-
 
     tickets.push(ticket);
 
-
-
     saveTickets(tickets);
-
-
 
     alert(
 
-        "Registration Successful!\n\n" +
-
-        "Ticket ID : " +
+        "Registration Successful!\n\nTicket ID : " +
 
         ticket.ticketId
 
     );
 
-
-
     refreshEvents();
 
 }
+
 /* ==========================================
-            REFRESH EVENTS
+            REFRESH
 ========================================== */
 
 function refreshEvents() {
@@ -1010,43 +965,43 @@ function refreshEvents() {
 
 }
 
-
 /* ==========================================
             AUTO REFRESH
 ========================================== */
 
-window.addEventListener("storage", () => {
+window.addEventListener(
 
-    refreshEvents();
+    "storage",
 
-});
+    refreshEvents
 
+);
 
 /* ==========================================
-            INITIAL LOAD
+            INITIALIZE
 ========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
 
+    "DOMContentLoaded",
 
-    /* ---------- USER SECURITY ---------- */
+    () => {
 
-    if (currentUser.role !== "user") {
+        if (currentUser.role !== "user") {
 
-        window.location.href = "dashboard.html";
+            window.location.href = "dashboard.html";
 
-        return;
+            return;
+
+        }
+
+        loadUser();
+
+        refreshEvents();
 
     }
 
-
-    loadUser();
-
-    refreshEvents();
-
-
-});
-
+);
 
 /* ==========================================
             DEBUG
@@ -1058,49 +1013,67 @@ console.log(
 
 );
 
-
 console.log(
 
     "EventAI User Events Loaded"
 
 );
 
-
 console.log(
 
-    "Current User:",
+    "Current User :",
 
     currentUser
 
 );
 
-
 console.log(
 
-    "Events:",
+    "Events :",
 
     getEvents()
 
 );
 
-
 console.log(
 
-    "Attendees:",
+    "Attendees :",
 
     getAttendees()
 
 );
 
-
 console.log(
 
-    "Tickets:",
+    "Tickets :",
 
     getTickets()
 
 );
 
+console.log(
+
+    "Speakers :",
+
+    getSpeakers()
+
+);
+
+console.log(
+
+    "Sponsors :",
+
+    getSponsors()
+
+);
+
+console.log(
+
+    "Vendors :",
+
+    getVendors()
+
+);
 
 console.log(
 
