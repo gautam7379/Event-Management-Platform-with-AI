@@ -3,22 +3,22 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    <title>Vendors | EventAI</title>
+<title>Vendor Management | EventAI</title>
 
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/vendors.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/vendors.css">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 </head>
 
@@ -30,209 +30,221 @@
 
 <aside class="sidebar">
 
-    <div class="logo">
+<div class="logo">
 
-        <i class="fa-solid fa-calendar-check"></i>
+<i class="fa-solid fa-calendar-check"></i>
 
-        <h2>EventAI</h2>
+<h2>EventAI</h2>
 
-    </div>
+</div>
 
-    <ul>
+<ul>
 
-        <li>
+<li>
 
-            <a href="dashboard.html">
+<a href="dashboard.html">
 
-                <i class="fa-solid fa-house"></i>
+<i class="fa-solid fa-house"></i>
 
-                Dashboard
+Dashboard
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="events.html">
+<a href="events.html">
 
-                <i class="fa-solid fa-calendar-days"></i>
+<i class="fa-solid fa-calendar-days"></i>
 
-                Events
+Events
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="attendees.html">
+<a href="attendees.html">
 
-                <i class="fa-solid fa-users"></i>
+<i class="fa-solid fa-users"></i>
 
-                Attendees
+Attendees
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="tickets.html">
+<a href="tickets.html">
 
-                <i class="fa-solid fa-ticket"></i>
+<i class="fa-solid fa-ticket"></i>
 
-                Tickets
+Tickets
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li class="active">
+<li class="active">
 
-            <a href="vendors.html">
+<a href="vendors.html">
 
-                <i class="fa-solid fa-store"></i>
+<i class="fa-solid fa-store"></i>
 
-                Vendors
+Vendors
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="speakers.html">
+<a href="speakers.html">
 
-                <i class="fa-solid fa-microphone"></i>
+<i class="fa-solid fa-microphone"></i>
 
-                Speakers
+Speakers
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="analytics.html">
+<a href="sponsors.html">
 
-                <i class="fa-solid fa-chart-line"></i>
+<i class="fa-solid fa-handshake"></i>
 
-                Analytics
+Sponsors
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="chatbot.html">
+<a href="analytics.html">
 
-                <i class="fa-solid fa-robot"></i>
+<i class="fa-solid fa-chart-line"></i>
 
-                AI Chatbot
+Analytics
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-        <li>
+<li>
 
-            <a href="#" id="logoutBtn">
+<a href="chatbot.html">
 
-                <i class="fa-solid fa-right-from-bracket"></i>
+<i class="fa-solid fa-robot"></i>
 
-                Logout
+AI Chatbot
 
-            </a>
+</a>
 
-        </li>
+</li>
 
-    </ul>
+<li>
+
+<a href="#" id="logoutBtn">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</a>
+
+</li>
+
+</ul>
 
 </aside>
 
-<!-- ================= MAIN CONTENT ================= -->
+<!-- ================= MAIN ================= -->
 
 <main class="main-content">
 
 <header class="topbar">
 
-    <div>
+<div>
 
-        <h1>
+<h1>
 
-            Vendor Management
+Vendor Management
 
-        </h1>
+</h1>
 
-        <p>
+<p>
 
-            Manage vendors for all your events.
+Manage vendors assigned to your events.
 
-        </p>
+</p>
 
-    </div>
+</div>
 
-    <div class="user">
+<div class="user">
 
-        <i class="fa-solid fa-user-circle"></i>
+<i class="fa-solid fa-user-circle"></i>
 
-        <span id="loggedUserName">
+<span id="loggedUserName">
 
-            Administrator
+Administrator
 
-        </span>
+</span>
 
-    </div>
+</div>
 
 </header>
-<!-- ================= VENDOR STATISTICS ================= -->
+
+<!-- ================= STATISTICS ================= -->
 
 <section class="cards">
 
-    <div class="card">
+<div class="card">
 
-        <i class="fa-solid fa-store"></i>
+<i class="fa-solid fa-store"></i>
 
-        <h2 id="totalVendors">0</h2>
+<h2 id="totalVendors">0</h2>
 
-        <p>Total Vendors</p>
+<p>Total Vendors</p>
 
-    </div>
+</div>
 
-    <div class="card">
+<div class="card">
 
-        <i class="fa-solid fa-circle-check"></i>
+<i class="fa-solid fa-circle-check"></i>
 
-        <h2 id="activeVendors">0</h2>
+<h2 id="activeVendors">0</h2>
 
-        <p>Active Vendors</p>
+<p>Active Vendors</p>
 
-    </div>
+</div>
 
-    <div class="card">
+<div class="card">
 
-        <i class="fa-solid fa-briefcase"></i>
+<i class="fa-solid fa-layer-group"></i>
 
-        <h2 id="serviceCategories">0</h2>
+<h2 id="serviceCategories">0</h2>
 
-        <p>Categories</p>
+<p>Categories</p>
 
-    </div>
+</div>
 
-    <div class="card">
+<div class="card">
 
-        <i class="fa-solid fa-indian-rupee-sign"></i>
+<i class="fa-solid fa-indian-rupee-sign"></i>
 
-        <h2 id="vendorBudget">₹0</h2>
+<h2 id="vendorBudget">₹0</h2>
 
-        <p>Total Budget</p>
+<p>Total Budget</p>
 
-    </div>
+</div>
 
 </section>
-
 <!-- ================= ADD VENDOR ================= -->
 
 <section class="recent-events">
@@ -253,6 +265,8 @@
 
         <div class="form-grid">
 
+            <!-- Vendor Name -->
+
             <div class="input-group">
 
                 <label>Vendor Name</label>
@@ -264,6 +278,8 @@
                     required>
 
             </div>
+
+            <!-- Category -->
 
             <div class="input-group">
 
@@ -289,6 +305,8 @@
 
             </div>
 
+            <!-- Contact -->
+
             <div class="input-group">
 
                 <label>Contact Person</label>
@@ -296,20 +314,26 @@
                 <input
                     type="text"
                     id="vendorContact"
-                    placeholder="Contact Person">
+                    placeholder="Contact Person"
+                    required>
 
             </div>
 
+            <!-- Phone -->
+
             <div class="input-group">
 
-                <label>Phone</label>
+                <label>Phone Number</label>
 
                 <input
                     type="text"
                     id="vendorPhone"
-                    placeholder="Phone Number">
+                    placeholder="Phone Number"
+                    required>
 
             </div>
+
+            <!-- Email -->
 
             <div class="input-group">
 
@@ -318,27 +342,65 @@
                 <input
                     type="email"
                     id="vendorEmail"
-                    placeholder="Email">
+                    placeholder="Email Address">
 
             </div>
 
+            <!-- Event -->
+
             <div class="input-group">
 
-                <label>Budget</label>
+                <label>Assign Event</label>
+
+                <select id="vendorEvent">
+
+                    <option value="">Select Event</option>
+
+                </select>
+
+            </div>
+
+            <!-- Budget -->
+
+            <div class="input-group">
+
+                <label>Budget (₹)</label>
 
                 <input
                     type="number"
                     id="vendorBudgetInput"
-                    placeholder="Budget">
+                    placeholder="Vendor Budget">
+
+            </div>
+
+            <!-- Status -->
+
+            <div class="input-group">
+
+                <label>Status</label>
+
+                <select id="vendorStatus">
+
+                    <option value="Active">
+
+                        Active
+
+                    </option>
+
+                    <option value="Inactive">
+
+                        Inactive
+
+                    </option>
+
+                </select>
 
             </div>
 
         </div>
 
         <button
-
             type="submit"
-
             class="primary-btn">
 
             <i class="fa-solid fa-floppy-disk"></i>
@@ -350,7 +412,6 @@
     </form>
 
 </section>
-
 <!-- ================= SEARCH ================= -->
 
 <section class="recent-events">
@@ -367,7 +428,7 @@
 
     </div>
 
-    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+    <div class="search-section">
 
         <input
 
@@ -375,92 +436,69 @@
 
             id="searchVendor"
 
-            placeholder="Search Vendor..."
-
-            style="flex:1;padding:12px;">
+            placeholder="Search Vendor...">
 
         <select id="filterCategory">
 
-            <option value="All">
+            <option value="All">All Categories</option>
 
-                All Categories
+            <option value="Catering">Catering</option>
 
-            </option>
+            <option value="Photography">Photography</option>
 
-            <option value="Catering">
+            <option value="Decoration">Decoration</option>
 
-                Catering
+            <option value="Sound & Lighting">Sound & Lighting</option>
 
-            </option>
+            <option value="Security">Security</option>
 
-            <option value="Photography">
+            <option value="Transport">Transport</option>
 
-                Photography
-
-            </option>
-
-            <option value="Decoration">
-
-                Decoration
-
-            </option>
-
-            <option value="Sound & Lighting">
-
-                Sound & Lighting
-
-            </option>
-
-            <option value="Security">
-
-                Security
-
-            </option>
-
-            <option value="Transport">
-
-                Transport
-
-            </option>
+            <option value="Other">Other</option>
 
         </select>
 
     </div>
-    <!-- ================= VENDOR TABLE ================= -->
 
-    <table>
+    <div class="table-container">
 
-        <thead>
+        <table>
 
-            <tr>
+            <thead>
 
-                <th>ID</th>
+                <tr>
 
-                <th>Vendor</th>
+                    <th>ID</th>
 
-                <th>Category</th>
+                    <th>Vendor</th>
 
-                <th>Contact</th>
+                    <th>Category</th>
 
-                <th>Phone</th>
+                    <th>Event</th>
 
-                <th>Budget</th>
+                    <th>Contact</th>
 
-                <th>Status</th>
+                    <th>Phone</th>
 
-                <th>Actions</th>
+                    <th>Budget</th>
 
-            </tr>
+                    <th>Status</th>
 
-        </thead>
+                    <th>Actions</th>
 
-        <tbody id="vendorTable">
+                </tr>
 
-            <!-- Dynamic -->
+            </thead>
 
-        </tbody>
+            <tbody id="vendorTable">
 
-    </table>
+                <!-- Dynamic -->
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </section>
 
@@ -486,22 +524,14 @@
 
     </div>
 
-</section>
-
-<!-- ================= FOOTER ================= -->
+</section><!-- ================= FOOTER ================= -->
 
 <footer
-
     style="
-
         margin-top:40px;
-
         text-align:center;
-
         color:#64748B;
-
         padding:20px;
-
     ">
 
     © 2026 EventAI | Vendor Management
@@ -521,7 +551,6 @@
 <script>
 
 const logoutBtn =
-
 document.getElementById("logoutBtn");
 
 if(logoutBtn){

@@ -175,6 +175,81 @@ function generateResponse(question) {
 
     const tickets = getTickets();
 
+ /* ---------- UPCOMING EVENTS ---------- */
+
+if (
+
+    query.includes("upcoming")
+
+) {
+
+    const upcoming = events.filter(event =>
+
+        event.status &&
+
+        event.status.toLowerCase() === "upcoming"
+
+    );
+
+    if(upcoming.length === 0){
+
+        return "📅 There are no upcoming events.";
+
+    }
+
+    let response =
+
+        "📅 Upcoming Events:<br><br>";
+
+    upcoming.forEach(event => {
+
+        response +=
+
+        `• ${event.name}<br>`;
+
+    });
+
+    return response;
+
+}
+
+/* ---------- COMPLETED EVENTS ---------- */
+
+if (
+
+    query.includes("completed")
+
+) {
+
+    const completed = events.filter(event =>
+
+        event.status &&
+
+        event.status.toLowerCase() === "completed"
+
+    );
+
+    if(completed.length === 0){
+
+        return "✅ No completed events.";
+
+    }
+
+    let response =
+
+        "✅ Completed Events:<br><br>";
+
+    completed.forEach(event => {
+
+        response +=
+
+        `• ${event.name}<br>`;
+
+    });
+
+    return response;
+
+}
     /* ---------- TOTAL EVENTS ---------- */
 
     if (
@@ -301,43 +376,6 @@ function generateResponse(question) {
 
     }
 
-    /* ---------- UPCOMING EVENTS ---------- */
-
-    if (
-
-        query.includes("upcoming")
-
-    ) {
-
-        const upcoming = events.filter(
-
-            event =>
-
-                event.status === "Upcoming"
-
-        );
-
-        if(upcoming.length===0){
-
-            return "📅 There are no upcoming events.";
-
-        }
-
-        let response =
-
-            `📅 Upcoming Events:<br><br>`;
-
-        upcoming.forEach(event=>{
-
-            response +=
-
-            `• ${event.name}<br>`;
-
-        });
-
-        return response;
-
-    }
 
     /* ---------- POPULAR EVENT ---------- */
 

@@ -28,6 +28,16 @@ function saveVendors(vendors) {
 
 }
 
+function getEvents() {
+
+    return JSON.parse(
+
+        localStorage.getItem("events")
+
+    ) || [];
+
+}
+
 /* ==========================================
             CURRENT USER
 ========================================== */
@@ -49,6 +59,44 @@ const currentUser = {
 };
 
 /* ==========================================
+            EDIT MODE
+========================================== */
+
+let editingVendorIndex = -1;
+
+/* ==========================================
+            LOAD EVENTS
+========================================== */
+
+function loadEvents() {
+
+    const select = document.getElementById("vendorEvent");
+
+    if (!select) return;
+
+    const events = getEvents();
+
+    select.innerHTML =
+
+        `<option value="">Select Event</option>`;
+
+    events.forEach(event => {
+
+        select.innerHTML += `
+
+            <option value="${event.name}">
+
+                ${event.name}
+
+            </option>
+
+        `;
+
+    });
+
+}
+
+/* ==========================================
             SECURITY
 ========================================== */
 
@@ -66,9 +114,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         currentUser.name;
 
-    loadStatistics();
+    loadEvents();
 
-    loadVendors();
+    refreshPage();
 
 });
 
@@ -114,11 +162,7 @@ function loadStatistics() {
 
     vendors.forEach(vendor => {
 
-        totalBudget += Number(
-
-            vendor.budget || 0
-
-        );
+        totalBudget += Number(vendor.budget || 0);
 
     });
 
@@ -139,9 +183,9 @@ function loadVendors(filteredVendors = null) {
 
     if (!table) return;
 
-    table.innerHTML = "";
-
     const vendors = filteredVendors || getVendors();
+
+    table.innerHTML = "";
 
     if (vendors.length === 0) {
 
@@ -149,7 +193,7 @@ function loadVendors(filteredVendors = null) {
 
         <tr>
 
-            <td colspan="8" style="text-align:center;padding:20px;">
+            <td colspan="9" style="text-align:center;padding:20px;">
 
                 No vendors available.
 
@@ -165,9 +209,11 @@ function loadVendors(filteredVendors = null) {
 
     }
 
+    let html = "";
+
     vendors.forEach((vendor, index) => {
 
-        table.innerHTML += `
+        html += `
 
         <tr>
 
@@ -176,6 +222,8 @@ function loadVendors(filteredVendors = null) {
             <td>${vendor.name}</td>
 
             <td>${vendor.category}</td>
+
+            <td>${vendor.event || "-"}</td>
 
             <td>${vendor.contact}</td>
 
@@ -201,7 +249,7 @@ function loadVendors(filteredVendors = null) {
 
                         class="edit-btn"
 
-                        onclick="editVendor(${index})">
+                        onclick="editVendor('${vendor.id}')">
 
                         <i class="fa-solid fa-pen"></i>
 
@@ -211,7 +259,7 @@ function loadVendors(filteredVendors = null) {
 
                         class="delete-btn"
 
-                        onclick="deleteVendor(${index})">
+                        onclick="deleteVendor('${vendor.id}')">
 
                         <i class="fa-solid fa-trash"></i>
 
@@ -227,12 +275,14 @@ function loadVendors(filteredVendors = null) {
 
     });
 
+    table.innerHTML = html;
+
     loadTopVendors(vendors);
 
 }
 
 /* ==========================================
-            ADD VENDOR
+            ADD / UPDATE VENDOR
 ========================================== */
 
 const vendorForm = document.getElementById("vendorForm");
@@ -247,11 +297,15 @@ if (vendorForm) {
 
         const vendor = {
 
-            id: "VEN" + Date.now(),
+            id: editingVendorIndex === -1
+                ? "VEN" + Date.now()
+                : vendors[editingVendorIndex].id,
 
             name: document.getElementById("vendorName").value.trim(),
 
             category: document.getElementById("vendorCategory").value,
+
+            event: document.getElementById("vendorEvent").value,
 
             contact: document.getElementById("vendorContact").value.trim(),
 
@@ -261,11 +315,25 @@ if (vendorForm) {
 
             budget: Number(document.getElementById("vendorBudgetInput").value),
 
-            status: "Active"
+            status: document.getElementById("vendorStatus").value
 
         };
 
-        vendors.push(vendor);
+        if (editingVendorIndex === -1) {
+
+            vendors.push(vendor);
+
+            alert("✅ Vendor added successfully.");
+
+        } else {
+
+            vendors[editingVendorIndex] = vendor;
+
+            editingVendorIndex = -1;
+
+            alert("✅ Vendor updated successfully.");
+
+        }
 
         saveVendors(vendors);
 
@@ -275,26 +343,33 @@ if (vendorForm) {
 
         loadVendors();
 
-        alert("✅ Vendor added successfully.");
-
     });
 
 }
+
 /* ==========================================
             EDIT VENDOR
 ========================================== */
 
-function editVendor(index){
+function editVendor(vendorId) {
 
     const vendors = getVendors();
 
-    const vendor = vendors[index];
+    const index = vendors.findIndex(
 
-    if(!vendor) return;
+        vendor => vendor.id === vendorId
+
+    );
+
+    if (index === -1) return;
+
+    const vendor = vendors[index];
 
     document.getElementById("vendorName").value = vendor.name;
 
     document.getElementById("vendorCategory").value = vendor.category;
+
+    document.getElementById("vendorEvent").value = vendor.event || "";
 
     document.getElementById("vendorContact").value = vendor.contact;
 
@@ -304,21 +379,22 @@ function editVendor(index){
 
     document.getElementById("vendorBudgetInput").value = vendor.budget;
 
-    vendors.splice(index,1);
+    editingVendorIndex = index;
 
-    saveVendors(vendors);
+    window.scrollTo({
 
-    loadStatistics();
+        top: 0,
 
-    loadVendors();
+        behavior: "smooth"
+
+    });
 
 }
-
 /* ==========================================
             DELETE VENDOR
 ========================================== */
 
-function deleteVendor(index){
+function deleteVendor(vendorId){
 
     if(!confirm("Delete this vendor?")){
 
@@ -326,9 +402,13 @@ function deleteVendor(index){
 
     }
 
-    const vendors = getVendors();
+    let vendors = getVendors();
 
-    vendors.splice(index,1);
+    vendors = vendors.filter(
+
+        vendor => vendor.id !== vendorId
+
+    );
 
     saveVendors(vendors);
 
@@ -339,7 +419,7 @@ function deleteVendor(index){
 }
 
 /* ==========================================
-            SEARCH VENDOR
+            SEARCH
 ========================================== */
 
 const searchVendor =
@@ -348,7 +428,13 @@ document.getElementById("searchVendor");
 
 if(searchVendor){
 
-    searchVendor.addEventListener("keyup",filterVendors);
+    searchVendor.addEventListener(
+
+        "keyup",
+
+        filterVendors
+
+    );
 
 }
 
@@ -362,7 +448,13 @@ document.getElementById("filterCategory");
 
 if(filterCategory){
 
-    filterCategory.addEventListener("change",filterVendors);
+    filterCategory.addEventListener(
+
+        "change",
+
+        filterVendors
+
+    );
 
 }
 
@@ -402,15 +494,19 @@ function filterVendors(){
 
             ||
 
-            vendor.category.toLowerCase().includes(search);
-
-        const matchCategory =
-
-            category==="All"
+            vendor.category.toLowerCase().includes(search)
 
             ||
 
-            vendor.category===category;
+            (vendor.event || "").toLowerCase().includes(search);
+
+        const matchCategory =
+
+            category === "All"
+
+            ||
+
+            vendor.category === category;
 
         return matchSearch && matchCategory;
 
@@ -425,9 +521,7 @@ function filterVendors(){
 
 function loadTopVendors(vendors = getVendors()) {
 
-    const container =
-
-        document.getElementById("topVendors");
+    const container = document.getElementById("topVendors");
 
     if (!container) return;
 
@@ -451,13 +545,7 @@ function loadTopVendors(vendors = getVendors()) {
 
     const topVendors = [...vendors]
 
-        .sort((a, b) =>
-
-            Number(b.budget || 0) -
-
-            Number(a.budget || 0)
-
-        )
+        .sort((a, b) => Number(b.budget || 0) - Number(a.budget || 0))
 
         .slice(0, 4);
 
@@ -485,9 +573,25 @@ function loadTopVendors(vendors = getVendors()) {
 
                 <p>
 
+                    <strong>Event:</strong>
+
+                    ${vendor.event || "Not Assigned"}
+
+                </p>
+
+                <p>
+
                     <strong>Contact:</strong>
 
                     ${vendor.contact}
+
+                </p>
+
+                <p>
+
+                    <strong>Phone:</strong>
+
+                    ${vendor.phone}
 
                 </p>
 
@@ -519,6 +623,8 @@ function loadTopVendors(vendors = getVendors()) {
 
 function refreshPage(){
 
+    loadEvents();
+
     loadStatistics();
 
     loadVendors();
@@ -531,7 +637,7 @@ function refreshPage(){
             AUTO REFRESH
 ========================================== */
 
-window.addEventListener("storage", () => {
+window.addEventListener("storage",()=>{
 
     refreshPage();
 
@@ -541,17 +647,17 @@ window.addEventListener("storage", () => {
             INITIALIZE
 ========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
 
-    if (currentUser.role !== "admin") {
+    if(currentUser.role!=="admin"){
 
-        window.location.href = "user-dashboard.html";
+        window.location.href="user-dashboard.html";
 
         return;
 
     }
 
-    document.getElementById("loggedUserName").textContent =
+    document.getElementById("loggedUserName").textContent=
 
         currentUser.name;
 
@@ -567,6 +673,8 @@ console.log("================================");
 
 console.log("EventAI Vendors Loaded");
 
-console.log("Admin :", currentUser.name);
+console.log("Admin :",currentUser.name);
+
+console.log("Total Vendors :",getVendors().length);
 
 console.log("================================");
