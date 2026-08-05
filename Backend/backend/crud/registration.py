@@ -1,9 +1,6 @@
-from sqlalchemy.orm import Session
+from datetime import datetime
+from uuid import uuid4
 
-from backend.models.registration import Registration
-from backend.schemas.registration import RegistrationCreate
-
-from backend.utils.qr_generator import generate_qr_code
 from sqlalchemy.orm import Session
 
 from backend.models.registration import Registration
@@ -13,40 +10,35 @@ from backend.schemas.registration import RegistrationCreate
 def create_registration(
     db: Session,
     registration: RegistrationCreate,
+    ticket_id: int,
 ) -> Registration:
     """
-    Create a new registration.
+    Create a new event registration.
     """
 
+    registration_number = (
+        "REG-" + uuid4().hex[:8].upper()
+    )
+
     db_registration = Registration(
+
         user_id=registration.user_id,
+
         event_id=registration.event_id,
+
+        ticket_id=ticket_id,
+
+        registration_number=registration_number,
+
+        registration_date=datetime.utcnow(),
+
+        status="Pending",
     )
 
-    # -----------------------------
-    # Save Registration
-    # -----------------------------
     db.add(db_registration)
-    db.commit()
-    db.refresh(db_registration)
-
-    # -----------------------------
-    # Generate Registration Number
-    # -----------------------------
-    db_registration.registration_number = (
-        f"REG-{db_registration.id:06d}"
-    )
-
-    # -----------------------------
-    # Generate QR Code
-    # -----------------------------
-    qr_path = generate_qr_code(
-        db_registration.registration_number
-    )
-
-    db_registration.qr_code = qr_path
 
     db.commit()
+
     db.refresh(db_registration)
 
     return db_registration
@@ -67,6 +59,7 @@ def get_registration_by_id(
         .first()
     )
 
+
 def cancel_registration(
     db: Session,
     registration: Registration,
@@ -80,6 +73,7 @@ def cancel_registration(
     db.refresh(registration)
 
     return registration
+
 
 def get_registration(
     db: Session,
@@ -98,6 +92,7 @@ def get_registration(
         .first()
     )
 
+
 def count_event_registrations(
     db: Session,
     event_id: int,
@@ -113,6 +108,7 @@ def count_event_registrations(
         )
         .count()
     )
+
 
 def get_registrations_by_user(
     db: Session,
@@ -131,7 +127,8 @@ def get_registrations_by_user(
         )
         .all()
     )
-    
+
+
 def delete_registration(
     db: Session,
     registration: Registration,
@@ -141,3 +138,17 @@ def delete_registration(
     """
     db.delete(registration)
     db.commit()
+
+
+def get_all_registrations(
+    db: Session,
+):
+    """
+    Get all registrations.
+    Used by admin/organizer dashboard.
+    """
+    return (
+        db.query(Registration)
+        .order_by(Registration.id)
+        .all()
+    )

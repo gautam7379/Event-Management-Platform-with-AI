@@ -1,652 +1,451 @@
-/* =====================================================
-                EVENTAI - CREATE EVENT
-===================================================== */
-
-const createForm = document.getElementById("createForm");
-const toast = document.getElementById("toast");
-
-/* =====================================================
-                DEFAULT VALUES
-===================================================== */
-
-const FIELD_DEFAULTS = {
-    category: "General",
-    time: "10:00",
-    price: 0,
-    capacity: 100,
-    description: "Details coming soon."
-};
-
-const REQUIRED_FIELDS = [
-    "name",
-    "date",
-    "venue"
-];
-
-/* =====================================================
-                PREVIEW ELEMENTS
-===================================================== */
-
-const preview = {
-    name: document.getElementById("previewName"),
-    date: document.getElementById("previewDate"),
-    time: document.getElementById("previewTime"),
-    venue: document.getElementById("previewVenue"),
-    category: document.getElementById("previewCategory"),
-    price: document.getElementById("previewPrice"),
-    seats: document.getElementById("previewSeats"),
-    id: document.getElementById("previewId"),
-    stamp: document.getElementById("previewStamp"),
-    thumb: document.getElementById("previewThumb")
-};
-
-/* =====================================================
-                CATEGORY BANNERS
-===================================================== */
-
-const CATEGORY_BANNERS = {
-
-    AI: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200",
-
-    Technology: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200",
-
-    Cloud: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200",
-
-    Business: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200",
-
-    Workshop: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200",
-
-    Competition: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200",
-
-    Music: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=1200",
-
-    Sports: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1200",
-
-    Education: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200",
-
-    Health: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200",
-
-    Environment: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=1200",
-
-    General: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200"
-};
-
-function getCategoryBanner(category) {
-    return CATEGORY_BANNERS[category] || CATEGORY_BANNERS.General;
-}
-
-/* =====================================================
-                DEMO EVENTS
-===================================================== */
-
-function initializeDemoEvents() {
-
-    let events = JSON.parse(localStorage.getItem("events"));
-
-    if (events && events.length > 0) return;
-
-    events = [
-
-        {
-            id: 1,
-            eventCode: "EVT-0001",
-            name: "AI Summit 2026",
-            category: "AI",
-            date: "2026-08-15",
-            time: "10:00",
-            venue: "Kolkata",
-            price: 1200,
-            capacity: 500,
-            registered: 352,
-            description: "India's biggest AI conference.",
-            banner: getCategoryBanner("AI"),
-            status: "Upcoming"
-        },
-
-        {
-            id: 2,
-            eventCode: "EVT-0002",
-            name: "Cloud Expo 2026",
-            category: "Cloud",
-            date: "2026-08-28",
-            time: "11:00",
-            venue: "Hyderabad",
-            price: 1000,
-            capacity: 400,
-            registered: 247,
-            description: "Cloud & DevOps conference.",
-            banner: getCategoryBanner("Cloud"),
-            status: "Upcoming"
-        },
-
-        {
-            id: 3,
-            eventCode: "EVT-0003",
-            name: "Startup Connect",
-            category: "Business",
-            date: "2026-09-10",
-            time: "09:30",
-            venue: "Delhi",
-            price: 700,
-            capacity: 300,
-            registered: 176,
-            description: "Meet founders and investors.",
-            banner: getCategoryBanner("Business"),
-            status: "Upcoming"
-        },
-
-        {
-            id: 4,
-            eventCode: "EVT-0004",
-            name: "Hackathon 2026",
-            category: "Competition",
-            date: "2026-10-10",
-            time: "08:00",
-            venue: "Bangalore",
-            price: 500,
-            capacity: 250,
-            registered: 150,
-            description: "24-hour coding marathon.",
-            banner: getCategoryBanner("Competition"),
-            status: "Upcoming"
-        }
-
-    ];
-
-    localStorage.setItem("events", JSON.stringify(events));
-}
-
-/* =====================================================
-                STORAGE HELPERS
-===================================================== */
-
-function getEvents() {
-    initializeDemoEvents();
-    return JSON.parse(localStorage.getItem("events")) || [];
-}
-
-function saveEvent(event) {
-
-    const events = getEvents();
-
-    events.push(event);
-
-    localStorage.setItem(
-        "events",
-        JSON.stringify(events)
-    );
-}
-
-function getNextId() {
-
-    const events = getEvents();
-
-    return events.length
-        ? Math.max(...events.map(e => e.id)) + 1
-        : 1;
-}
-
-/* =====================================================
-                DATE HELPERS
-===================================================== */
-
-function formatDate(date) {
-
-    if (!date) return "—";
-
-    return new Date(date).toLocaleDateString(
-        "en-IN",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        }
-    );
-}
-
-function computeStatus(date) {
-
-    const today = new Date();
-
-    today.setHours(0, 0, 0, 0);
-
-    const eventDate = new Date(date);
-
-    return eventDate < today
-        ? "Completed"
-        : "Upcoming";
-}
-
-/* =====================================================
-                VALIDATION HELPERS
-===================================================== */
-
-function clearErrors() {
-
-    document.querySelectorAll(".error").forEach(error => {
-        error.textContent = "";
-    });
-
-    document.querySelectorAll(".invalid").forEach(input => {
-        input.classList.remove("invalid");
-    });
-
-}
-
-function showError(field) {
-
-    const input = document.getElementById(field);
-
-    if (!input) return;
-
-    input.classList.add("invalid");
-
-}
-
-function showToast(message, error = false) {
-
-    toast.textContent = message;
-
-    toast.className = error
-        ? "toast error show"
-        : "toast show";
-
-    setTimeout(() => {
-
-        toast.classList.remove("show");
-
-    }, 3000);
-
-}
-/* =====================================================
-                LIVE PREVIEW
-===================================================== */
-
-const previewFields = [
-    "name",
-    "date",
-    "time",
-    "venue",
-    "category",
-    "price",
-    "capacity",
-    "banner"
-];
-
-previewFields.forEach(id => {
-
-    const input = document.getElementById(id);
-
-    if (!input) return;
-
-    input.addEventListener("input", updatePreview);
-
-    input.addEventListener("change", updatePreview);
-
-});
-
-/* =====================================================
-                UPDATE PREVIEW
-===================================================== */
-
-function updatePreview() {
-
-    const name =
-        document.getElementById("name").value.trim();
-
-    const date =
-        document.getElementById("date").value;
-
-    const time =
-        document.getElementById("time").value.trim();
-
-    const venue =
-        document.getElementById("venue").value.trim();
-
-    const category =
-        document.getElementById("category").value.trim() ||
-        FIELD_DEFAULTS.category;
-
-    const price =
-        document.getElementById("price").value;
-
-    const capacity =
-        document.getElementById("capacity").value;
-
-    const bannerInput =
-        document.getElementById("banner").value.trim();
-
-    /* -------------------------------
-            TEXT PREVIEW
-    -------------------------------- */
-
-    preview.name.textContent =
-        name || "Your Event Name";
-
-    preview.date.textContent =
-        formatDate(date);
-
-    preview.time.textContent =
-        time || FIELD_DEFAULTS.time;
-
-    preview.venue.textContent =
-        venue || "Venue";
-
-    preview.category.textContent =
-        category;
-
-    preview.price.textContent =
-        price && Number(price) > 0
-            ? `₹${Number(price).toLocaleString()}`
-            : "Free";
-
-    preview.seats.textContent =
-        capacity || FIELD_DEFAULTS.capacity;
-
-    preview.id.textContent =
-        `EVT-${String(getNextId()).padStart(4, "0")}`;
-
-    /* -------------------------------
-            STATUS BADGE
-    -------------------------------- */
-
-    const status = computeStatus(date);
-
-    preview.stamp.textContent = status;
-
-    preview.stamp.className =
-        status === "Completed"
-            ? "badge completed"
-            : "badge upcoming";
-
-    /* -------------------------------
-            IMAGE PREVIEW
-    -------------------------------- */
-
-    const banner =
-        bannerInput ||
-        getCategoryBanner(category);
-
-    preview.thumb.innerHTML = `
-        <img
-            src="${banner}"
-            alt="Banner"
-            onerror="this.src='${getCategoryBanner("General")}'"
-        >
-    `;
-
-}
-
-/* =====================================================
-                INITIAL PREVIEW
-===================================================== */
-
-updatePreview();
-
-/* =====================================================
-                DATE RESTRICTION
-===================================================== */
-
-const dateInput = document.getElementById("date");
-
-if (dateInput) {
-
-    const today = new Date();
-
-    today.setHours(0,0,0,0);
-
-    dateInput.min = today.toISOString().split("T")[0];
-
-}
-
-/* =====================================================
-                NUMBER INPUT FIXES
-===================================================== */
-
-const priceInput = document.getElementById("price");
-
-if (priceInput) {
-
-    priceInput.addEventListener("input", () => {
-
-        if (priceInput.value < 0)
-            priceInput.value = 0;
-
-        updatePreview();
-
-    });
-
-}
-
-const capacityInput = document.getElementById("capacity");
-
-if (capacityInput) {
-
-    capacityInput.addEventListener("input", () => {
-
-        if (capacityInput.value < 1)
-            capacityInput.value = 1;
-
-        updatePreview();
-
-    });
-
-}
-
-/* =====================================================
-                AUTO CATEGORY BANNER
-===================================================== */
-
-const categoryInput =
-    document.getElementById("category");
-
-const bannerInput =
-    document.getElementById("banner");
-
-if (categoryInput && bannerInput) {
-
-    categoryInput.addEventListener("change", () => {
-
-        if (bannerInput.value.trim() === "") {
-
-            updatePreview();
-
-        }
-
-    });
-
-}
-/* =====================================================
-                FORM SUBMISSION
-===================================================== */
-
-createForm.addEventListener("submit", function (e) {
-
-    e.preventDefault();
-
-    clearErrors();
-
-    const formData = new FormData(createForm);
-
-    const values = Object.fromEntries(formData.entries());
-
-    /* ==========================================
-                REQUIRED FIELD CHECK
-    ========================================== */
-
-    let valid = true;
-
-    REQUIRED_FIELDS.forEach(field => {
-
-        if (!values[field] || values[field].trim() === "") {
-
-            showError(field);
-
-            valid = false;
-
-        }
-
-    });
-
-    if (!valid) {
-
-        showToast(
-            "Please fill all required fields.",
-            true
-        );
-
-        return;
+function toast(message) {
+    const t = document.getElementById("toast");
+
+    if (t) {
+        t.textContent = message;
+        t.classList.add("show");
+
+        setTimeout(() => {
+            t.classList.remove("show");
+        }, 2500);
+    } else {
+        alert(message);
     }
+}
 
-    /* ==========================================
-                DATE VALIDATION
-    ========================================== */
 
-    const today = new Date();
+// ===============================
+// INITIALIZE PAGE
+// ===============================
 
-    today.setHours(0, 0, 0, 0);
+async function init() {
+    if (!requireLogin()) return;
 
-    const selectedDate = new Date(values.date);
+    // Do NOT load venues and do NOT replace
+    // venue input with a dropdown.
 
-    if (selectedDate < today) {
+    const adminName = document.querySelector(".admin span");
 
-        showToast(
-            "Event date cannot be in the past.",
-            true
-        );
-
-        return;
+    if (adminName) {
+        adminName.textContent =
+            localStorage.getItem("userName") || "Organizer";
     }
+}
 
-    /* ==========================================
-                DUPLICATE CHECK
-    ========================================== */
 
-    const events = getEvents();
+// ===============================
+// CREATE EVENT
+// ===============================
 
-    const duplicate = events.find(event =>
+document
+    .getElementById("createForm")
+    ?.addEventListener("submit", async (e) => {
 
-        event.name.trim().toLowerCase() ===
-        values.name.trim().toLowerCase()
+        e.preventDefault();
 
-    );
+        try {
 
-    if (duplicate) {
+            // --------------------------------
+            // Read form data
+            // --------------------------------
 
-        showToast(
-            "An event with this name already exists.",
-            true
-        );
+            const eventName =
+                document.getElementById("name").value.trim();
 
-        return;
-    }
+            const date =
+                document.getElementById("date").value;
 
-    /* ==========================================
-                CREATE EVENT
-    ========================================== */
+            const venueName =
+                document.getElementById("venue").value.trim();
 
-    const nextId = getNextId();
+            const category =
+                document.getElementById("category").value.trim()
+                || "General";
 
-    const event = {
+            const time =
+                document.getElementById("time").value
+                || "10:00";
 
-        id: nextId,
+            // --------------------------------
+            // Automatically calculate end
+            // date/time (2 hours after start)
+            // --------------------------------
 
-        eventCode: `EVT-${String(nextId).padStart(4, "0")}`,
+            // ============================================
+            // CALCULATE EVENT END DATE/TIME
+            // Default duration = 2 hours
+            // ============================================
 
-        name: values.name.trim(),
+            const startDateTime =
+                new Date(`${date}T${time}:00`);
 
-        category:
-            values.category.trim() ||
-            FIELD_DEFAULTS.category,
+            if (isNaN(startDateTime.getTime())) {
 
-        date: values.date,
+                toast("Invalid event date or time.");
+                return;
+            }
 
-        time:
-            values.time.trim() ||
-            FIELD_DEFAULTS.time,
+            const endDateTime =
+                new Date(
+                    startDateTime.getTime() +
+                    (2 * 60 * 60 * 1000)
+                );
 
-        venue: values.venue.trim(),
 
-        price:
-            values.price !== ""
-                ? Number(values.price)
-                : FIELD_DEFAULTS.price,
+            // --------------------------------------------
+            // Format LOCAL date as YYYY-MM-DD
+            // Do NOT use toISOString() here
+            // --------------------------------------------
 
-        capacity:
-            values.capacity !== ""
-                ? Number(values.capacity)
-                : FIELD_DEFAULTS.capacity,
+            function formatLocalDate(dateObject) {
 
-        registered: 0,
+                const year =
+                    dateObject.getFullYear();
 
-        description:
-            values.description.trim() ||
-            FIELD_DEFAULTS.description,
+                const month =
+                    String(
+                        dateObject.getMonth() + 1
+                    ).padStart(2, "0");
 
-        banner:
-            values.banner.trim() ||
-            getCategoryBanner(
-                values.category.trim() ||
-                FIELD_DEFAULTS.category
-            ),
+                const day =
+                    String(
+                        dateObject.getDate()
+                    ).padStart(2, "0");
 
-        status:
-            computeStatus(values.date),
+                return `${year}-${month}-${day}`;
+            }
 
-        createdAt:
-            new Date().toISOString()
 
-    };
+            // --------------------------------------------
+            // Format LOCAL time as HH:MM
+            // --------------------------------------------
 
-    /* ==========================================
-                SAVE
-    ========================================== */
+            function formatLocalTime(dateObject) {
 
-    saveEvent(event);
+                const hours =
+                    String(
+                        dateObject.getHours()
+                    ).padStart(2, "0");
 
-    updatePreview();
+                const minutes =
+                    String(
+                        dateObject.getMinutes()
+                    ).padStart(2, "0");
 
-    showToast(
-        `"${event.name}" created successfully!`
-    );
+                return `${hours}:${minutes}`;
+            }
 
-    /* ==========================================
-                RESET
-    ========================================== */
 
-    createForm.reset();
+            const endDate =
+                formatLocalDate(endDateTime);
 
-    updatePreview();
+            const endTime =
+                formatLocalTime(endDateTime);
 
-    setTimeout(() => {
 
-        window.location.href = "events.html";
+            console.log(
+                "Start:",
+                date,
+                time
+            );
 
-    }, 1200);
+            console.log(
+                "End:",
+                endDate,
+                endTime
+            );
 
-});
+            const capacity =
+                Number(
+                    document.getElementById("capacity").value || 100
+                );
 
-/* =====================================================
-                INITIALIZE
-===================================================== */
+            const description =
+                document.getElementById("description").value.trim()
+                || null;
 
-document.addEventListener("DOMContentLoaded", () => {
+            const banner =
+                document.getElementById("banner").value.trim()
+                || null;
 
-    initializeDemoEvents();
+            const price =
+                Number(
+                    document.getElementById("price").value || 0
+                );
 
-    updatePreview();
 
-    const dateInput = document.getElementById("date");
+            // --------------------------------
+            // Basic validation
+            // --------------------------------
 
-    if (dateInput) {
+            if (!eventName) {
+                toast("Event name is required");
+                return;
+            }
 
-        const today = new Date();
+            if (!date) {
+                toast("Event date is required");
+                return;
+            }
 
-        today.setHours(0,0,0,0);
+            if (!venueName) {
+                toast("Venue is required");
+                return;
+            }
 
-        dateInput.min =
-            today.toISOString().split("T")[0];
 
-    }
+            // =====================================================
+            // STEP 1: CREATE VENUE IN POSTGRESQL THROUGH BACKEND API
+            // =====================================================
+
+            const venuePayload = {
+
+                    venue_name:
+                        document
+                            .getElementById("venue")
+                            .value
+                            .trim(),
+
+                    address:
+                        document
+                            .getElementById("venueAddress")
+                            .value
+                            .trim(),
+
+                    city:
+                        document
+                            .getElementById("venueCity")
+                            .value
+                            .trim(),
+
+                    state:
+                        document
+                            .getElementById("venueState")
+                            .value
+                            .trim(),
+
+                    country:
+                        document
+                            .getElementById("venueCountry")
+                            .value
+                            .trim(),
+
+                    postal_code:
+                        document
+                            .getElementById("venuePostalCode")
+                            .value
+                            .trim(),
+
+                    capacity:
+                        Number(
+                            document.getElementById("capacity").value || 100
+                        ),
+
+                    contact_person:
+                        document
+                            .getElementById("venueContactPerson")
+                            .value
+                            .trim(),
+
+                    phone:
+                        document
+                            .getElementById("venuePhone")
+                            .value
+                            .trim()
+                };
+
+            console.log(
+                "Creating venue:",
+                venuePayload
+            );
+
+            const venue =
+                await Api.venues.create(venuePayload);
+
+
+            if (!venue || !venue.id) {
+                throw new Error(
+                    "Venue could not be created"
+                );
+            }
+
+
+            console.log(
+                "Venue created:",
+                venue
+            );
+
+
+            // =====================================================
+            // STEP 2: CREATE EVENT USING DATABASE venue_id
+            // =====================================================
+
+            const eventPayload = {
+
+                organizer_id:
+                    Number(
+                        localStorage.getItem("userId")
+                    ),
+
+                venue_id:
+                    Number(venue.id),
+
+                event_name:
+                    eventName,
+
+                event_type:
+                    category,
+
+                description:
+                    description,
+
+                agenda:
+                    null,
+
+                start_date:
+                    date,
+
+                end_date:
+                    date,
+
+                start_time:
+                    time,
+
+                end_time:
+                    endTime,
+
+                capacity:
+                    capacity,
+
+                banner_image:
+                    banner,
+
+                status:
+                    "Draft"
+            };
+
+
+            console.log("Creating event payload:");
+            console.log(JSON.stringify(eventPayload, null, 2));
+
+            console.log("START DATE:", eventPayload.start_date);
+            console.log("END DATE:", eventPayload.end_date);
+            console.log("START TIME:", eventPayload.start_time);
+            console.log("END TIME:", eventPayload.end_time);
+
+            
+            const event =
+                await Api.events.create(eventPayload);
+
+
+            if (!event || !event.id) {
+                throw new Error(
+                    "Event could not be created"
+                );
+            }
+
+
+            console.log(
+                "Event created:",
+                event
+            );
+
+
+            // =====================================================
+            // STEP 3: CREATE TICKET
+            // =====================================================
+
+            const ticketPayload = {
+
+                event_id:
+                    event.id,
+
+                ticket_category:
+                    "General",
+
+                price:
+                    price,
+
+                quantity:
+                    capacity,
+
+                qr_enabled:
+                    true,
+
+                sale_start_date:
+                    new Date()
+                        .toISOString()
+                        .slice(0, 10),
+
+                sale_end_date:
+                    date,
+
+                status:
+                    "Active"
+            };
+
+
+            console.log(
+                "Creating ticket:",
+                ticketPayload
+            );
+
+
+            try {
+
+                await Api.tickets.create(
+                    ticketPayload
+                );
+
+            } catch (ticketError) {
+
+                console.warn(
+                    "Event created but ticket creation failed:",
+                    ticketError
+                );
+            }
+
+
+            // =====================================================
+            // SUCCESS
+            // =====================================================
+
+            toast(
+                "Event and venue created successfully"
+            );
+
+
+            setTimeout(() => {
+
+                location.href =
+                    "events.html";
+
+            }, 700);
+
+
+        } catch (error) {
+
+            console.error(
+                "Create Event Error:",
+                error
+            );
+
+            toast(
+                error.message ||
+                "Failed to create event"
+            );
+        }
+    });
+
+
+// ===============================
+// START
+// ===============================
+
+init().catch((error) => {
+
+    console.error(error);
+
+    toast(error.message);
 
 });

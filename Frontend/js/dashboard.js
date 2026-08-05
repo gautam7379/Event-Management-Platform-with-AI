@@ -1,183 +1,457 @@
 /* ==========================================
-            EVENTAI DASHBOARD
+        EVENTAI ADMIN DASHBOARD
 ========================================== */
+
+const $ = (id) =>
+    document.getElementById(id);
+
 
 /* ==========================================
-            LOCAL STORAGE
+        MONEY FORMAT
 ========================================== */
 
-function getEvents() {
+function formatMoney(value) {
 
-    return JSON.parse(
-
-        localStorage.getItem("events")
-
-    ) || [];
-
+    return (
+        "₹" +
+        Number(value || 0)
+            .toLocaleString("en-IN")
+    );
 }
 
-function getAttendees() {
-
-    return JSON.parse(
-
-        localStorage.getItem("attendees")
-
-    ) || [];
-
-}
-
-function getTickets() {
-
-    return JSON.parse(
-
-        localStorage.getItem("tickets")
-
-    ) || [];
-
-}
 
 /* ==========================================
-            CURRENT USER
+        DATE FORMAT
 ========================================== */
 
-const currentUser = {
+function formatDate(value) {
 
-    name:
-
-        localStorage.getItem("userName") ||
-
-        "Administrator"
-
-};
-
-/* ==========================================
-            LOAD USER
-========================================== */
-
-function loadUser() {
-
-    const user =
-
-        document.querySelector(".user span");
-
-    if(user){
-
-        user.textContent =
-
-            currentUser.name;
-
+    if (!value) {
+        return "-";
     }
 
+    const date =
+        new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }
+    );
 }
+
+
 /* ==========================================
-            DASHBOARD STATISTICS
+        LOAD CURRENT USER FROM BACKEND
 ========================================== */
 
-function loadStatistics() {
+async function loadCurrentUser() {
 
-    const events = getEvents();
-    const attendees = getAttendees();
-    const tickets = getTickets();
+    try {
 
-    // ===== TOTAL EVENTS =====
-    document.getElementById("totalEvents").textContent =
-        events.length;
+        /*
+            GET authenticated user
+            using JWT through Api.me()
+        */
 
-    // ===== TOTAL ATTENDEES =====
-    document.getElementById("totalAttendees").textContent =
-        attendees.length;
+        const user =
+            await Api.me();
 
-    // ===== TOTAL TICKETS =====
-    document.getElementById("totalTickets").textContent =
-        tickets.length;
 
-    // ===== TOTAL REVENUE =====
-    let revenue = 0;
+        console.log(
+            "Dashboard user:",
+            user
+        );
 
-    tickets.forEach(ticket => {
-        revenue += Number(ticket.price || 0);
-    });
 
-    document.getElementById("totalRevenue").textContent =
-        "₹" + revenue.toLocaleString("en-IN");
+        /* ----------------------------------
+                USER NAME
+        ---------------------------------- */
 
-    // ===== UPCOMING EVENTS =====
-    const upcoming =
-        events.filter(event =>
-            event.status === "Upcoming"
-        ).length;
+        const fullName = [
 
-    document.getElementById("upcomingEvents").textContent =
-        upcoming;
+            user.first_name,
 
-    // ===== COMPLETED EVENTS =====
-    const completed =
-        events.filter(event =>
-            event.status === "Completed"
-        ).length;
+            user.last_name
 
-    document.getElementById("completedEvents").textContent =
-        completed;
+        ]
+        .filter(Boolean)
+        .join(" ");
 
-    // ===== CHECKED-IN ATTENDEES =====
-    const checkedIn =
-        attendees.filter(attendee =>
-            attendee.status === "Checked In"
-        ).length;
 
-    document.getElementById("checkedInCount").textContent =
-        checkedIn;
+        if ($("loggedUserName")) {
 
-    // ===== REGISTRATION RATE =====
-    const totalCapacity =
-        events.reduce(
-            (sum, event) => sum + Number(event.capacity || 0),
+            $("loggedUserName")
+                .textContent =
+                fullName || user.email || "User";
+        }
+
+
+        /* ----------------------------------
+                USER ROLE
+        ---------------------------------- */
+
+        let roleName =
+            "User";
+
+
+        if (Number(user.role_id) === 1) {
+
+            roleName =
+                "Admin";
+
+        } else if (
+            Number(user.role_id) === 2
+        ) {
+
+            roleName =
+                "Organizer";
+        }
+
+
+        if ($("userRole")) {
+
+            $("userRole")
+                .textContent =
+                roleName;
+        }
+
+
+        return user;
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load current user:",
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+/* ==========================================
+        LOAD DASHBOARD DATA
+========================================== */
+
+async function loadDashboard() {
+
+    if (!requireLogin()) {
+        return;
+    }
+
+
+    try {
+
+        /*
+            Load backend data concurrently.
+        */
+
+        const [
+
+            currentUser,
+
+            events,
+
+            analytics
+
+        ] = await Promise.all([
+
+            loadCurrentUser(),
+
+            Api.events.list(),
+
+            Api.analytics()
+                .catch(error => {
+
+                    console.warn(
+                        "Analytics unavailable:",
+                        error
+                    );
+
+                    return null;
+                })
+
+        ]);
+
+
+        console.log(
+            "Events:",
+            events
+        );
+
+        console.log(
+            "Analytics:",
+            analytics
+        );
+
+
+        /* ==================================
+                TOTAL EVENTS
+        ================================== */
+
+        if ($("totalEvents")) {
+
+            $("totalEvents")
+                .textContent =
+                analytics?.total_events
+                ?? events.length;
+        }
+
+
+        /* ==================================
+                TOTAL ATTENDEES
+        ================================== */
+
+        if ($("totalAttendees")) {
+
+            $("totalAttendees")
+                .textContent =
+                analytics?.total_registrations
+                ?? 0;
+        }
+
+
+        /* ==================================
+                TOTAL TICKETS
+        ================================== */
+
+        if ($("totalTickets")) {
+
+            $("totalTickets")
+                .textContent =
+                analytics?.total_tickets
+                ?? 0;
+        }
+
+
+        /* ==================================
+                TOTAL REVENUE
+        ================================== */
+
+        if ($("totalRevenue")) {
+
+            $("totalRevenue")
+                .textContent =
+                formatMoney(
+                    analytics?.total_revenue
+                    ?? 0
+                );
+        }
+
+
+        /* ==================================
+                UPCOMING EVENTS
+        ================================== */
+
+        const today =
+            new Date();
+
+        today.setHours(
+            0,
+            0,
+            0,
             0
         );
 
-    const totalRegistered =
-        events.reduce(
-            (sum, event) => sum + Number(event.registered || 0),
-            0
+
+        const upcomingEvents =
+
+            events.filter(event => {
+
+                if (!event.start_date) {
+                    return false;
+                }
+
+                const startDate =
+                    new Date(
+                        event.start_date +
+                        "T00:00:00"
+                    );
+
+                return (
+                    startDate >= today &&
+                    event.status !== "Completed"
+                );
+
+            }).length;
+
+
+        if ($("upcomingEvents")) {
+
+            $("upcomingEvents")
+                .textContent =
+                upcomingEvents;
+        }
+
+
+        /* ==================================
+                COMPLETED EVENTS
+        ================================== */
+
+        const completedEvents =
+
+            events.filter(
+
+                event =>
+
+                    String(
+                        event.status
+                    ).toLowerCase()
+                    === "completed"
+
+            ).length;
+
+
+        if ($("completedEvents")) {
+
+            $("completedEvents")
+                .textContent =
+                completedEvents;
+        }
+
+
+        /* ==================================
+                CHECKED-IN ATTENDEES
+        ================================== */
+
+        if ($("checkedInCount")) {
+
+            $("checkedInCount")
+                .textContent =
+
+                analytics?.checked_in_count
+
+                ?? analytics?.total_checkins
+
+                ?? 0;
+        }
+
+
+        /* ==================================
+                REGISTRATION RATE
+        ================================== */
+
+        let registrationRate =
+            analytics?.registration_rate;
+
+
+        /*
+            Only calculate locally if backend
+            doesn't provide registration_rate
+            but does provide capacity.
+        */
+
+        if (
+            registrationRate == null &&
+            analytics?.total_registrations != null &&
+            analytics?.total_capacity
+        ) {
+
+            registrationRate =
+
+                (
+                    Number(
+                        analytics.total_registrations
+                    )
+
+                    /
+
+                    Number(
+                        analytics.total_capacity
+                    )
+
+                    *
+
+                    100
+                );
+        }
+
+
+        if ($("registrationRate")) {
+
+            $("registrationRate")
+                .textContent =
+
+                registrationRate != null
+
+                    ? (
+                        Number(
+                            registrationRate
+                        ).toFixed(1)
+                        + "%"
+                    )
+
+                    : "0%";
+        }
+
+
+        /* ==================================
+                RECENT EVENTS
+        ================================== */
+
+        renderRecentEvents(
+            events
         );
 
-    const registrationRate =
-        totalCapacity > 0
-            ? Math.round((totalRegistered / totalCapacity) * 100)
-            : 0;
 
-    document.getElementById("registrationRate").textContent =
-        registrationRate + "%";
+        /* ==================================
+                ACTIVITY
+        ================================== */
+
+        renderActivity(
+            analytics
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard loading failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to load dashboard."
+        );
+    }
 }
+
+
 /* ==========================================
-            RECENT EVENTS
+        RECENT EVENTS
 ========================================== */
 
-function loadRecentEvents() {
+function renderRecentEvents(
+    events
+) {
 
-    const tbody =
+    const table =
+        $("recentEventsTable");
 
-        document.getElementById(
+    if (!table) {
+        return;
+    }
 
-            "recentEventsTable"
 
-        );
+    if (!events.length) {
 
-    if (!tbody) return;
-
-    tbody.innerHTML = "";
-
-    const events = getEvents();
-
-    if (events.length === 0) {
-
-        tbody.innerHTML = `
+        table.innerHTML = `
 
             <tr>
 
-                <td colspan="4"
-
-                    style="text-align:center;padding:20px;">
+                <td
+                    colspan="4"
+                    style="text-align:center;">
 
                     No events available.
 
@@ -188,188 +462,179 @@ function loadRecentEvents() {
         `;
 
         return;
-
     }
 
-    /* ---------- SORT BY ID ---------- */
 
-    const latestEvents =
+    /*
+        Most recent 5 events.
+
+        Copy array before sorting so original
+        API data is not modified.
+    */
+
+    const recentEvents =
 
         [...events]
 
-        .sort((a, b) => b.id - a.id)
+        .sort(
 
-        .slice(0, 5);
+            (a, b) =>
 
-    latestEvents.forEach(event => {
+                Number(b.id) -
+                Number(a.id)
 
-        let badgeClass = "upcoming";
+        )
 
-        if (event.status === "Completed") {
+        .slice(
+            0,
+            5
+        );
 
-            badgeClass = "completed";
 
-        }
+    table.innerHTML =
 
-        else if (event.status === "Open") {
+        recentEvents.map(
 
-            badgeClass = "pending";
+            event => `
 
-        }
+                <tr>
 
-        tbody.innerHTML += `
+                    <td>
 
-        <tr>
+                        ${escapeHtml(
+                            event.event_name
+                            || "-"
+                        )}
 
-            <td>
+                    </td>
 
-                ${event.name}
 
-            </td>
+                    <td>
 
-            <td>
+                        ${formatDate(
+                            event.start_date
+                        )}
 
-                ${new Date(event.date)
+                    </td>
 
-                    .toLocaleDateString("en-IN")}
 
-            </td>
+                    <td>
 
-            <td>
+                        ${escapeHtml(
+                            getEventVenue(
+                                event
+                            )
+                        )}
 
-                ${event.venue}
+                    </td>
 
-            </td>
 
-            <td>
+                    <td>
 
-                <span class="badge ${badgeClass}">
+                        ${escapeHtml(
+                            event.status
+                            || "-"
+                        )}
 
-                    ${event.status}
+                    </td>
 
-                </span>
+                </tr>
 
-            </td>
+            `
 
-        </tr>
-
-        `;
-
-    });
-
-}
-/* ==========================================
-            REFRESH DASHBOARD
-========================================== */
-
-function refreshDashboard() {
-
-    loadUser();
-
-    loadStatistics();
-
-    loadRecentEvents();
-
+        ).join("");
 }
 
+
 /* ==========================================
-            INITIALIZE
+        EVENT VENUE
 ========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
+function getEventVenue(event) {
 
-    /* ---------- ADMIN ONLY ---------- */
+    /*
+        Different APIs may return venue in
+        slightly different shapes.
 
-    const role =
+        Support the common representations.
+    */
 
-        localStorage.getItem("userRole");
+    if (
+        event.venue &&
+        typeof event.venue === "string"
+    ) {
 
-    if (role !== "admin") {
+        return event.venue;
+    }
 
-        window.location.href =
 
-            "user-dashboard.html";
+    if (
+        event.venue &&
+        typeof event.venue === "object"
+    ) {
 
+        return (
+            event.venue.venue_name
+            ||
+            event.venue.name
+            ||
+            "-"
+        );
+    }
+
+
+    if (event.venue_name) {
+
+        return event.venue_name;
+    }
+
+
+    /*
+        Don't display event_type as venue.
+
+        Your previous dashboard.js did this:
+
+            <td>${e.event_type}</td>
+
+        which was incorrect.
+    */
+
+    return "-";
+}
+
+
+/* ==========================================
+        ACTIVITY FEED
+========================================== */
+
+function renderActivity(
+    analytics
+) {
+
+    const list =
+        $("activityList");
+
+    if (!list) {
         return;
-
     }
 
-    refreshDashboard();
 
-});
+    /*
+        If analytics backend eventually returns
+        recent_activity, display it.
+    */
 
-/* ==========================================
-            AUTO REFRESH
-========================================== */
+    const activities =
+        analytics?.recent_activity;
 
-window.addEventListener("storage", () => {
 
-    refreshDashboard();
+    if (
+        !Array.isArray(activities)
+        ||
+        !activities.length
+    ) {
 
-});
-/* ==========================================
-            ACTIVITY LOG
-========================================== */
-
-function getActivities() {
-
-    return JSON.parse(
-
-        localStorage.getItem("activities")
-
-    ) || [];
-
-}
-
-function saveActivity(message) {
-
-    const activities = getActivities();
-
-    activities.unshift({
-
-        message,
-
-        time: new Date().toLocaleString("en-IN")
-
-    });
-
-    /* Keep only latest 20 */
-
-    if (activities.length > 20) {
-
-        activities.pop();
-
-    }
-
-    localStorage.setItem(
-
-        "activities",
-
-        JSON.stringify(activities)
-
-    );
-
-}
-
-/* ==========================================
-            LOAD ACTIVITIES
-========================================== */
-
-function loadActivities() {
-
-    const activityList =
-
-        document.getElementById("activityList");
-
-    if (!activityList) return;
-
-    const activities = getActivities();
-
-    activityList.innerHTML = "";
-
-    if (activities.length === 0) {
-
-        activityList.innerHTML = `
+        list.innerHTML = `
 
             <li>
 
@@ -380,51 +645,65 @@ function loadActivities() {
         `;
 
         return;
+    }
+
+
+    list.innerHTML =
+
+        activities.map(
+
+            activity => `
+
+                <li>
+
+                    ${escapeHtml(
+                        activity.message
+                        ||
+                        activity.description
+                        ||
+                        String(activity)
+                    )}
+
+                </li>
+
+            `
+
+        ).join("");
+}
+
+
+/* ==========================================
+        HTML ESCAPE
+========================================== */
+
+function escapeHtml(value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
+
+    return div.innerHTML;
+}
+
+
+/* ==========================================
+        START DASHBOARD
+========================================== */
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    () => {
+
+        loadDashboard();
 
     }
 
-    activities.forEach(activity => {
-
-        activityList.innerHTML += `
-
-            <li>
-
-                <strong>
-
-                    ${activity.message}
-
-                </strong>
-
-                <br>
-
-                <small>
-
-                    ${activity.time}
-
-                </small>
-
-            </li>
-
-        `;
-
-    });
-
-}
-
-/* ==========================================
-            UPDATE REFRESH
-========================================== */
-
-function refreshDashboard() {
-
-    loadUser();
-
-    loadStatistics();
-
-    loadRecentEvents();
-
-    loadActivities();
-
-}
-
-console.log("EventAI Dashboard Loaded");
+);

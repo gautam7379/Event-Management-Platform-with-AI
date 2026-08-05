@@ -6,6 +6,7 @@ from backend.crud.payment import (
     create_payment,
     get_payment_by_registration,
 )
+
 from backend.crud.registration import (
     get_registration_by_id,
 )
@@ -20,6 +21,9 @@ def create_new_payment(
 ) -> Payment:
     """
     Create a new payment after business validation.
+
+    If payment is successful/paid,
+    confirm the associated registration.
     """
 
     # -----------------------------
@@ -66,8 +70,26 @@ def create_new_payment(
     # -----------------------------
     # Create Payment
     # -----------------------------
-    return create_payment(
+    db_payment = create_payment(
         db=db,
         payment=payment,
         transaction_id=transaction_id,
     )
+
+    # -----------------------------
+    # Confirm Registration
+    # After Successful Payment
+    # -----------------------------
+    if (
+        payment.payment_status
+        and payment.payment_status.lower() == "paid"
+    ):
+        registration.status = "Confirmed"
+
+        db.commit()
+        db.refresh(registration)
+
+    # -----------------------------
+    # Return Payment
+    # -----------------------------
+    return db_payment

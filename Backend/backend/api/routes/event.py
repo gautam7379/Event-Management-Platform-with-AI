@@ -107,6 +107,7 @@ def update_event_route(
             detail=str(e),
         )
 
+
 @router.delete(
     "/{event_id}",
     status_code=status.HTTP_200_OK,
@@ -117,9 +118,11 @@ def delete_event_route(
     current_user=Depends(require_admin_or_organizer),
 ):
     """
-    Delete an existing event.
+    Delete an event when it has no registrations.
     """
+
     try:
+
         delete_existing_event(
             db=db,
             event_id=event_id,
@@ -130,7 +133,16 @@ def delete_event_route(
         }
 
     except ValueError as e:
+
+        message = str(e)
+
+        if message == "Event not found.":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=message,
+            )
+
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
+            status_code=status.HTTP_409_CONFLICT,
+            detail=message,
         )

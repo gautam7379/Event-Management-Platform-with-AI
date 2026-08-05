@@ -1,116 +1,72 @@
 /* ==========================================
-            EVENTAI SPONSORS
+        EVENTAI SPONSOR MANAGEMENT
 ========================================== */
+
+console.log("Sponsor Management Loaded");
+
+
+let sponsors = [];
+let events = [];
+let assignments = [];
+let editId = null;
+
 
 /* ==========================================
-            LOCAL STORAGE
+        HELPERS
 ========================================== */
 
-function getSponsors(){
+const $ = (id) =>
+    document.getElementById(id);
 
-    return JSON.parse(
+function formatMoney(value) {
 
-        localStorage.getItem("sponsors")
+    const amount = Number(value || 0);
 
-    ) || [];
-
-}
-
-function saveSponsors(sponsors){
-
-    localStorage.setItem(
-
-        "sponsors",
-
-        JSON.stringify(sponsors)
-
+    return (
+        "₹" +
+        amount.toLocaleString(
+            "en-IN",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        )
     );
-
 }
 
-function getEvents(){
+function escapeHtml(value) {
 
-    return JSON.parse(
+    const div =
+        document.createElement("div");
 
-        localStorage.getItem("events")
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
 
-    ) || [];
-
+    return div.innerHTML;
 }
 
-/* ==========================================
-            CURRENT USER
-========================================== */
 
-const currentUser = {
+function populateEventDropdown() {
 
-    name:
+    const select = $("sponsorEvent");
 
-        localStorage.getItem("userName") ||
-
-        "Administrator",
-
-    role:
-
-        localStorage.getItem("userRole") ||
-
-        "admin"
-
-};
-
-/* ==========================================
-            SECURITY
-========================================== */
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-    if(currentUser.role!=="admin"){
-
-        window.location.href="user-dashboard.html";
-
+    if (!select)
         return;
 
-    }
-
-    document.getElementById("loggedUserName").textContent=
-
-        currentUser.name;
-
-    loadEvents();
-
-    loadStatistics();
-
-    loadSponsors();
-
-});
-
-/* ==========================================
-            LOAD EVENTS
-========================================== */
-
-function loadEvents(){
-
-    const select=
-
-        document.getElementById("sponsorEvent");
-
-    if(!select) return;
-
-    select.innerHTML=
-
+    select.innerHTML =
         `<option value="">Select Event</option>`;
 
-    const events=getEvents();
+    events.forEach(event => {
 
-    events.forEach(event=>{
+        select.innerHTML += `
 
-        select.innerHTML+=`
+            <option value="${event.id}">
 
-        <option value="${event.name}">
+                ${event.event_name}
 
-            ${event.name}
-
-        </option>
+            </option>
 
         `;
 
@@ -118,633 +74,892 @@ function loadEvents(){
 
 }
 
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
+function getAssignment(sponsorId){
 
-function loadStatistics(){
+    return assignments.find(
 
-    const sponsors=getSponsors();
+        a=>a.sponsor_id===sponsorId
 
-    document.getElementById(
+    );
 
-        "totalSponsors"
+}
 
-    ).textContent=sponsors.length;
+function getEventName(sponsorId){
 
-    document.getElementById(
+    const assignment =
+        getAssignment(sponsorId);
 
-        "platinumSponsors"
+    if(!assignment)
+        return "-";
 
-    ).textContent=
+    const event =
+        events.find(
 
-        sponsors.filter(
-
-            sponsor=>sponsor.level==="Platinum"
-
-        ).length;
-
-    document.getElementById(
-
-        "assignedSponsors"
-
-    ).textContent=
-
-        sponsors.filter(
-
-            sponsor=>sponsor.event!==""
-
-        ).length;
-
-    let totalFunding=0;
-
-    sponsors.forEach(sponsor=>{
-
-        totalFunding+=Number(
-
-            sponsor.amount||0
+            e=>e.id===assignment.event_id
 
         );
 
-    });
-
-    document.getElementById(
-
-        "totalFunding"
-
-    ).textContent=
-
-        "₹"+
-
-        totalFunding.toLocaleString("en-IN");
+    return event
+        ? event.event_name
+        : "-";
 
 }
+
 /* ==========================================
-            LOAD SPONSORS
+        LOAD SPONSORS
 ========================================== */
 
-function loadSponsors(filteredSponsors = null){
+async function loadSponsors() {
+
+    const [
+        sponsorData,
+        eventData,
+        assignmentData
+    ] = await Promise.all([
+
+        Api.sponsors.list(),
+
+        Api.events.list(),
+
+        Api.eventSponsors.list()
+
+    ]);
+
+    sponsors = sponsorData;
+    events = eventData;
+    assignments = assignmentData;
+
+    populateEventDropdown();
+
+    renderSponsors(sponsors);
+
+    updateStatistics();
+
+    renderTopSponsors();
+}
+
+
+/* ==========================================
+        RENDER TABLE
+========================================== */
+
+function renderSponsors(data) {
 
     const table =
+        $("sponsorTable");
 
-        document.getElementById("sponsorTable");
+    if (!table) {
+        return;
+    }
 
-    if(!table) return;
 
-    table.innerHTML = "";
+    // ==========================================
+    // EMPTY STATE
+    // ==========================================
 
-    const sponsors =
-
-        filteredSponsors || getSponsors();
-
-    if(sponsors.length===0){
+    if (!data || !data.length) {
 
         table.innerHTML = `
+            <tr>
 
-        <tr>
+                <td
+                    colspan="9"
+                    style="text-align:center;">
 
-            <td colspan="8"
+                    No sponsors found.
 
-                style="text-align:center;padding:20px;">
+                </td>
 
-                No sponsors available.
-
-            </td>
-
-        </tr>
-
+            </tr>
         `;
-
-        loadTopSponsors([]);
 
         return;
-
     }
 
-    sponsors.forEach((sponsor,index)=>{
 
-        let badgeClass = sponsor.level.toLowerCase();
+    // ==========================================
+    // RENDER SPONSOR ROWS
+    // ==========================================
 
-        let statusClass = sponsor.status.toLowerCase();
+    table.innerHTML =
 
-        table.innerHTML += `
+        data.map(
 
-        <tr>
+            sponsor => {
 
-            <td>${sponsor.id}</td>
+                const eventName =
+                    getEventName(
+                        sponsor.id
+                    );
 
-            <td>${sponsor.name}</td>
 
-            <td>${sponsor.company}</td>
+                return `
 
-            <td>
+                    <tr>
 
-                <span class="badge ${badgeClass}">
+                        <!-- ID -->
 
-                    ${sponsor.level}
+                        <td>
 
-                </span>
+                            ${sponsor.id}
 
-            </td>
+                        </td>
 
-            <td>
 
-                ${sponsor.event || "-"}
+                        <!-- SPONSOR NAME -->
 
-            </td>
+                        <td>
 
-            <td>
+                            <strong>
 
-                ₹${Number(sponsor.amount).toLocaleString("en-IN")}
+                                ${escapeHtml(
+                                    sponsor.sponsor_name
+                                    || "-"
+                                )}
 
-            </td>
+                            </strong>
 
-            <td>
+                        </td>
 
-                <span class="badge ${statusClass}">
 
-                    ${sponsor.status}
+                        <!-- CONTACT PERSON -->
 
-                </span>
+                        <td>
 
-            </td>
+                            ${escapeHtml(
+                                sponsor.contact_person
+                                || "-"
+                            )}
 
-            <td>
+                        </td>
 
-                <div class="action-buttons">
 
-                    <button
+                        <!-- SPONSORSHIP LEVEL -->
 
-                        class="edit-btn"
+                        <td>
 
-                        onclick="editSponsor(${index})">
+                            <span class="sponsor-level">
 
-                        <i class="fa-solid fa-pen"></i>
+                                ${escapeHtml(
+                                    sponsor.sponsorship_level
+                                    || "-"
+                                )}
 
-                    </button>
+                            </span>
 
-                    <button
+                        </td>
 
-                        class="delete-btn"
 
-                        onclick="deleteSponsor(${index})">
+                        <!-- EVENT -->
 
-                        <i class="fa-solid fa-trash"></i>
+                        <td>
 
-                    </button>
+                            ${escapeHtml(
+                                eventName
+                                || "-"
+                            )}
 
-                </div>
+                        </td>
 
-            </td>
 
-        </tr>
+                        <!-- EMAIL -->
 
-        `;
+                        <td>
 
-    });
+                            ${escapeHtml(
+                                sponsor.email
+                                || "-"
+                            )}
 
-    loadTopSponsors(sponsors);
+                        </td>
+
+
+                        <!-- PHONE -->
+
+                        <td>
+
+                            ${escapeHtml(
+                                sponsor.phone
+                                || "-"
+                            )}
+
+                        </td>
+
+
+                        <!-- CONTRIBUTION -->
+
+                        <td>
+
+                            ${formatMoney(
+                                sponsor.contribution
+                            )}
+
+                        </td>
+
+
+                        <!-- ACTIONS -->
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="edit-btn"
+                                onclick="editSponsor(${sponsor.id})">
+
+                                <i class="fa-solid fa-pen"></i>
+
+                                Edit
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="delete-btn"
+                                onclick="deleteSponsor(${sponsor.id})">
+
+                                <i class="fa-solid fa-trash"></i>
+
+                                Delete
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+
+        ).join("");
 
 }
 
+
 /* ==========================================
-            ADD SPONSOR
+        STATISTICS
 ========================================== */
 
-const sponsorForm =
+function updateStatistics() {
 
-document.getElementById("sponsorForm");
+    const total =
+        sponsors.length;
 
-if(sponsorForm){
 
-    sponsorForm.addEventListener("submit",function(e){
+    const platinum =
+        sponsors.filter(
+            sponsor =>
+                sponsor
+                    .sponsorship_level
+                    ?.toLowerCase()
+                === "platinum"
+        ).length;
 
-        e.preventDefault();
 
-        const sponsors = getSponsors();
-
-        const sponsor = {
-
-            id:
-
-                "SPO" + Date.now(),
-
-            name:
-
-                document.getElementById(
-
-                    "sponsorName"
-
-                ).value.trim(),
-
-            company:
-
-                document.getElementById(
-
-                    "companyName"
-
-                ).value.trim(),
-
-            email:
-
-                document.getElementById(
-
-                    "sponsorEmail"
-
-                ).value.trim(),
-
-            phone:
-
-                document.getElementById(
-
-                    "sponsorPhone"
-
-                ).value.trim(),
-
-            level:
-
-                document.getElementById(
-
-                    "sponsorLevel"
-
-                ).value,
-
-            amount:
-
+    const totalFunding =
+        sponsors.reduce(
+            (total, sponsor) =>
+                total +
                 Number(
-
-                    document.getElementById(
-
-                        "sponsorAmount"
-
-                    ).value
-
+                    sponsor.contribution || 0
                 ),
+            0
+        );
 
-            event:
 
-                document.getElementById(
+    if ($("totalSponsors")) {
 
-                    "sponsorEvent"
-
-                ).value,
-
-            status:
-
-                document.getElementById(
-
-                    "sponsorStatus"
-
-                ).value,
-
-            notes:
-
-                document.getElementById(
-
-                    "sponsorNotes"
-
-                ).value.trim()
-
-        };
-
-        sponsors.push(sponsor);
-
-        saveSponsors(sponsors);
-
-        sponsorForm.reset();
-
-        loadStatistics();
-
-        loadSponsors();
-
-        alert("✅ Sponsor added successfully.");
-
-    });
-
-}
-/* ==========================================
-            EDIT SPONSOR
-========================================== */
-
-function editSponsor(index){
-
-    const sponsors = getSponsors();
-
-    const sponsor = sponsors[index];
-
-    if(!sponsor) return;
-
-    document.getElementById("sponsorName").value = sponsor.name;
-
-    document.getElementById("companyName").value = sponsor.company;
-
-    document.getElementById("sponsorEmail").value = sponsor.email;
-
-    document.getElementById("sponsorPhone").value = sponsor.phone;
-
-    document.getElementById("sponsorLevel").value = sponsor.level;
-
-    document.getElementById("sponsorAmount").value = sponsor.amount;
-
-    document.getElementById("sponsorEvent").value = sponsor.event;
-
-    document.getElementById("sponsorStatus").value = sponsor.status;
-
-    document.getElementById("sponsorNotes").value = sponsor.notes;
-
-    sponsors.splice(index,1);
-
-    saveSponsors(sponsors);
-
-    loadStatistics();
-
-    loadSponsors();
-
-}
-
-/* ==========================================
-            DELETE SPONSOR
-========================================== */
-
-function deleteSponsor(index){
-
-    if(!confirm("Delete this sponsor?")){
-
-        return;
-
+        $("totalSponsors").textContent =
+            total;
     }
 
-    const sponsors = getSponsors();
 
-    sponsors.splice(index,1);
+    if ($("platinumSponsors")) {
 
-    saveSponsors(sponsors);
+        $("platinumSponsors").textContent =
+            platinum;
+    }
 
-    loadStatistics();
 
-    loadSponsors();
+    /*
+        Event assignment is stored in the
+        event_sponsors table.
 
+        Until that API is connected, don't
+        display fake assignment numbers.
+    */
+
+    if ($("assignedSponsors")) {
+
+        $("assignedSponsors").textContent =
+            assignments.length;
+    }
+
+
+    if ($("totalFunding")) {
+
+        $("totalFunding").textContent =
+            formatMoney(
+                totalFunding
+            );
+    }
 }
 
-/* ==========================================
-            SEARCH
-========================================== */
-
-const searchSponsor =
-
-document.getElementById("searchSponsor");
-
-if(searchSponsor){
-
-    searchSponsor.addEventListener(
-
-        "keyup",
-
-        filterSponsors
-
-    );
-
-}
 
 /* ==========================================
-            FILTER
+        TOP SPONSORS
 ========================================== */
 
-const filterLevel =
+function renderTopSponsors() {
 
-document.getElementById("filterLevel");
+    const container =
+        $("topSponsors");
 
-if(filterLevel){
+    if (!container) {
+        return;
+    }
 
-    filterLevel.addEventListener(
 
-        "change",
+    const top =
+        [...sponsors]
+        .sort(
+            (a, b) =>
+                Number(b.contribution || 0)
+                -
+                Number(a.contribution || 0)
+        )
+        .slice(
+            0,
+            3
+        );
 
-        filterSponsors
 
-    );
-
-}
-
-/* ==========================================
-            FILTER FUNCTION
-========================================== */
-
-function filterSponsors(){
-
-    const search =
-
-        document.getElementById(
-
-            "searchSponsor"
-
-        ).value.toLowerCase();
-
-    const level =
-
-        document.getElementById(
-
-            "filterLevel"
-
-        ).value;
-
-    let sponsors = getSponsors();
-
-    sponsors = sponsors.filter(sponsor=>{
-
-        const matchSearch =
-
-            sponsor.name.toLowerCase().includes(search)
-
-            ||
-
-            sponsor.company.toLowerCase().includes(search)
-
-            ||
-
-            sponsor.level.toLowerCase().includes(search)
-
-            ||
-
-            (sponsor.event || "").toLowerCase().includes(search);
-
-        const matchLevel =
-
-            level==="All"
-
-            ||
-
-            sponsor.level===level;
-
-        return matchSearch && matchLevel;
-
-    });
-
-    loadSponsors(sponsors);
-
-}
-/* ==========================================
-            TOP SPONSORS
-========================================== */
-
-function loadTopSponsors(sponsors = getSponsors()) {
-
-    const container = document.getElementById("topSponsors");
-
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (sponsors.length === 0) {
+    if (!top.length) {
 
         container.innerHTML = `
-
-            <div class="no-data">
-
-                No sponsors available.
-
-            </div>
-
+            <p>
+                No sponsor data available.
+            </p>
         `;
 
         return;
-
     }
 
-    const topSponsors = [...sponsors]
 
-        .sort((a, b) =>
+    container.innerHTML =
+        top.map(
+            (sponsor, index) => `
+                <div class="card">
 
-            Number(b.amount || 0) -
+                    <i class="fa-solid fa-ranking-star"></i>
 
-            Number(a.amount || 0)
+                    <h3>
+                        #${index + 1}
+                        ${escapeHtml(
+                            sponsor.sponsor_name
+                        )}
+                    </h3>
 
-        )
+                    <p>
+                        ${escapeHtml(
+                            sponsor.sponsorship_level
+                        )}
+                    </p>
 
-        .slice(0, 4);
-
-    topSponsors.forEach(sponsor => {
-
-        let badgeClass = sponsor.level.toLowerCase();
-
-        container.innerHTML += `
-
-            <div class="sponsor-card">
-
-                <h3>
-
-                    <i class="fa-solid fa-building"></i>
-
-                    ${sponsor.company}
-
-                </h3>
-
-                <p>
-
-                    <strong>Sponsor:</strong>
-
-                    ${sponsor.name}
-
-                </p>
-
-                <p>
-
-                    <strong>Level:</strong>
-
-                    <span class="badge ${badgeClass}">
-
-                        ${sponsor.level}
-
-                    </span>
-
-                </p>
-
-                <p>
-
-                    <strong>Event:</strong>
-
-                    ${sponsor.event || "Not Assigned"}
-
-                </p>
-
-                <p>
-
-                    <strong>Status:</strong>
-
-                    ${sponsor.status}
-
-                </p>
-
-                <div class="contribution">
-
-                    ₹${Number(sponsor.amount).toLocaleString("en-IN")}
+                    <h2>
+                        ${formatMoney(
+                            sponsor.contribution
+                        )}
+                    </h2>
 
                 </div>
-
-            </div>
-
-        `;
-
-    });
-
+            `
+        )
+        .join("");
 }
 
+
 /* ==========================================
-            REFRESH PAGE
+        CREATE / UPDATE
 ========================================== */
 
-function refreshPage(){
+$("sponsorForm")
+    ?.addEventListener(
+        "submit",
+        async function (event) {
 
-    loadEvents();
+            event.preventDefault();
 
-    loadStatistics();
 
-    loadSponsors();
+            const sponsorName =
+                $("sponsorName")
+                    .value
+                    .trim();
 
-    loadTopSponsors();
 
+            if (!sponsorName) {
+
+                alert(
+                    "Sponsor name is required."
+                );
+
+                return;
+            }
+
+
+            const contribution =
+                Number(
+                    $("sponsorAmount")
+                        .value || 0
+                );
+
+
+            if (
+                Number.isNaN(contribution)
+                ||
+                contribution < 0
+            ) {
+
+                alert(
+                    "Contribution must be zero or greater."
+                );
+
+                return;
+            }
+
+
+            const data = {
+
+                sponsor_name:
+                    sponsorName,
+
+                contact_person:
+                    $("contactPerson")
+                        ?.value
+                        .trim()
+                    || null,
+
+                email:
+                    $("sponsorEmail")
+                        .value
+                        .trim()
+                    || null,
+
+                phone:
+                    $("sponsorPhone")
+                        .value
+                        .trim()
+                    || null,
+
+                sponsorship_level:
+                    $("sponsorLevel")
+                        .value,
+
+                contribution:
+                    contribution,
+
+                logo:
+                    null
+            };
+
+
+            try {
+
+                if (editId !== null) {
+
+                    await Api.sponsors.update(
+                        editId,
+                        data
+                    );
+
+                    const eventSelect =
+                        $("sponsorEvent");
+
+                    const eventId =
+                        eventSelect
+                            ? eventSelect.value
+                            : "";
+
+                    const assignment =
+                        assignments.find(
+
+                            a=>a.sponsor_id===editId
+
+                        );
+
+                    if(assignment){
+
+                        await Api.eventSponsors.remove(
+                            assignment.id
+                        );
+
+                    }
+
+                    if(eventId){
+
+                        await Api.eventSponsors.create({
+
+                            sponsor_id:editId,
+
+                            event_id:Number(eventId)
+
+                        });
+
+                    }
+
+                } else {
+
+                    const sponsor =
+                        await Api.sponsors.create(
+                            data
+                        );
+
+                    const eventSelect =
+                        $("sponsorEvent");
+
+                    const eventId =
+                        eventSelect
+                            ? eventSelect.value
+                            : "";
+
+                    if (eventId) {
+
+                        await Api.eventSponsors.create({
+
+                            sponsor_id: sponsor.id,
+
+                            event_id: Number(eventId)
+
+                        });
+                    }
+                }
+
+
+                editId = null;
+
+                event.target.reset();
+
+
+                const submitButton =
+                    event.target.querySelector(
+                        'button[type="submit"]'
+                    );
+
+                if (submitButton) {
+
+                    submitButton.innerHTML = `
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save Sponsor
+                    `;
+                }
+
+
+                await loadSponsors();
+
+
+            } catch (error) {
+
+                console.error(
+                    "Sponsor save failed:",
+                    error
+                );
+
+                alert(
+                    error.message ||
+                    "Unable to save sponsor."
+                );
+            }
+        }
+    );
+
+
+/* ==========================================
+        EDIT
+========================================== */
+
+window.editSponsor =
+    function (id) {
+
+        const sponsor =
+            sponsors.find(
+                item =>
+                    item.id === id
+            );
+
+
+        if (!sponsor) {
+            return;
+        }
+
+
+        editId =
+            sponsor.id;
+
+
+        $("sponsorName").value =
+            sponsor.sponsor_name || "";
+
+
+        if ($("contactPerson")) {
+
+            $("contactPerson").value =
+                sponsor.contact_person || "";
+        }
+
+
+        $("sponsorEmail").value =
+            sponsor.email || "";
+
+
+        $("sponsorPhone").value =
+            sponsor.phone || "";
+
+
+        $("sponsorLevel").value =
+            sponsor.sponsorship_level;
+
+
+        $("sponsorAmount").value =
+            sponsor.contribution;
+
+
+        const submitButton =
+            $("sponsorForm")
+                ?.querySelector(
+                    'button[type="submit"]'
+                );
+
+
+        if (submitButton) {
+
+            submitButton.innerHTML = `
+                <i class="fa-solid fa-floppy-disk"></i>
+                Update Sponsor
+            `;
+        }
+
+
+        $("sponsorForm")
+            ?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        
+        const assignment =
+            assignments.find(
+
+                a=>a.sponsor_id===id
+
+            );
+
+        if(
+            $("sponsorEvent")
+        ){
+
+            $("sponsorEvent").value =
+                assignment
+                    ? assignment.event_id
+                    : "";
+
+        }
+    };
+
+
+/* ==========================================
+        DELETE
+========================================== */
+
+window.deleteSponsor =
+    async function (id) {
+
+        const sponsor =
+            sponsors.find(
+                item =>
+                    item.id === id
+            );
+
+
+        const name =
+            sponsor
+                ?.sponsor_name
+            || "this sponsor";
+
+
+        if (
+            !confirm(
+                `Delete ${name}?`
+            )
+        ) {
+            return;
+        }
+
+
+        try {
+
+            const assignment =
+                assignments.find(
+
+                    a=>a.sponsor_id===id
+
+                );
+
+            if(assignment){
+
+                await Api.eventSponsors.remove(
+                    assignment.id
+                );
+
+            }
+            await Api.sponsors.remove(id);
+
+
+            if (editId === id) {
+
+                editId = null;
+
+                $("sponsorForm")
+                    ?.reset();
+            }
+
+
+            await loadSponsors();
+
+
+        } catch (error) {
+
+            console.error(
+                "Sponsor deletion failed:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Unable to delete sponsor."
+            );
+        }
+    };
+
+
+/* ==========================================
+        SEARCH / FILTER
+========================================== */
+
+function filterSponsors() {
+
+    const search =
+        $("searchSponsor")
+            ?.value
+            .trim()
+            .toLowerCase()
+        || "";
+
+
+    const level =
+        $("filterLevel")
+            ?.value
+        || "All";
+
+
+    const filtered =
+        sponsors.filter(
+            sponsor => {
+
+                const matchesSearch =
+
+                    sponsor
+                        .sponsor_name
+                        ?.toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    sponsor
+                        .contact_person
+                        ?.toLowerCase()
+                        .includes(search)
+
+                    ||
+
+                    sponsor
+                        .email
+                        ?.toLowerCase()
+                        .includes(search);
+
+
+                const matchesLevel =
+
+                    level === "All"
+
+                    ||
+
+                    sponsor
+                        .sponsorship_level
+                    === level;
+
+
+                return (
+                    matchesSearch
+                    &&
+                    matchesLevel
+                );
+            }
+        );
+
+
+    renderSponsors(
+        filtered
+    );
 }
 
+
+$("searchSponsor")
+    ?.addEventListener(
+        "input",
+        filterSponsors
+    );
+
+
+$("filterLevel")
+    ?.addEventListener(
+        "change",
+        filterSponsors
+    );
+
+
 /* ==========================================
-            AUTO REFRESH
+        INITIALIZE
 ========================================== */
 
-window.addEventListener("storage", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
-    refreshPage();
+        if (
+            typeof requireLogin
+            === "function"
+            &&
+            !requireLogin()
+        ) {
+            return;
+        }
 
-});
 
-/* ==========================================
-            INITIALIZE
-========================================== */
+        try {
 
-document.addEventListener("DOMContentLoaded", () => {
+            await loadSponsors();
 
-    if(currentUser.role !== "admin"){
+        } catch (error) {
 
-        window.location.href = "user-dashboard.html";
+            console.error(
+                "Could not load sponsors:",
+                error
+            );
 
-        return;
-
+            alert(
+                error.message ||
+                "Unable to load sponsors."
+            );
+        }
     }
-
-    document.getElementById("loggedUserName").textContent =
-
-        currentUser.name;
-
-    refreshPage();
-
-});
-
-/* ==========================================
-            DEBUG
-========================================== */
-
-console.log("================================");
-
-console.log("EventAI Sponsors Loaded");
-
-console.log("Admin :", currentUser.name);
-
-console.log("================================");
+);

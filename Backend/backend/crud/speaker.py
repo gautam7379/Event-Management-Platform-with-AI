@@ -22,8 +22,12 @@ def create_speaker(
         phone=speaker.phone,
         organization=speaker.organization,
         designation=speaker.designation,
+
+        experience=speaker.experience,
+        expertise=speaker.expertise,
+        speaker_type=speaker.speaker_type,
+
         bio=speaker.bio,
-        profile_image=speaker.profile_image,
     )
 
     db.add(db_speaker)
@@ -31,7 +35,6 @@ def create_speaker(
     db.refresh(db_speaker)
 
     return db_speaker
-
 
 def get_speaker_by_id(
     db: Session,

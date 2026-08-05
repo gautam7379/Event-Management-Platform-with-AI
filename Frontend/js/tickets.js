@@ -1,518 +1,889 @@
-/* ==========================================
-            EVENTAI TICKETS
-========================================== */
+// ==========================================
+// EVENTAI TICKETS - BACKEND VERSION
+// ==========================================
 
-/* ==========================================
-            LOCAL STORAGE
-========================================== */
-
-function getTickets() {
-
-    return JSON.parse(
-        localStorage.getItem("tickets")
-    ) || [];
-
-}
-
-function getEvents() {
-
-    return JSON.parse(
-        localStorage.getItem("events")
-    ) || [];
-
-}
-
-/* ==========================================
-            CURRENT USER
-========================================== */
+let tickets = [];
 
 const currentUser = {
-
-    name:
-        localStorage.getItem("userName") ||
-        "Guest",
-
-    email:
-        localStorage.getItem("userEmail") ||
-        "",
-
-    role:
-        localStorage.getItem("userRole") ||
-        "user"
-
+    name: localStorage.getItem("userName") || "User",
+    role: localStorage.getItem("userRole") || "user"
 };
 
-/* ==========================================
-            ELEMENTS
-========================================== */
+
+// ==========================================
+// ELEMENTS
+// ==========================================
 
 const ticketTable =
-document.getElementById("ticketTable");
+    document.getElementById("ticketTable");
 
 const searchBox =
-document.getElementById("searchTicket");
+    document.getElementById("searchTicket");
 
 const statusFilter =
-document.getElementById("statusFilter");
+    document.getElementById("statusFilter");
 
 const emptyMessage =
-document.getElementById("emptyMessage");
+    document.getElementById("emptyMessage");
 
-/* ==========================================
-            LOAD USER
-========================================== */
 
-function loadUser(){
+// ==========================================
+// LOAD USER
+// ==========================================
+
+function loadUser() {
 
     const userElement =
-    document.getElementById("loggedUserName");
+        document.getElementById("loggedUserName");
 
-    if(userElement){
-
+    if (userElement) {
         userElement.textContent =
-        currentUser.name;
-
+            currentUser.name;
     }
-
 }
 
-/* ==========================================
-            LOAD USER TICKETS
-========================================== */
 
-function loadTickets(){
+// ==========================================
+// LOAD TICKETS FROM BACKEND
+// ==========================================
 
-    const tickets = getTickets();
+async function loadTicketsFromBackend() {
 
-    if(currentUser.role==="admin"){
+    try {
 
-        return tickets;
+        console.log(
+            "Loading tickets from backend..."
+        );
 
+        let registrations;
+
+
+        // ----------------------------------
+        // Admin / Organizer
+        // ----------------------------------
+
+        if (
+            currentUser.role === "admin" ||
+            currentUser.role === "organizer"
+        ) {
+
+            registrations =
+                await Api.registrations.list();
+
+        }
+
+        // ----------------------------------
+        // Normal User
+        // ----------------------------------
+
+        else {
+
+            registrations =
+                await Api.registrations.mine();
+
+        }
+
+
+        console.log(
+            "REGISTRATIONS:",
+            registrations
+        );
+
+
+        // ----------------------------------
+        // Load complete ticket view
+        // ----------------------------------
+
+        const results =
+            await Promise.allSettled(
+
+                registrations.map(
+                    registration =>
+                        Api.tickets.view(
+                            registration.id
+                        )
+                )
+
+            );
+
+
+        tickets = results
+
+            .filter(
+                result =>
+                    result.status === "fulfilled"
+            )
+
+            .map(
+                result =>
+                    result.value
+            );
+
+
+        // Log failed tickets
+        results.forEach(
+            (result, index) => {
+
+                if (
+                    result.status === "rejected"
+                ) {
+
+                    console.warn(
+                        "Could not load ticket for registration:",
+                        registrations[index].id,
+                        result.reason
+                    );
+
+                }
+
+            }
+        );
+
+
+        console.log(
+            "TICKETS FROM BACKEND:",
+            tickets
+        );
+
+
+        loadStatistics();
+
+        renderTickets(tickets);
+
+
+    } catch (error) {
+
+        console.error(
+            "Ticket loading failed:",
+            error
+        );
+
+        tickets = [];
+
+        loadStatistics();
+
+        renderTickets([]);
+
+        alert(
+            error.message ||
+            "Failed to load tickets."
+        );
     }
-
-    return tickets.filter(ticket=>
-
-        ticket.email===currentUser.email
-
-    );
-
 }
 
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
 
-function loadStatistics(){
+// ==========================================
+// STATISTICS
+// ==========================================
 
-    const tickets = loadTickets();
+function loadStatistics() {
 
     const total =
-    document.getElementById("totalTickets");
+        document.getElementById(
+            "totalTickets"
+        );
 
     const confirmed =
-    document.getElementById("confirmedTickets");
+        document.getElementById(
+            "confirmedTickets"
+        );
 
     const pending =
-    document.getElementById("pendingTickets");
+        document.getElementById(
+            "pendingTickets"
+        );
 
     const cancelled =
-    document.getElementById("cancelledTickets");
+        document.getElementById(
+            "cancelledTickets"
+        );
 
-    if(total)
-        total.textContent=tickets.length;
 
-    if(confirmed)
-        confirmed.textContent=tickets.filter(
+    if (total) {
 
-            t=>t.status==="Confirmed"
+        total.textContent =
+            tickets.length;
+    }
 
-        ).length;
 
-    if(pending)
-        pending.textContent=tickets.filter(
+    if (confirmed) {
 
-            t=>t.status==="Pending"
+        confirmed.textContent =
+            tickets.filter(
+                ticket =>
+                    String(ticket.status)
+                        .toLowerCase()
+                    === "confirmed"
+            ).length;
+    }
 
-        ).length;
 
-    if(cancelled)
-        cancelled.textContent=tickets.filter(
+    if (pending) {
 
-            t=>t.status==="Cancelled"
+        pending.textContent =
+            tickets.filter(
+                ticket =>
+                    String(ticket.status)
+                        .toLowerCase()
+                    === "pending"
+            ).length;
+    }
 
-        ).length;
 
+    if (cancelled) {
+
+        cancelled.textContent =
+            tickets.filter(
+                ticket =>
+                    String(ticket.status)
+                        .toLowerCase()
+                    === "cancelled"
+            ).length;
+    }
 }
-/* ==========================================
-            RENDER TICKETS
-========================================== */
 
-function renderTickets(ticketList = loadTickets()) {
 
-    if (!ticketTable) return;
+// ==========================================
+// FORMAT DATE
+// ==========================================
+
+function formatDate(date) {
+
+    if (!date) {
+        return "-";
+    }
+
+    const parsed =
+        new Date(
+            date + "T00:00:00"
+        );
+
+    if (
+        Number.isNaN(
+            parsed.getTime()
+        )
+    ) {
+        return date;
+    }
+
+    return parsed.toLocaleDateString(
+        "en-IN"
+    );
+}
+
+
+// ==========================================
+// BADGE CLASS
+// ==========================================
+
+function getBadgeClass(status) {
+
+    const value =
+        String(status || "")
+            .toLowerCase();
+
+    if (value === "confirmed") {
+        return "completed";
+    }
+
+    if (value === "pending") {
+        return "pending";
+    }
+
+    if (value === "cancelled") {
+        return "cancelled";
+    }
+
+    return "pending";
+}
+
+
+// ==========================================
+// RENDER TICKETS
+// ==========================================
+
+function renderTickets(
+    ticketList = tickets
+) {
+
+    if (!ticketTable) {
+        return;
+    }
+
 
     ticketTable.innerHTML = "";
 
-    if (ticketList.length === 0) {
+
+    if (
+        !ticketList ||
+        ticketList.length === 0
+    ) {
 
         if (emptyMessage) {
 
-            emptyMessage.style.display = "block";
-
+            emptyMessage.style.display =
+                "block";
         }
 
         return;
-
     }
+
 
     if (emptyMessage) {
 
-        emptyMessage.style.display = "none";
-
+        emptyMessage.style.display =
+            "none";
     }
 
-    let html = "";
 
-    ticketList.forEach(ticket => {
+    ticketTable.innerHTML =
+        ticketList.map(ticket => {
 
-        let badgeClass = "completed";
+            const badgeClass =
+                getBadgeClass(
+                    ticket.status
+                );
 
-        if (ticket.status === "Pending") {
 
-            badgeClass = "pending";
+            const ticketNumber =
+                ticket.registration_number ||
+                `REG-${ticket.registration_id}`;
 
-        }
 
-        else if (ticket.status === "Cancelled") {
+            const price =
+                Number(
+                    ticket.price || 0
+                );
 
-            badgeClass = "cancelled";
 
-        }
+            return `
 
-        html += `
+                <tr>
 
-        <tr>
+                    <td>
+                        ${ticketNumber}
+                    </td>
 
-            <td>${ticket.ticketId}</td>
+                    <td>
+                        ${ticket.holder_name || "-"}
+                    </td>
 
-            <td>${ticket.name}</td>
+                    <td>
+                        ${ticket.event_name || "-"}
+                    </td>
 
-            <td>${ticket.eventName}</td>
+                    <td>
+                        ${formatDate(ticket.date)}
+                    </td>
 
-            <td>${new Date(ticket.date).toLocaleDateString("en-IN")}</td>
+                    <td>
+                        ${ticket.venue || "-"}
+                    </td>
 
-            <td>${ticket.venue}</td>
+                    <td>
+                        ${
+                            price > 0
 
-            <td>
+                            ? "₹" +
+                              price.toLocaleString(
+                                  "en-IN"
+                              )
 
-                ${ticket.price > 0
+                            : "Free"
+                        }
+                    </td>
 
-                    ? `₹${Number(ticket.price).toLocaleString("en-IN")}`
+                    <td>
 
-                    : "Free"}
+                        <span
+                            class="badge ${badgeClass}"
+                        >
 
-            </td>
+                            ${ticket.status || "-"}
 
-            <td>
+                        </span>
 
-                <span class="badge ${badgeClass}">
+                    </td>
 
-                    ${ticket.status}
+                    <td>
 
-                </span>
+                        <button
+                            class="action-btn view"
+                            onclick="viewTicket(
+                                ${ticket.registration_id}
+                            )"
+                            title="View Ticket"
+                        >
 
-            </td>
+                            <i
+                                class="fa-solid fa-eye"
+                            ></i>
 
-            <td>
+                        </button>
 
-                <button
 
-                    class="action-btn view"
+                        <button
+                            class="action-btn edit"
+                            onclick="downloadTicket(
+                                ${ticket.registration_id}
+                            )"
+                            title="Download Ticket"
+                        >
 
-                    onclick="viewTicket('${ticket.ticketId}')">
+                            <i
+                                class="fa-solid fa-download"
+                            ></i>
 
-                    <i class="fa-solid fa-eye"></i>
+                        </button>
 
-                </button>
+                    </td>
 
-                <button
+                </tr>
 
-                    class="action-btn edit"
+            `;
 
-                    onclick="printTicket('${ticket.ticketId}')">
-
-                    <i class="fa-solid fa-print"></i>
-
-                </button>
-
-            </td>
-
-        </tr>
-
-        `;
-
-    });
-
-    ticketTable.innerHTML = html;
-
+        }).join("");
 }
 
-/* ==========================================
-            SEARCH & FILTER
-========================================== */
+
+// ==========================================
+// FILTER
+// ==========================================
 
 function filterTickets() {
 
     const search =
-
         searchBox
+            ? searchBox.value
+                .trim()
+                .toLowerCase()
+            : "";
 
-        ? searchBox.value.trim().toLowerCase()
-
-        : "";
 
     const status =
-
         statusFilter
+            ? statusFilter.value
+            : "All";
 
-        ? statusFilter.value
 
-        : "All";
+    const filtered =
+        tickets.filter(ticket => {
 
-    const filtered = loadTickets().filter(ticket => {
 
-        const matchSearch =
+            const ticketNumber =
+                String(
+                    ticket.registration_number ||
+                    ticket.registration_id ||
+                    ""
+                ).toLowerCase();
 
-            ticket.ticketId.toLowerCase().includes(search)
 
-            ||
+            const holder =
+                String(
+                    ticket.holder_name || ""
+                ).toLowerCase();
 
-            ticket.name.toLowerCase().includes(search)
 
-            ||
+            const eventName =
+                String(
+                    ticket.event_name || ""
+                ).toLowerCase();
 
-            ticket.eventName.toLowerCase().includes(search)
 
-            ||
+            const email =
+                String(
+                    ticket.email || ""
+                ).toLowerCase();
 
-            ticket.email.toLowerCase().includes(search);
 
-        const matchStatus =
+            const matchesSearch =
 
-            status === "All"
+                ticketNumber.includes(search)
 
-            ||
+                ||
 
-            ticket.status === status;
+                holder.includes(search)
 
-        return matchSearch && matchStatus;
+                ||
 
-    });
+                eventName.includes(search)
+
+                ||
+
+                email.includes(search);
+
+
+            const matchesStatus =
+
+                status === "All"
+
+                ||
+
+                String(ticket.status)
+                    .toLowerCase()
+
+                ===
+
+                status.toLowerCase();
+
+
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
+
+        });
+
 
     renderTickets(filtered);
-
 }
 
-/* ==========================================
-            EVENTS
-========================================== */
+
+// ==========================================
+// VIEW TICKET
+// ==========================================
+
+async function viewTicket(
+    registrationId
+) {
+
+    try {
+
+        const ticket =
+            await Api.tickets.view(
+                registrationId
+            );
+
+
+        const modal =
+            document.getElementById(
+                "ticketModal"
+            );
+
+
+        const content =
+            document.getElementById(
+                "ticketContent"
+            );
+
+
+        if (!modal || !content) {
+            return;
+        }
+
+
+        const price =
+            Number(
+                ticket.price || 0
+            );
+
+
+        content.innerHTML = `
+
+            <div
+                style="
+                    padding:20px;
+                    line-height:2;
+                "
+            >
+
+                <h2>
+                    ${ticket.event_name}
+                </h2>
+
+
+                <p>
+                    <strong>
+                        Ticket:
+                    </strong>
+
+                    ${ticket.registration_number}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Holder:
+                    </strong>
+
+                    ${ticket.holder_name}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Email:
+                    </strong>
+
+                    ${ticket.email}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Event:
+                    </strong>
+
+                    ${ticket.event_name}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Venue:
+                    </strong>
+
+                    ${ticket.venue}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Date:
+                    </strong>
+
+                    ${formatDate(ticket.date)}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Category:
+                    </strong>
+
+                    ${ticket.ticket_category}
+                </p>
+
+
+                <p>
+                    <strong>
+                        Price:
+                    </strong>
+
+                    ${
+                        price > 0
+
+                        ? "₹" +
+                          price.toLocaleString(
+                              "en-IN"
+                          )
+
+                        : "Free"
+                    }
+                </p>
+
+
+                <p>
+                    <strong>
+                        Status:
+                    </strong>
+
+                    ${ticket.status}
+                </p>
+
+
+                <br>
+
+
+                <button
+                    class="action-btn edit"
+                    onclick="
+                        downloadTicket(
+                            ${ticket.registration_id}
+                        )
+                    "
+                >
+
+                    <i
+                        class="fa-solid fa-download"
+                    ></i>
+
+                    Download Ticket
+
+                </button>
+
+            </div>
+
+        `;
+
+
+        modal.style.display =
+            "block";
+
+
+    } catch (error) {
+
+        console.error(
+            "View ticket failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Unable to load ticket."
+        );
+    }
+}
+
+
+// ==========================================
+// DOWNLOAD TICKET PDF
+// ==========================================
+
+async function downloadTicket(
+    registrationId
+) {
+
+    try {
+
+        const token =
+            localStorage.getItem(
+                "accessToken"
+            );
+
+
+        if (!token) {
+
+            alert(
+                "Please login again."
+            );
+
+            return;
+        }
+
+
+        const response =
+            await fetch(
+                `/api/registrations/${registrationId}/download`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            const error =
+                await response
+                    .json()
+                    .catch(() => ({}));
+
+
+            throw new Error(
+                error.detail ||
+                "Ticket download failed."
+            );
+        }
+
+
+        const blob =
+            await response.blob();
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href = url;
+
+        link.download =
+            `ticket-${registrationId}.pdf`;
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        link.remove();
+
+
+        URL.revokeObjectURL(
+            url
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Download failed:",
+            error
+        );
+
+        alert(
+            error.message
+        );
+    }
+}
+
+
+// ==========================================
+// SEARCH EVENTS
+// ==========================================
 
 if (searchBox) {
 
     searchBox.addEventListener(
-
         "input",
-
         filterTickets
-
     );
-
 }
+
 
 if (statusFilter) {
 
     statusFilter.addEventListener(
-
         "change",
-
         filterTickets
-
     );
-
 }
-/* ==========================================
-            VIEW TICKET
-========================================== */
 
-function viewTicket(ticketId){
 
-    const ticket = loadTickets().find(
+// ==========================================
+// INITIALIZE
+// ==========================================
 
-        t => t.ticketId === ticketId
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
-    );
+        loadUser();
 
-    if(!ticket){
-
-        alert("Ticket not found.");
-
-        return;
+        await loadTicketsFromBackend();
 
     }
+);
 
-    localStorage.setItem(
 
-        "selectedTicket",
+// ==========================================
+// EXPORT
+// ==========================================
 
-        JSON.stringify(ticket)
+window.viewTicket =
+    viewTicket;
 
-    );
+window.downloadTicket =
+    downloadTicket;
 
-    window.location.href = "ticket-view.html";
 
-}
+// ==========================================
+// DEBUG
+// ==========================================
 
-/* ==========================================
-            PRINT TICKET
-========================================== */
-
-function printTicket(ticketId){
-
-    const ticket = loadTickets().find(
-
-        t => t.ticketId === ticketId
-
-    );
-
-    if(!ticket){
-
-        alert("Ticket not found.");
-
-        return;
-
-    }
-
-    localStorage.setItem(
-
-        "selectedTicket",
-
-        JSON.stringify(ticket)
-
-    );
-
-    window.open(
-
-        "ticket-view.html",
-
-        "_blank"
-
-    );
-
-}
-
-/* ==========================================
-            DOWNLOAD TICKET
-========================================== */
-
-function downloadTicket(ticketId){
-
-    const ticket = loadTickets().find(
-
-        t => t.ticketId === ticketId
-
-    );
-
-    if(!ticket){
-
-        return;
-
-    }
-
-    localStorage.setItem(
-
-        "selectedTicket",
-
-        JSON.stringify(ticket)
-
-    );
-
-    window.open(
-
-        "ticket-view.html",
-
-        "_blank"
-
-    );
-
-}
-
-/* ==========================================
-            GET SINGLE TICKET
-========================================== */
-
-function getTicketById(ticketId){
-
-    return loadTickets().find(
-
-        ticket => ticket.ticketId === ticketId
-
-    );
-
-}
-/* ==========================================
-            REFRESH PAGE
-========================================== */
-
-function refreshTickets(){
-
-    renderTickets();
-
-    loadStatistics();
-
-}
-
-/* ==========================================
-            AUTO REFRESH
-========================================== */
-
-window.addEventListener("storage", () => {
-
-    refreshTickets();
-
-});
-
-/* ==========================================
-            INITIALIZE
-========================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    loadUser();
-
-    refreshTickets();
-
-});
-
-/* ==========================================
-            EXPORT (Optional)
-========================================== */
-
-window.viewTicket = viewTicket;
-window.printTicket = printTicket;
-window.downloadTicket = downloadTicket;
-
-/* ==========================================
-            DEBUG
-========================================== */
-
-console.log("================================");
-
-console.log("EventAI Tickets Loaded");
-
-console.log("Current User :", currentUser.name);
-
-console.log("Role :", currentUser.role);
-
-console.log("Total Tickets :", loadTickets().length);
-
-console.log("================================");
+console.log(
+    "EventAI Tickets Backend Version Loaded"
+);

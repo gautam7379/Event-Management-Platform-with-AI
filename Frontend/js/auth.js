@@ -1,310 +1,211 @@
-/* ==========================================
-            EVENTAI AUTH
-========================================== */
+const password = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
 
-/* ==========================================
-            PASSWORD TOGGLE
-========================================== */
 
-const password =
-    document.getElementById("password");
+// ================================
+// SHOW / HIDE PASSWORD
+// ================================
 
-const togglePassword =
-    document.getElementById("togglePassword");
+if (togglePassword && password) {
 
-if (togglePassword) {
+    togglePassword.onclick = () => {
 
-    togglePassword.addEventListener("click", () => {
-
-        if (password.type === "password") {
-
-            password.type = "text";
-
-            togglePassword.classList.remove("fa-eye");
-
-            togglePassword.classList.add("fa-eye-slash");
-
-        }
-
-        else {
-
-            password.type = "password";
-
-            togglePassword.classList.remove("fa-eye-slash");
-
-            togglePassword.classList.add("fa-eye");
-
-        }
-
-    });
-
+        password.type =
+            password.type === "password"
+                ? "text"
+                : "password";
+    };
 }
 
-/* ==========================================
-            LOGIN FORM
-========================================== */
+
+// ================================
+// LOGIN
+// ================================
 
 const loginForm =
     document.getElementById("loginForm");
-/* ==========================================
-            LOGIN
-========================================== */
+
 
 if (loginForm) {
 
-    loginForm.addEventListener("submit", function (e) {
+    loginForm.addEventListener(
+        "submit",
 
-        e.preventDefault();
+        async (e) => {
 
-        const email =
-            document.getElementById("email")
-            .value
-            .trim()
-            .toLowerCase();
+            e.preventDefault();
 
-        const passwordValue =
-            document.getElementById("password")
-            .value
-            .trim();
+            const btn =
+                loginForm.querySelector(
+                    "button[type=submit]"
+                );
 
-        if (!email || !passwordValue) {
+            try {
 
-            alert("Please fill in all fields.");
+                btn.disabled = true;
 
-            return;
 
+                // -----------------------------
+                // 1. LOGIN
+                // -----------------------------
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim();
+
+                const passwordValue =
+                    password.value;
+
+
+                const token =
+                    await Api.login(
+                        email,
+                        passwordValue
+                    );
+
+
+                // -----------------------------
+                // 2. SAVE JWT
+                // -----------------------------
+
+                localStorage.setItem(
+                    "accessToken",
+                    token.access_token
+                );
+
+                localStorage.setItem(
+                    "isLoggedIn",
+                    "true"
+                );
+
+
+                // -----------------------------
+                // 3. GET USER FROM BACKEND
+                // -----------------------------
+
+                const me =
+                    await Api.me();
+
+
+                console.log(
+                    "Logged in user:",
+                    me
+                );
+
+
+                // -----------------------------
+                // 4. SAVE SESSION INFORMATION
+                // -----------------------------
+
+                localStorage.setItem(
+                    "userId",
+                    String(me.id)
+                );
+
+                localStorage.setItem(
+                    "roleId",
+                    String(me.role_id)
+                );
+
+                localStorage.setItem(
+                    "userName",
+                    `${me.first_name} ${me.last_name}`.trim()
+                );
+
+                localStorage.setItem(
+                    "userEmail",
+                    me.email
+                );
+
+
+                // -----------------------------
+                // 5. DETERMINE ROLE
+                // -----------------------------
+
+                let role = "user";
+
+
+                if (Number(me.role_id) === 1) {
+
+                    role = "admin";
+
+                } else if (
+                    Number(me.role_id) === 2
+                ) {
+
+                    role = "organizer";
+                }
+
+
+                localStorage.setItem(
+                    "userRole",
+                    role
+                );
+
+
+                console.log(
+                    "Role:",
+                    role
+                );
+
+
+                // -----------------------------
+                // 6. REDIRECT
+                // -----------------------------
+
+                if (role === "user") {
+
+                    location.href =
+                        "user-dashboard.html";
+
+                } else {
+
+                    location.href =
+                        "dashboard.html";
+                }
+
+
+            } catch (err) {
+
+                console.error(
+                    "Login failed:",
+                    err
+                );
+
+                alert(
+                    err.message ||
+                    "Login failed"
+                );
+
+            } finally {
+
+                if (btn) {
+                    btn.disabled = false;
+                }
+            }
         }
+    );
+}
 
-        /* ===================================
-                ADMIN LOGIN
-        =================================== */
+
+// ================================
+// LOGOUT
+// ================================
+
+document.addEventListener(
+    "click",
+
+    (e) => {
 
         if (
-
-            email === "admin@eventai.com"
-
-            &&
-
-            passwordValue === "admin123"
-
+            e.target.closest("#logoutBtn")
         ) {
 
-            localStorage.setItem(
-                "isLoggedIn",
-                "true"
-            );
+            e.preventDefault();
 
-            localStorage.setItem(
-                "userRole",
-                "admin"
-            );
-
-            localStorage.setItem(
-                "userName",
-                "Administrator"
-            );
-
-            localStorage.setItem(
-                "userEmail",
-                email
-            );
-
-            alert("Welcome Admin!");
-
-            window.location.href =
-                "dashboard.html";
-
-            return;
-
+            logout();
         }
-
-        /* ===================================
-                USER LOGIN
-        =================================== */
-
-        const users =
-
-            JSON.parse(
-
-                localStorage.getItem("users")
-
-            ) || [];
-
-        const user = users.find(
-
-            u =>
-
-                u.email.toLowerCase() === email
-
-                &&
-
-                u.password === passwordValue
-
-        );
-
-        if (user) {
-
-            localStorage.setItem(
-                "isLoggedIn",
-                "true"
-            );
-
-            localStorage.setItem(
-                "userRole",
-                "user"
-            );
-
-            localStorage.setItem(
-                "userName",
-                user.name
-            );
-
-            localStorage.setItem(
-                "userEmail",
-                user.email
-            );
-
-            alert("Welcome " + user.name + "!");
-
-            /* USER GOES HERE */
-
-            window.location.href =
-                "user-dashboard.html";
-
-            return;
-
-        }
-
-        alert("Invalid Email or Password.");
-
-    });
-
-}
-/* ==========================================
-            LOGOUT
-========================================== */
-
-function logout() {
-
-    localStorage.removeItem("isLoggedIn");
-
-    localStorage.removeItem("userRole");
-
-    localStorage.removeItem("userName");
-
-    localStorage.removeItem("userEmail");
-
-    window.location.href = "login.html";
-
-}
-
-/* ==========================================
-        LOGOUT BUTTON
-========================================== */
-
-const logoutBtn =
-    document.getElementById("logoutBtn");
-
-if (logoutBtn) {
-
-    logoutBtn.addEventListener("click", function (e) {
-
-        e.preventDefault();
-
-        logout();
-
-    });
-
-}
-
-/* ==========================================
-        SESSION CHECK
-========================================== */
-
-function checkLogin() {
-
-    const loggedIn =
-        localStorage.getItem("isLoggedIn");
-
-    if (
-
-        !loggedIn
-
-        &&
-
-        !window.location.pathname.includes("login.html")
-
-        &&
-
-        !window.location.pathname.includes("register.html")
-
-    ) {
-
-        window.location.href = "login.html";
-
-        return;
-
     }
-
-}
-
-/* ==========================================
-        ROLE PROTECTION
-========================================== */
-
-function checkRole() {
-
-    const role = localStorage.getItem("userRole");
-
-    const page = window.location.pathname.split("/").pop();
-
-    // Admin dashboard
-    if (page === "dashboard.html" && role !== "admin") {
-        window.location.href = "user-dashboard.html";
-        return;
-    }
-
-    // User dashboard
-    if (page === "user-dashboard.html" && role !== "user") {
-        window.location.href = "dashboard.html";
-        return;
-    }
-}
-
-/* ==========================================
-        AUTO RUN
-========================================== */
-
-checkLogin();
-
-checkRole();
-
-/* ==========================================
-        DEBUG
-========================================== */
-
-console.log(
-
-    "Logged In :",
-
-    localStorage.getItem("isLoggedIn")
-
 );
-
-console.log(
-
-    "Role :",
-
-    localStorage.getItem("userRole")
-
-);
-
-console.log(
-
-    "User :",
-
-    localStorage.getItem("userName")
-
-);
-
-console.log("EventAI Authentication Loaded");

@@ -3,7 +3,12 @@ from sqlalchemy.orm import Session
 
 from backend.database.database import get_db
 
-from backend.schemas.user import UserRegister, UserResponse
+from backend.schemas.user import (
+    UserRegister,
+    UserResponse,
+    UserUpdate,
+)
+from backend.crud.user import update_user
 from backend.schemas.auth import Token
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -67,6 +72,10 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e),
         )
+# ==========================================
+# GET CURRENT USER PROFILE
+# ==========================================
+
 @router.get(
     "/me",
     response_model=UserResponse,
@@ -75,6 +84,30 @@ def get_profile(
     current_user=Depends(get_current_user),
 ):
     """
-    Get currently logged-in user.
+    Get currently logged-in user's profile.
     """
     return current_user
+
+
+# ==========================================
+# UPDATE CURRENT USER PROFILE
+# ==========================================
+
+@router.put(
+    "/me",
+    response_model=UserResponse,
+)
+def update_profile(
+    user: UserUpdate,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Update currently logged-in user's profile.
+    """
+
+    return update_user(
+        db=db,
+        db_user=current_user,
+        user=user,
+    )

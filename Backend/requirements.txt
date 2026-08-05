@@ -1,41 +1,45 @@
+# ============================================================
+# EventAI - Event Management Platform with AI
+# Backend Requirements
+# ============================================================
+
+
 # ==========================
-# FastAPI
+# FastAPI / Server
 # ==========================
 fastapi
 uvicorn[standard]
+python-multipart
+
 
 # ==========================
-# Database
+# Database / ORM
 # ==========================
 sqlalchemy
 psycopg2-binary
 alembic
 
+
 # ==========================
-# Environment Variables
+# Environment / Configuration
 # ==========================
 python-dotenv
+pydantic
+pydantic-settings
+email-validator
+
 
 # ==========================
 # Authentication & Security
 # ==========================
 python-jose[cryptography]
 passlib[bcrypt]
-bcrypt
-email-validator
+bcrypt==4.0.1
+cryptography
+
 
 # ==========================
-# Forms / Uploads
-# ==========================
-python-multipart
-
-# ==========================
-# Validation
-# ==========================
-pydantic
-
-# ==========================
-# AI
+# AI / LangChain / Ollama
 # ==========================
 langchain
 langchain-core
@@ -43,17 +47,34 @@ langchain-community
 langchain-ollama
 ollama
 
+
 # ==========================
-# Scheduler
+# HTTP Clients
+# ==========================
+requests
+httpx
+
+
+# ==========================
+# Scheduler / Reminders
 # ==========================
 apscheduler
 
-# ==========================
-# HTTP Client
-# ==========================
-requests
 
 # ==========================
-# Optional (Future)
+# QR Code Generation
 # ==========================
-httpx
+qrcode[pil]
+Pillow
+
+
+# ==========================
+# PDF Ticket Generation
+# ==========================
+reportlab
+
+
+# ==========================
+# Date / Time Utilities
+# ==========================
+python-dateutil

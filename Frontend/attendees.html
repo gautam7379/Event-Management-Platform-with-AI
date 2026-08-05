@@ -62,19 +62,24 @@
         <header class="topbar">
 
             <h1>Attendees</h1>
-            <button 
-    class="primary-btn"
-    onclick="exportAttendeesCSV()">
-
-    <i class="fa-solid fa-file-csv"></i>
-
-    Export CSV
-
-</button>
 
             <div class="topbar-actions">
 
-                <button id="addAttendeeBtn" class="btn-primary">
+                <button
+                    type="button"
+                    class="primary-btn"
+                    onclick="exportAttendeesCSV()">
+
+                    <i class="fa-solid fa-file-csv"></i>
+
+                    Export CSV
+
+                </button>
+
+                <button
+                    type="button"
+                    id="addAttendeeBtn"
+                    class="btn-primary">
 
                     <i class="fas fa-user-plus"></i>
 
@@ -83,6 +88,8 @@
                 </button>
 
             </div>
+
+
 
         </header>
 
@@ -306,6 +313,7 @@
 
 </div>
 
+<script src="js/api.js"></script>
 <script src="js/attendees.js"></script>
 
 </body>

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.database.database import Base
@@ -8,7 +8,10 @@ from backend.models.base import TimestampMixin
 class User(Base, TimestampMixin):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True
+    )
 
     role_id: Mapped[int] = mapped_column(
         ForeignKey("roles.id"),
@@ -37,12 +40,32 @@ class User(Base, TimestampMixin):
         nullable=False
     )
 
-    phone: Mapped[str] = mapped_column(
+    phone: Mapped[str | None] = mapped_column(
         String(20),
         nullable=True
     )
 
-    profile_image: Mapped[str] = mapped_column(
+    organization: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True
+    )
+
+    designation: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True
+    )
+
+    location: Mapped[str | None] = mapped_column(
+        String(150),
+        nullable=True
+    )
+
+    bio: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True
+    )
+
+    profile_image: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True
     )
@@ -73,7 +96,7 @@ class User(Base, TimestampMixin):
         "Feedback",
         back_populates="user",
     )
-    
+
     def __repr__(self):
         return (
             f"<User(id={self.id}, "

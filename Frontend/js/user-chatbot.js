@@ -1,717 +1,606 @@
 /* ==========================================
-        EVENTAI USER CHATBOT
+        EVENTAI USER AI CHATBOT
+        BACKEND LLM VERSION
 ========================================== */
 
+console.log(
+    "EventAI User AI Chatbot Backend Version Loaded"
+);
 
 
 /* ==========================================
-            LOCAL STORAGE
+        ELEMENTS
 ========================================== */
-
-
-function getEvents(){
-
-
-    return JSON.parse(
-
-        localStorage.getItem("events")
-
-    ) || [];
-
-
-}
-
-
-
-function getTickets(){
-
-
-    return JSON.parse(
-
-        localStorage.getItem("tickets")
-
-    ) || [];
-
-
-}
-
-
-
-function getAttendees(){
-
-
-    return JSON.parse(
-
-        localStorage.getItem("attendees")
-
-    ) || [];
-
-
-}
-
-
-
-
-
-
-
-/* ==========================================
-            CURRENT USER
-========================================== */
-
-
-const currentUser = {
-
-
-    name:
-
-    localStorage.getItem("userName") || "User",
-
-
-
-    email:
-
-    localStorage.getItem("userEmail") || ""
-
-
-};
-
-
-
-
-
-
-
-
-/* ==========================================
-            ELEMENTS
-========================================== */
-
 
 const chatMessages =
-
-document.getElementById("chatMessages");
-
-
+    document.getElementById("chatMessages");
 
 const userMessage =
-
-document.getElementById("userMessage");
-
-
+    document.getElementById("userMessage");
 
 const sendMessage =
+    document.getElementById("sendMessage");
 
-document.getElementById("sendMessage");
+const loggedUserName =
+    document.getElementById("loggedUserName");
+
+
 /* ==========================================
-            ADD MESSAGE
+        CURRENT USER
 ========================================== */
 
-
-function addMessage(message, sender){
-
-
-    const div = document.createElement("div");
+let currentUser = null;
 
 
+/* ==========================================
+        ESCAPE HTML
+========================================== */
 
-    if(sender === "user"){
+function escapeHtml(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
+
+    return div.innerHTML;
+}
 
 
-        div.className = "user-message";
+/* ==========================================
+        FORMAT AI RESPONSE
+========================================== */
 
+function formatAIResponse(message) {
 
+    if (!message) {
+        return "";
     }
 
-    else{
+    let formatted =
+        escapeHtml(message);
 
 
-        div.className = "bot-message";
+    // ======================================
+    // Markdown headings
+    // ======================================
+
+    formatted = formatted.replace(
+        /^###\s+(.*)$/gm,
+        "<strong>$1</strong>"
+    );
+
+    formatted = formatted.replace(
+        /^##\s+(.*)$/gm,
+        "<strong>$1</strong>"
+    );
+
+    formatted = formatted.replace(
+        /^#\s+(.*)$/gm,
+        "<strong>$1</strong>"
+    );
 
 
+    // ======================================
+    // Markdown bold
+    // ======================================
+
+    formatted = formatted.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    // ======================================
+    // Markdown bullets
+    // ======================================
+
+    formatted = formatted.replace(
+        /^[-•]\s+(.*)$/gm,
+        "• $1"
+    );
+
+
+    // ======================================
+    // Line breaks
+    // ======================================
+
+    formatted = formatted.replace(
+        /\n/g,
+        "<br>"
+    );
+
+
+    return formatted;
+}
+
+
+/* ==========================================
+        ADD MESSAGE
+========================================== */
+
+function addMessage(
+    message,
+    sender
+) {
+
+    if (!chatMessages) {
+        return;
     }
 
 
+    const div =
+        document.createElement("div");
+
+
+    div.className =
+        sender === "user"
+            ? "user-message"
+            : "bot-message";
 
 
     div.innerHTML = `
 
-        <p>
+        <div class="message">
 
-        ${message}
+            ${formatAIResponse(message)}
 
-        </p>
+        </div>
 
     `;
-
-
 
 
     chatMessages.appendChild(div);
 
 
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+}
+
+
+/* ==========================================
+        SHOW AI TYPING
+========================================== */
+
+function showTyping() {
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    removeTyping();
+
+
+    const div =
+        document.createElement("div");
+
+
+    div.className =
+        "bot-message";
+
+
+    div.id =
+        "aiTyping";
+
+
+    div.innerHTML = `
+
+        <i class="fa-solid fa-robot"></i>
+
+        <div class="message">
+
+            <span class="typing-text">
+
+                EventAI is thinking...
+
+            </span>
+
+        </div>
+
+    `;
+
+
+    chatMessages.appendChild(div);
+
 
     chatMessages.scrollTop =
-
         chatMessages.scrollHeight;
-
-
 }
 
 
-
-
-
-
-
 /* ==========================================
-            AI RESPONSE
+        REMOVE AI TYPING
 ========================================== */
 
+function removeTyping() {
 
-function getBotResponse(message){
-
-
-
-    const text =
-
-        message.toLowerCase();
-
-
-
-
-
-
-    const events = getEvents();
-
-
-
-    const tickets = getTickets();
-
-
-
-    const attendees = getAttendees();
-
-
-
-
-
-
-    /* ===============================
-            GREETING
-    =============================== */
-
-
-    if(
-
-        text.includes("hello")
-
-        ||
-
-        text.includes("hi")
-
-        ||
-
-        text.includes("hey")
-
-    ){
-
-
-        return (
-
-        "Hello "+currentUser.name+
-
-        " 👋 How can I help you today?"
-
+    const typing =
+        document.getElementById(
+            "aiTyping"
         );
 
 
-    }
+    if (typing) {
 
-
-
-
-
-
-
-    /* ===============================
-            AVAILABLE EVENTS
-    =============================== */
-
-
-    if(
-
-        text.includes("event")
-
-        &&
-
-        (
-
-        text.includes("available")
-
-        ||
-
-        text.includes("show")
-
-        ||
-
-        text.includes("list")
-
-        )
-
-    ){
-
-
-
-        if(events.length === 0){
-
-
-            return "Currently no events are available.";
-
-        }
-
-
-
-
-
-        let reply =
-
-        "Upcoming Events:<br><br>";
-
-
-
-
-
-        events.forEach((event,index)=>{
-
-
-            if(event.status !== "Completed"){
-
-
-                reply +=
-
-                `${index+1}. ${event.name}<br>
-                Date: ${event.date}<br>
-                Venue: ${event.venue}<br><br>`;
-
-
-            }
-
-
-        });
-
-
-
-
-
-        return reply;
-
+        typing.remove();
 
     }
-
-
-
-
-
-
-
-
-    /* ===============================
-            EVENT SEARCH
-    =============================== */
-
-
-    for(let event of events){
-
-
-
-        if(
-
-            text.includes(
-
-                event.name.toLowerCase()
-
-            )
-
-        ){
-
-
-
-            return `
-
-            Event Details:<br><br>
-
-            Name: ${event.name}<br>
-
-            Category: ${event.category}<br>
-
-            Date: ${event.date}<br>
-
-            Time: ${event.time}<br>
-
-            Venue: ${event.venue}<br>
-
-            Price: ₹${event.price}
-
-            `;
-
-
-        }
-
-
-    }
-
-
-
-
-
-
-
-
-    /* ===============================
-            MY TICKETS
-    =============================== */
-
-
-    if(
-
-        text.includes("ticket")
-
-        ||
-
-        text.includes("my ticket")
-
-    ){
-
-
-
-        const myTickets =
-
-        tickets.filter(ticket =>
-
-            ticket.email === currentUser.email
-
-        );
-
-
-
-
-
-        if(myTickets.length === 0){
-
-
-            return (
-
-            "You don't have any tickets yet. "+
-
-            "Register for an event to generate a ticket."
-
-            );
-
-
-        }
-
-
-
-
-
-
-        let reply =
-
-        "Your Tickets:<br><br>";
-
-
-
-
-
-        myTickets.forEach(ticket=>{
-
-
-            reply +=
-
-            `Ticket ID: ${ticket.ticketId}<br>
-             Event: ${ticket.eventName}<br>
-             Status: ${ticket.status}<br><br>`;
-
-
-        });
-
-
-
-
-
-        return reply;
-
-
-    }
-
-
-
-
-
-
-
-
-    /* ===============================
-            REGISTRATION
-    =============================== */
-
-
-    if(
-
-        text.includes("register")
-
-    ){
-
-
-        return (
-
-        "To register:<br><br>"+
-
-        "1. Go to Browse Events<br>"+
-
-        "2. Select an event<br>"+
-
-        "3. Click Register button<br>"+
-
-        "4. Your ticket will be generated"
-
-        );
-
-
-    }
-
-
-
-
-
-
-
-    /* ===============================
-            HELP
-    =============================== */
-
-
-    if(
-
-        text.includes("help")
-
-    ){
-
-
-        return (
-
-        "I can help you with:<br><br>"+
-
-        "• Available events<br>"+
-
-        "• Event details<br>"+
-
-        "• Registration<br>"+
-
-        "• My tickets"
-
-        );
-
-
-    }
-
-
-
-
-
-
-    return (
-
-    "Sorry, I couldn't understand that. "
-
-    +
-
-    "Try asking about events, tickets, or registration."
-
-    );
-
-
-
 }
+
+
 /* ==========================================
-            SEND MESSAGE
+        LOAD CURRENT USER
 ========================================== */
 
+async function loadCurrentUser() {
 
-function sendUserMessage(){
+    try {
+
+        currentUser =
+            await Api.me();
+
+
+        console.log(
+            "Current user:",
+            currentUser
+        );
+
+
+        if (loggedUserName) {
+
+            const fullName =
+
+                `${currentUser.first_name || ""} ` +
+                `${currentUser.last_name || ""}`;
+
+
+            loggedUserName.textContent =
+                fullName.trim() || "User";
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Could not load current user:",
+            error
+        );
+
+
+        if (loggedUserName) {
+
+            loggedUserName.textContent =
+                "User";
+
+        }
+    }
+}
+
+
+/* ==========================================
+        SEND MESSAGE TO BACKEND LLM
+========================================== */
+
+async function sendUserMessage() {
+
+    if (!userMessage) {
+        return;
+    }
 
 
     const message =
-
         userMessage.value.trim();
 
 
-
-
-    if(message === ""){
-
+    if (!message) {
         return;
-
     }
 
 
-
-
-
-    // USER MESSAGE
+    /* ======================================
+       DISPLAY USER MESSAGE
+    ====================================== */
 
     addMessage(
-
         message,
-
         "user"
-
     );
-
-
-
 
 
     userMessage.value = "";
 
 
+    /* ======================================
+       DISABLE SEND BUTTON
+    ====================================== */
 
+    if (sendMessage) {
 
-
-
-
-    // BOT RESPONSE DELAY
-
-
-    setTimeout(()=>{
-
-
-        const response =
-
-            getBotResponse(message);
-
-
-
-        addMessage(
-
-            response,
-
-            "bot"
-
-        );
-
-
-
-    },500);
-
-
-
-}
-
-
-
-
-
-
-
-
-/* ==========================================
-            SEND BUTTON CLICK
-========================================== */
-
-
-if(sendMessage){
-
-
-    sendMessage.addEventListener(
-
-        "click",
-
-        sendUserMessage
-
-    );
-
-
-}
-
-
-
-
-
-
-
-
-/* ==========================================
-            ENTER KEY SUPPORT
-========================================== */
-
-
-if(userMessage){
-
-
-    userMessage.addEventListener(
-
-        "keypress",
-
-        function(event){
-
-
-
-            if(event.key === "Enter"){
-
-
-                sendUserMessage();
-
-
-            }
-
-
-
-        }
-
-
-    );
-
-
-}
-
-
-
-
-
-
-
-
-/* ==========================================
-            INITIAL LOAD
-========================================== */
-
-
-document.addEventListener(
-
-"DOMContentLoaded",
-
-()=>{
-
-
-    const user =
-
-    document.getElementById(
-        "loggedUserName"
-    );
-
-
-
-    if(user){
-
-
-        user.textContent =
-
-        currentUser.name;
-
+        sendMessage.disabled = true;
 
     }
 
 
-});
+    /* ======================================
+       SHOW AI THINKING
+    ====================================== */
+
+    showTyping();
+
+
+    try {
+
+        console.log(
+            "User AI Question:",
+            message
+        );
+
+
+        /*
+         USER-SPECIFIC BACKEND ENDPOINT
+
+         POST /ai/chat/user
+
+         Backend determines current user
+         using JWT.
+
+         Frontend never sends user_id.
+        */
+
+        const response =
+            await Api.userChat(
+                message
+            );
+
+
+        console.log(
+            "User AI Response:",
+            response
+        );
+
+
+        removeTyping();
+
+
+        /* ==================================
+           VALIDATE RESPONSE
+        ================================== */
+
+        if (
+            !response ||
+            !response.answer
+        ) {
+
+            addMessage(
+                "I could not generate a response.",
+                "bot"
+            );
+
+            return;
+        }
+
+
+        /* ==================================
+           DISPLAY AI RESPONSE
+        ================================== */
+
+        addMessage(
+            response.answer,
+            "bot"
+        );
+
+
+    } catch (error) {
+
+        removeTyping();
+
+
+        console.error(
+            "User AI chatbot failed:",
+            error
+        );
+
+
+        addMessage(
+
+            error.message ||
+
+            "Unable to contact the EventAI assistant. Please try again.",
+
+            "bot"
+        );
+
+
+    } finally {
+
+
+        /* ==================================
+           ENABLE SEND BUTTON
+        ================================== */
+
+        if (sendMessage) {
+
+            sendMessage.disabled = false;
+
+        }
+
+
+        /* ==================================
+           RETURN FOCUS
+        ================================== */
+
+        if (userMessage) {
+
+            userMessage.focus();
+
+        }
+    }
+}
+
+/* ==========================================
+        SEND MESSAGE
+========================================== */
+
+async function sendUserMessage() {
+
+    if (!userMessage) {
+        return;
+    }
+
+    const question =
+        userMessage.value.trim();
+
+    if (!question) {
+        return;
+    }
+
+    // Show user's question
+    addMessage(
+        question,
+        "user"
+    );
+
+    // Clear input
+    userMessage.value = "";
+
+    // Disable send while processing
+    if (sendMessage) {
+        sendMessage.disabled = true;
+    }
+
+    showTyping();
+
+    try {
+
+        console.log(
+            "User AI Question:",
+            question
+        );
+
+        // New authenticated user AI endpoint
+        const response =
+            await Api.userChat(
+                question
+            );
+
+        console.log(
+            "User AI Response:",
+            response
+        );
+
+        removeTyping();
+
+        if (
+            !response ||
+            !response.answer
+        ) {
+
+            addMessage(
+                "I could not generate a response.",
+                "bot"
+            );
+
+            return;
+        }
+
+        addMessage(
+            response.answer,
+            "bot"
+        );
+
+    } catch (error) {
+
+        removeTyping();
+
+        console.error(
+            "EventAI chatbot error:",
+            error
+        );
+
+        addMessage(
+            error.message ||
+            "Unable to contact EventAI. Please try again.",
+            "bot"
+        );
+
+    } finally {
+
+        if (sendMessage) {
+            sendMessage.disabled = false;
+        }
+
+        if (userMessage) {
+            userMessage.focus();
+        }
+    }
+}
+
+
+/* ==========================================
+        SEND BUTTON
+========================================== */
+
+if (sendMessage) {
+
+    sendMessage.addEventListener(
+        "click",
+        sendUserMessage
+    );
+}
+
+
+/* ==========================================
+        ENTER KEY
+========================================== */
+
+if (userMessage) {
+
+    userMessage.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendUserMessage();
+
+            }
+        }
+    );
+}
+
+
+/* ==========================================
+        INITIALIZE
+========================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        await loadCurrentUser();
+
+
+        if (userMessage) {
+
+            userMessage.focus();
+
+        }
+    }
+);
+
+
+/* ==========================================
+        GLOBAL
+========================================== */
+
+window.sendUserMessage =
+    sendUserMessage;

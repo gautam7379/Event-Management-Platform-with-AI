@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from backend.models.registration import Registration
 
 from backend.crud.event import (
     create_event,
@@ -180,17 +181,18 @@ def update_existing_event(
         event=event,
     )
 
+
 def delete_existing_event(
     db: Session,
     event_id: int,
 ) -> None:
     """
-    Delete an existing event.
+    Safely delete an event.
+
+    An event with registrations cannot be
+    permanently deleted.
     """
 
-    # -----------------------------
-    # Event Validation
-    # -----------------------------
     db_event = get_event_by_id(
         db,
         event_id,
@@ -201,9 +203,21 @@ def delete_existing_event(
             "Event not found."
         )
 
-    # -----------------------------
-    # Delete Event
-    # -----------------------------
+    registration_exists = (
+        db.query(Registration.id)
+        .filter(
+            Registration.event_id == event_id
+        )
+        .first()
+    )
+
+    if registration_exists:
+        raise ValueError(
+            "This event cannot be deleted because "
+            "users have already registered for it. "
+            "Cancel the event instead."
+        )
+
     delete_event(
         db=db,
         db_event=db_event,

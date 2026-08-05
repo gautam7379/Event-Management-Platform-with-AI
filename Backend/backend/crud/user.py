@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from backend.models.user import User
-from backend.schemas.user import UserRegister
+from backend.schemas.user import UserRegister, UserUpdate
 
 
 def get_user_by_email(
@@ -47,6 +47,27 @@ def create_user(
     )
 
     db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
+
+def update_user(
+    db: Session,
+    db_user: User,
+    user: UserUpdate,
+) -> User:
+    """
+    Update user profile information.
+    """
+
+    update_data = user.model_dump(
+        exclude_unset=True
+    )
+
+    for key, value in update_data.items():
+        setattr(db_user, key, value)
+
     db.commit()
     db.refresh(db_user)
 

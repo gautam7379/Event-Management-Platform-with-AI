@@ -1,182 +1,1294 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Event | EventAI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/create-event.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Event | EventAI</title>
+
+    <!-- Main project styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+
+    <!-- Create Event page styles -->
+    <link rel="stylesheet" href="css/create-event.css">
+
+    <!-- Responsive styles -->
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    >
 </head>
-<body>
 
-<div class="app">
 
-  <!-- ============ SIDEBAR ============ -->
-  <aside class="sidebar">
-    <div class="brand">
-      <i class="fa-solid fa-calendar-check"></i>
-      <span>EventAI</span>
-    </div>
+<body class="create-event-page">
 
-    <nav class="nav">
-      <a href="dashboard.html"><i class="fa-solid fa-house"></i> Dashboard</a>
-      <a href="events.html" class="active"><i class="fa-solid fa-calendar-days"></i> Events</a>
-      <a href="attendees.html"><i class="fa-solid fa-users"></i> Attendees</a>
-      <a href="tickets.html"><i class="fa-solid fa-ticket"></i> Tickets</a>
-      <a href="vendors.html"><i class="fa-solid fa-store"></i> Vendors</a>
-      <a href="speakers.html"><i class="fa-solid fa-microphone"></i> Speakers</a>
-      <a href="sponsors.html"><i class="fa-solid fa-handshake"></i> Sponsors</a>
-      <a href="analytics.html"><i class="fa-solid fa-chart-line"></i> Analytics</a>
-      <a href="chatbot.html"><i class="fa-solid fa-robot"></i> AI Chatbot</a>
-      <a href="profile.html"><i class="fa-solid fa-user"></i> Profile</a>
-    </nav>
-  </aside>
+<div class="dashboard">
 
-  <!-- ============ MAIN ============ -->
-  <main class="main">
 
-    <div class="topbar">
-      <div>
-        <h1><i class="fa-solid fa-calendar-plus"></i> Create Event</h1>
-        <p>Add a new event to your dashboard.</p>
-      </div>
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
 
-      <div class="admin">
-        <i class="fa-solid fa-circle-user"></i>
-        <span>Administrator</span>
-      </div>
-    </div>
+    <aside class="sidebar">
 
-    <div class="content-grid">
+        <div class="logo">
 
-      <!-- ============ FORM CARD ============ -->
-      <form id="createForm" class="card form-card" novalidate>
+            <i class="fa-solid fa-calendar-check"></i>
 
-        <fieldset>
-          <legend>Required details</legend>
+            <h2>
+                EventAI
+            </h2>
 
-          <div class="field">
-            <label for="name">Event name <span class="req">*</span></label>
-            <input type="text" id="name" name="name" required placeholder="e.g. AI Summit 2026" autocomplete="off">
-            <small class="error" id="err-name"></small>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label for="date">Date <span class="req">*</span></label>
-              <input type="date" id="date" name="date" required>
-              <small class="error" id="err-date"></small>
-            </div>
-
-            <div class="field">
-              <label for="venue">Venue <span class="req">*</span></label>
-              <input type="text" id="venue" name="venue" required placeholder="e.g. Hyderabad">
-              <small class="error" id="err-venue"></small>
-            </div>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>Optional details <span class="legend-note">add now or edit later</span></legend>
-
-          <div class="field-row">
-            <div class="field">
-              <label for="category">Category</label>
-              <input type="text" id="category" name="category" placeholder="Defaults to “General”">
-            </div>
-
-            <div class="field">
-              <label for="time">Time</label>
-              <input type="time" id="time" name="time" placeholder="Defaults to 10:00">
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field">
-              <label for="price">Ticket price (₹)</label>
-              <input type="number" id="price" name="price" min="0" placeholder="Defaults to Free">
-            </div>
-
-            <div class="field">
-              <label for="capacity">Capacity</label>
-              <input type="number" id="capacity" name="capacity" min="0" placeholder="Defaults to 100">
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="banner">Banner image URL</label>
-            <input type="url" id="banner" name="banner" placeholder="Defaults to a placeholder image">
-          </div>
-
-          <div class="field">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="3" placeholder="Defaults to “Details coming soon.”"></textarea>
-          </div>
-        </fieldset>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
-          <button type="submit" class="btn-primary"><i class="fa-solid fa-plus"></i> Create Event</button>
         </div>
 
-      </form>
 
-      <!-- ============ LIVE PREVIEW CARD ============ -->
-      <aside class="card preview-card" aria-label="Live event preview">
-        <p class="preview-label">Preview</p>
+        <ul>
 
-        <div class="preview-banner" id="previewThumb">
-          <i class="fa-solid fa-image"></i>
+            <li>
+
+                <a href="dashboard.html">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    Dashboard
+
+                </a>
+
+            </li>
+
+
+            <li class="active">
+
+                <a href="events.html">
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                    Events
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="attendees.html">
+
+                    <i class="fa-solid fa-users"></i>
+
+                    Attendees
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="tickets.html">
+
+                    <i class="fa-solid fa-ticket"></i>
+
+                    Tickets
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="vendors.html">
+
+                    <i class="fa-solid fa-store"></i>
+
+                    Vendors
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="speakers.html">
+
+                    <i class="fa-solid fa-microphone"></i>
+
+                    Speakers
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="sponsors.html">
+
+                    <i class="fa-solid fa-handshake"></i>
+
+                    Sponsors
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="analytics.html">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                    Analytics
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="chatbot.html">
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    AI Chatbot
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="profile.html">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    Profile
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="#" id="logoutBtn">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    Logout
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </aside>
+
+
+
+    <!-- =====================================================
+         MAIN CONTENT
+    ====================================================== -->
+
+    <main class="main-content">
+
+
+        <!-- =================================================
+             TOPBAR
+        ================================================== -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>
+
+                    <i class="fa-solid fa-calendar-plus"></i>
+
+                    Create Event
+
+                </h1>
+
+
+                <p class="page-description">
+
+                    Create and configure a new event.
+
+                </p>
+
+            </div>
+
+
+            <div class="user">
+
+                <i class="fa-solid fa-circle-user"></i>
+
+                <span id="loggedUserName">
+                    Administrator
+                </span>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =================================================
+             CREATE EVENT LAYOUT
+        ================================================== -->
+
+        <div class="create-event-layout">
+
+
+            <!-- =================================================
+                 EVENT FORM
+            ================================================== -->
+
+            <form
+                id="createForm"
+                class="event-form-card"
+                novalidate
+            >
+
+
+                <!-- =============================================
+                     BASIC EVENT DETAILS
+                ============================================== -->
+
+                <section class="form-section">
+
+
+                    <div class="form-section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-calendar-days"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2>
+                                Event Details
+                            </h2>
+
+                            <p>
+                                Enter the basic information about your event.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-section-body">
+
+
+                        <!-- EVENT NAME -->
+
+                        <div class="field field-full">
+
+                            <label for="name">
+
+                                Event Name
+
+                                <span class="required">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                required
+                                autocomplete="off"
+                                placeholder="e.g. AI Summit 2026"
+                            >
+
+
+                            <small
+                                class="error"
+                                id="err-name"
+                            ></small>
+
+                        </div>
+
+
+
+                        <div class="form-grid">
+
+
+                            <!-- DATE -->
+
+                            <div class="field">
+
+                                <label for="date">
+
+                                    Event Date
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="date"
+                                    id="date"
+                                    name="date"
+                                    required
+                                >
+
+
+                                <small
+                                    class="error"
+                                    id="err-date"
+                                ></small>
+
+                            </div>
+
+
+
+                            <!-- TIME -->
+
+                            <div class="field">
+
+                                <label for="time">
+
+                                    Event Time
+
+                                </label>
+
+
+                                <input
+                                    type="time"
+                                    id="time"
+                                    name="time"
+                                >
+
+
+                                <small class="field-help">
+
+                                    Defaults to 10:00 if not specified.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- CATEGORY -->
+
+                        <div class="field field-full">
+
+                            <label for="category">
+
+                                Event Category
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                id="category"
+                                name="category"
+                                placeholder="e.g. Technology, Workshop, Conference"
+                            >
+
+
+                            <small class="field-help">
+
+                                Defaults to General.
+
+                            </small>
+
+                        </div>
+
+
+
+                        <!-- DESCRIPTION -->
+
+                        <div class="field field-full">
+
+                            <label for="description">
+
+                                Description
+
+                            </label>
+
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="5"
+                                placeholder="Describe your event..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =============================================
+                     VENUE DETAILS
+                ============================================== -->
+
+                <section class="form-section">
+
+
+                    <div class="form-section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2>
+                                Venue Details
+                            </h2>
+
+                            <p>
+                                Enter the location and contact information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-section-body">
+
+
+                        <!-- VENUE NAME -->
+
+                        <div class="field field-full">
+
+                            <label for="venue">
+
+                                Venue Name
+
+                                <span class="required">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                id="venue"
+                                name="venue"
+                                required
+                                maxlength="255"
+                                placeholder="e.g. HITEX Exhibition Center"
+                            >
+
+                        </div>
+
+
+
+                        <!-- CITY + STATE -->
+
+                        <div class="form-grid">
+
+
+                            <div class="field">
+
+                                <label for="venueCity">
+
+                                    City
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="venueCity"
+                                    required
+                                    maxlength="100"
+                                    placeholder="e.g. Hyderabad"
+                                >
+
+                            </div>
+
+
+
+                            <div class="field">
+
+                                <label for="venueState">
+
+                                    State
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="venueState"
+                                    required
+                                    maxlength="100"
+                                    placeholder="e.g. Telangana"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- ADDRESS -->
+
+                        <div class="field field-full">
+
+                            <label for="venueAddress">
+
+                                Address
+
+                                <span class="required">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                id="venueAddress"
+                                required
+                                placeholder="e.g. HITEX Road, Izzathnagar"
+                            >
+
+                        </div>
+
+
+
+                        <!-- COUNTRY + POSTAL -->
+
+                        <div class="form-grid">
+
+
+                            <div class="field">
+
+                                <label for="venueCountry">
+
+                                    Country
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="venueCountry"
+                                    required
+                                    maxlength="100"
+                                    value="India"
+                                >
+
+                            </div>
+
+
+
+                            <div class="field">
+
+                                <label for="venuePostalCode">
+
+                                    Postal Code
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="venuePostalCode"
+                                    required
+                                    maxlength="20"
+                                    placeholder="e.g. 500084"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- CONTACT PERSON + PHONE -->
+
+                        <div class="form-grid">
+
+
+                            <div class="field">
+
+                                <label for="venueContactPerson">
+
+                                    Contact Person
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="text"
+                                    id="venueContactPerson"
+                                    required
+                                    maxlength="100"
+                                    placeholder="e.g. Rahul Sharma"
+                                >
+
+                            </div>
+
+
+
+                            <div class="field">
+
+                                <label for="venuePhone">
+
+                                    Contact Phone
+
+                                    <span class="required">*</span>
+
+                                </label>
+
+
+                                <input
+                                    type="tel"
+                                    id="venuePhone"
+                                    required
+                                    maxlength="20"
+                                    placeholder="e.g. 9876543210"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =============================================
+                     CAPACITY & TICKETING
+                ============================================== -->
+
+                <section class="form-section">
+
+
+                    <div class="form-section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-ticket"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2>
+                                Capacity & Ticketing
+                            </h2>
+
+                            <p>
+                                Configure attendee capacity and ticket price.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-section-body">
+
+
+                        <div class="form-grid">
+
+
+                            <!-- PRICE -->
+
+                            <div class="field">
+
+                                <label for="price">
+
+                                    Ticket Price (₹)
+
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    id="price"
+                                    name="price"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0"
+                                >
+
+
+                                <small class="field-help">
+
+                                    Enter 0 for a free event.
+
+                                </small>
+
+                            </div>
+
+
+
+                            <!-- CAPACITY -->
+
+                            <div class="field">
+
+                                <label for="capacity">
+
+                                    Event Capacity
+
+                                </label>
+
+
+                                <input
+                                    type="number"
+                                    id="capacity"
+                                    name="capacity"
+                                    min="1"
+                                    placeholder="100"
+                                >
+
+
+                                <small class="field-help">
+
+                                    Maximum number of attendees.
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =============================================
+                     EVENT BANNER
+                ============================================== -->
+
+                <section class="form-section">
+
+
+                    <div class="form-section-header">
+
+                        <div class="section-icon">
+
+                            <i class="fa-solid fa-image"></i>
+
+                        </div>
+
+
+                        <div>
+
+                            <h2>
+                                Event Banner
+                            </h2>
+
+                            <p>
+                                Add an image URL for the event banner.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-section-body">
+
+
+                        <div class="field field-full">
+
+                            <label for="banner">
+
+                                Banner Image URL
+
+                            </label>
+
+
+                            <input
+                                type="url"
+                                id="banner"
+                                name="banner"
+                                placeholder="https://example.com/event-banner.jpg"
+                            >
+
+
+                            <small class="field-help">
+
+                                Paste a direct URL to your event image.
+
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =============================================
+                     ACTION BUTTONS
+                ============================================== -->
+
+                <div class="form-actions">
+
+
+                    <button
+                        type="button"
+                        class="btn-secondary"
+                        onclick="window.history.back()"
+                    >
+
+                        <i class="fa-solid fa-arrow-left"></i>
+
+                        Cancel
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn-primary"
+                    >
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Create Event
+
+                    </button>
+
+                </div>
+
+
+            </form>
+
+
+
+            <!-- =================================================
+                 LIVE PREVIEW
+            ================================================== -->
+
+            <aside
+                class="event-preview-card"
+                aria-label="Live event preview"
+            >
+
+
+                <div class="preview-header">
+
+
+                    <div>
+
+                        <p class="preview-label">
+
+                            LIVE PREVIEW
+
+                        </p>
+
+
+                        <h2>
+
+                            Event Preview
+
+                        </h2>
+
+                    </div>
+
+
+                    <i class="fa-solid fa-eye"></i>
+
+                </div>
+
+
+
+                <!-- BANNER -->
+
+                <div
+                    class="preview-banner"
+                    id="previewThumb"
+                >
+
+                    <i class="fa-solid fa-image"></i>
+
+                    <span>
+                        Event Banner
+                    </span>
+
+                </div>
+
+
+
+                <div class="preview-content">
+
+
+                    <!-- TITLE -->
+
+                    <div class="preview-title-row">
+
+
+                        <h3 id="previewName">
+
+                            Your event name
+
+                        </h3>
+
+
+                        <span
+                            class="badge upcoming"
+                            id="previewStamp"
+                        >
+
+                            Upcoming
+
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- CATEGORY -->
+
+                    <p
+                        class="preview-category"
+                        id="previewCategory"
+                    >
+
+                        General
+
+                    </p>
+
+
+
+                    <!-- EVENT INFORMATION -->
+
+                    <div class="preview-info">
+
+
+                        <!-- DATE -->
+
+                        <div class="preview-info-row">
+
+
+                            <div class="preview-icon">
+
+                                <i class="fa-solid fa-calendar-day"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="preview-info-label">
+
+                                    Date & Time
+
+                                </span>
+
+
+                                <div>
+
+                                    <span id="previewDate">
+                                        —
+                                    </span>
+
+
+                                    <span class="preview-dot">
+                                        •
+                                    </span>
+
+
+                                    <span id="previewTime">
+                                        10:00
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- VENUE -->
+
+                        <div class="preview-info-row">
+
+
+                            <div class="preview-icon">
+
+                                <i class="fa-solid fa-location-dot"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <span class="preview-info-label">
+
+                                    Venue
+
+                                </span>
+
+
+                                <div id="previewVenue">
+
+                                    —
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- STATISTICS -->
+
+                    <div class="preview-statistics">
+
+
+                        <!-- PRICE -->
+
+                        <div class="preview-stat">
+
+
+                            <div class="preview-stat-icon">
+
+                                <i class="fa-solid fa-indian-rupee-sign"></i>
+
+                            </div>
+
+
+                            <span class="stat-label">
+
+                                Price
+
+                            </span>
+
+
+                            <span
+                                class="stat-value"
+                                id="previewPrice"
+                            >
+
+                                Free
+
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- CAPACITY -->
+
+                        <div class="preview-stat">
+
+
+                            <div class="preview-stat-icon">
+
+                                <i class="fa-solid fa-users"></i>
+
+                            </div>
+
+
+                            <span class="stat-label">
+
+                                Capacity
+
+                            </span>
+
+
+                            <span
+                                class="stat-value"
+                                id="previewSeats"
+                            >
+
+                                100
+
+                            </span>
+
+                        </div>
+
+
+
+                        <!-- EVENT ID -->
+
+                        <div class="preview-stat">
+
+
+                            <div class="preview-stat-icon">
+
+                                <i class="fa-solid fa-hashtag"></i>
+
+                            </div>
+
+
+                            <span class="stat-label">
+
+                                Event ID
+
+                            </span>
+
+
+                            <span
+                                class="stat-value"
+                                id="previewId"
+                            >
+
+                                New
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="preview-note">
+
+                        <i class="fa-solid fa-circle-info"></i>
+
+                        <span>
+
+                            Preview updates automatically as you complete
+                            the event form.
+
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </aside>
+
+
         </div>
 
-        <div class="preview-body">
-          <div class="preview-top">
-            <h3 id="previewName">Your event name</h3>
-            <span class="badge upcoming" id="previewStamp">Upcoming</span>
-          </div>
-
-          <p class="preview-category" id="previewCategory">General</p>
-
-          <div class="preview-row">
-            <i class="fa-solid fa-calendar-day"></i>
-            <span id="previewDate">—</span>
-            <span class="dot">•</span>
-            <span id="previewTime">10:00</span>
-          </div>
-
-          <div class="preview-row">
-            <i class="fa-solid fa-location-dot"></i>
-            <span id="previewVenue">—</span>
-          </div>
-
-          <div class="preview-stats">
-            <div>
-              <span class="stat-label">Price</span>
-              <span class="stat-value" id="previewPrice">Free</span>
-            </div>
-            <div>
-              <span class="stat-label">Capacity</span>
-              <span class="stat-value" id="previewSeats">100</span>
-            </div>
-            <div>
-              <span class="stat-label">Event ID</span>
-              <span class="stat-value" id="previewId">#1</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-    </div>
-
-  </main>
+    </main>
 
 </div>
 
-<div id="toast" class="toast"></div>
+
+
+<!-- =====================================================
+     TOAST
+====================================================== -->
+
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+<script src="js/auth.js"></script>
+
+<script src="js/api.js"></script>
 
 <script src="js/create-event.js"></script>
+
+
+<script>
+
+    const loggedUserName =
+        document.getElementById("loggedUserName");
+
+
+    if (loggedUserName) {
+
+        loggedUserName.textContent =
+            localStorage.getItem("userName")
+            || "Administrator";
+
+    }
+
+
+    const logoutBtn =
+        document.getElementById("logoutBtn");
+
+
+    if (logoutBtn) {
+
+        logoutBtn.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                if (
+                    typeof logout === "function"
+                ) {
+
+                    logout();
+
+                }
+
+            }
+        );
+
+    }
+
+</script>
+
+
 </body>
+
 </html>

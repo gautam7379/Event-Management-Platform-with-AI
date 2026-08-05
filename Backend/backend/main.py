@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from backend.core.config import settings
 import backend.models
+from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes.auth import router as auth_router
 from backend.api.routes.admin import router as admin_router
 from backend.api.routes.event import router as event_router
@@ -18,6 +19,7 @@ from backend.api.routes.ai import router as ai_router
 from backend.api.routes.ai_dashboard import router as ai_dashboard_router
 from backend.api.routes.ai_budget import router as ai_budget_router
 from backend.api.routes.ai_success import router as ai_success_router
+from backend.api.routes.event_speaker import router as event_speaker_router
 from backend.api.routes.attendance_prediction import (
     router as attendance_prediction_router,
 )
@@ -40,7 +42,9 @@ from backend.api.routes.ai_analytics import router as ai_analytics_router
 from backend.api.routes.ai_chat import (
     router as ai_chat_router,
 )
-
+from backend.api.routes.event_sponsor import (
+    router as event_sponsor_router,
+)
 
 from backend.api.routes.dashboard_analytics import (
     router as dashboard_analytics_router,
@@ -64,11 +68,26 @@ from backend.core.exception_handler import (
     global_exception_handler,
 )
 
+from backend.api.routes.event_vendor import (
+    router as event_vendor_router,
+)
+
 
 
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.add_exception_handler(
@@ -105,6 +124,9 @@ app.include_router(dashboard_analytics_router)
 app.include_router(dashboard_chart_router)
 app.include_router(health_router)
 app.include_router(info_router)
+app.include_router(event_vendor_router)
+app.include_router(event_speaker_router)
+app.include_router(event_sponsor_router)
 app.add_exception_handler(
     Exception,
     global_exception_handler,

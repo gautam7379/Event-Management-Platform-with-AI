@@ -21,7 +21,7 @@
 
 </head>
 
-<body>
+<body class="events-page">
 
 <div class="dashboard">
 
@@ -247,18 +247,9 @@
 
         <section class="recent-events">
 
-            <div
-                style="display:flex;
-                justify-content:space-between;
-                align-items:center;
-                flex-wrap:wrap;
-                gap:20px;
-                margin-bottom:25px;">
+            <div class="event-toolbar">
 
-                <div
-                    style="display:flex;
-                    gap:15px;
-                    flex-wrap:wrap;">
+                <div class="event-filters">
 
                     <input
                         type="text"
@@ -277,7 +268,7 @@
                         </option>
 
                         <option value="Open">
-                            Open
+                            Ongoing
                         </option>
 
                         <option value="Completed">
@@ -326,7 +317,7 @@
                             <th>Status</th>
 
                             <th>Actions</th>
-                            <th>Register</th>
+                            
 
                         </tr>
 
@@ -335,11 +326,11 @@
                     <tbody id="eventTable">
 <!-- Events will be loaded dynamically using JavaScript -->
 
-</tbody>
 
-</table>
+                </table>
 
-</div>
+            
+            </div>
 
 <!-- Empty State -->
 
@@ -466,9 +457,7 @@
             <div class="input-group">
 
                 <label>
-
-                    Date
-
+                    Start Date
                 </label>
 
                 <input
@@ -481,9 +470,20 @@
             <div class="input-group">
 
                 <label>
+                    End Date
+                </label>
 
-                    Time
+                <input
+                    type="date"
+                    id="editEndDate"
+                    required>
 
+            </div>
+
+            <div class="input-group">
+
+                <label>
+                    Start Time
                 </label>
 
                 <input
@@ -496,17 +496,35 @@
             <div class="input-group">
 
                 <label>
-
-                    Venue
-
+                    End Time
                 </label>
 
-                <input
-                    type="text"
+    <input
+        type="time"
+        id="editEndTime"
+        required>
+
+</div>
+
+            <div class="input-group">
+
+                <label>
+                    Venue
+                </label>
+
+                <select
                     id="editVenue"
                     required>
 
+                    <option value="">
+                        Select Venue
+                    </option>
+
+                </select>
+
             </div>
+
+
 
             <div class="input-group">
 
@@ -548,25 +566,36 @@
 
                 <select id="editStatus">
 
-                    <option value="Upcoming">
-
-                        Upcoming
-
+                    <option value="Draft">
+                        Draft
                     </option>
 
-                    <option value="Open">
+                    <option value="Published">
+                        Published
+                    </option>
 
-                        Open
-
+                    <option value="Cancelled">
+                        Cancelled
                     </option>
 
                     <option value="Completed">
-
                         Completed
-
                     </option>
 
                 </select>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+                    Agenda
+                </label>
+
+                <textarea
+                    id="editAgenda"
+                    rows="4"
+                    placeholder="Enter event agenda"></textarea>
 
             </div>
 
@@ -581,6 +610,43 @@
                 <textarea
                     id="editDescription"
                     rows="4"></textarea>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label>
+                    Banner Image
+                </label>
+
+                <input
+                    type="text"
+                    id="editBannerImage"
+                    placeholder="Enter image URL or image path">
+
+                <small>
+                    Update the banner image URL/path,
+                    or leave unchanged to keep the current image.
+                </small>
+
+                <div
+                    id="editBannerPreviewContainer"
+                    style="margin-top:12px;display:none;">
+
+                    <img
+                        id="editBannerPreview"
+                        src=""
+                        alt="Event Banner"
+                        style="
+                            width:100%;
+                            max-width:350px;
+                            height:180px;
+                            object-fit:cover;
+                            border-radius:10px;
+                        ">
+
+                </div>
 
             </div>
 
@@ -605,6 +671,7 @@
 
 <!-- ================= JAVASCRIPT ================= -->
 
+<script src="js/api.js"></script>
 <script src="js/events.js"></script>
 
 <script>

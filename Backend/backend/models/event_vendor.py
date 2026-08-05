@@ -8,7 +8,10 @@ from backend.models.base import TimestampMixin
 class EventVendor(Base, TimestampMixin):
     __tablename__ = "event_vendors"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True
+    )
 
     event_id: Mapped[int] = mapped_column(
         ForeignKey("events.id"),

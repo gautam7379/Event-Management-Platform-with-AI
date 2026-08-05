@@ -1,680 +1,691 @@
-/* ==========================================
-            EVENTAI VENDORS
-========================================== */
+// ======================================================
+// Vendor Management
+// Database-backed Event ↔ Vendor assignment
+// ======================================================
 
-/* ==========================================
-            LOCAL STORAGE
-========================================== */
+let vendors = [];
+let events = [];
+let assignments = [];
+let editing = null;
 
-function getVendors() {
+const $ = id => document.getElementById(id);
 
-    return JSON.parse(
 
-        localStorage.getItem("vendors")
+// ======================================================
+// LOAD EVENTS
+// ======================================================
 
-    ) || [];
+async function loadEvents() {
 
-}
+    events = await Api.events.list();
 
-function saveVendors(vendors) {
-
-    localStorage.setItem(
-
-        "vendors",
-
-        JSON.stringify(vendors)
-
-    );
-
-}
-
-function getEvents() {
-
-    return JSON.parse(
-
-        localStorage.getItem("events")
-
-    ) || [];
-
-}
-
-/* ==========================================
-            CURRENT USER
-========================================== */
-
-const currentUser = {
-
-    name:
-
-        localStorage.getItem("userName") ||
-
-        "Administrator",
-
-    role:
-
-        localStorage.getItem("userRole") ||
-
-        "admin"
-
-};
-
-/* ==========================================
-            EDIT MODE
-========================================== */
-
-let editingVendorIndex = -1;
-
-/* ==========================================
-            LOAD EVENTS
-========================================== */
-
-function loadEvents() {
-
-    const select = document.getElementById("vendorEvent");
+    const select = $("vendorEvent");
 
     if (!select) return;
 
-    const events = getEvents();
-
     select.innerHTML =
-
-        `<option value="">Select Event</option>`;
-
-    events.forEach(event => {
-
-        select.innerHTML += `
-
-            <option value="${event.name}">
-
-                ${event.name}
-
+        `<option value="">Select Event</option>` +
+        events.map(event => `
+            <option value="${event.id}">
+                ${event.event_name}
             </option>
-
-        `;
-
-    });
-
+        `).join("");
 }
 
-/* ==========================================
-            SECURITY
-========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
+// ======================================================
+// LOAD EVENT-VENDOR ASSIGNMENTS
+// ======================================================
 
-    if (currentUser.role !== "admin") {
+async function loadAssignments() {
 
-        window.location.href = "user-dashboard.html";
+    assignments = await Api.eventVendors.list();
+}
 
-        return;
 
-    }
+// ======================================================
+// GET EVENT NAMES FOR VENDOR
+// ======================================================
 
-    document.getElementById("loggedUserName").textContent =
+function getVendorEventNames(vendorId) {
 
-        currentUser.name;
+    const vendorAssignments =
+        assignments.filter(
+            assignment =>
+                Number(assignment.vendor_id) === Number(vendorId)
+        );
 
-    loadEvents();
+    const names =
+        vendorAssignments
+            .map(assignment => {
 
-    refreshPage();
+                const event =
+                    events.find(
+                        event =>
+                            Number(event.id) ===
+                            Number(assignment.event_id)
+                    );
 
-});
+                return event
+                    ? event.event_name
+                    : null;
+            })
+            .filter(Boolean);
 
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
+    return names.length
+        ? names.join(", ")
+        : "—";
+}
 
-function loadStatistics() {
 
-    const vendors = getVendors();
+// ======================================================
+// REFRESH
+// ======================================================
 
-    document.getElementById("totalVendors").textContent =
+async function refresh() {
 
+    [
+        vendors,
+        events,
+        assignments
+    ] = await Promise.all([
+        Api.vendors.list(),
+        Api.events.list(),
+        Api.eventVendors.list()
+    ]);
+
+    $("totalVendors").textContent =
         vendors.length;
 
-    document.getElementById("activeVendors").textContent =
-
+    $("activeVendors").textContent =
         vendors.filter(
-
             vendor => vendor.status === "Active"
-
         ).length;
 
-    const categories = [
-
-        ...new Set(
-
+    $("serviceCategories").textContent =
+        new Set(
             vendors.map(
-
-                vendor => vendor.category
-
+                vendor => vendor.vendor_type
             )
+        ).size;
 
-        )
-
-    ];
-
-    document.getElementById("serviceCategories").textContent =
-
-        categories.length;
-
-    let totalBudget = 0;
-
-    vendors.forEach(vendor => {
-
-        totalBudget += Number(vendor.budget || 0);
-
-    });
-
-    document.getElementById("vendorBudget").textContent =
-
+    $("vendorBudget").textContent =
         "₹" +
+        vendors.reduce(
+            (total, vendor) =>
+                total + Number(vendor.cost || 0),
+            0
+        ).toLocaleString("en-IN");
 
-        totalBudget.toLocaleString("en-IN");
-
+    render(vendors);
 }
-/* ==========================================
-            LOAD VENDORS
-========================================== */
 
-function loadVendors(filteredVendors = null) {
 
-    const table = document.getElementById("vendorTable");
+// ======================================================
+// RENDER TABLE
+// ======================================================
+
+function render(list) {
+
+    const table = $("vendorTable");
 
     if (!table) return;
 
-    const vendors = filteredVendors || getVendors();
-
-    table.innerHTML = "";
-
-    if (vendors.length === 0) {
+    if (!list.length) {
 
         table.innerHTML = `
-
-        <tr>
-
-            <td colspan="9" style="text-align:center;padding:20px;">
-
-                No vendors available.
-
-            </td>
-
-        </tr>
-
+            <tr>
+                <td colspan="9">
+                    No vendors available.
+                </td>
+            </tr>
         `;
-
-        loadTopVendors([]);
 
         return;
-
     }
 
-    let html = "";
 
-    vendors.forEach((vendor, index) => {
+    table.innerHTML =
+        list.map(vendor => {
 
-        html += `
+            const eventNames =
+                getVendorEventNames(vendor.id);
 
-        <tr>
+            return `
+                <tr>
 
-            <td>${vendor.id}</td>
+                    <td>
+                        ${vendor.id}
+                    </td>
 
-            <td>${vendor.name}</td>
+                    <td>
+                        ${vendor.vendor_name}
+                    </td>
 
-            <td>${vendor.category}</td>
+                    <td>
+                        ${vendor.vendor_type}
+                    </td>
 
-            <td>${vendor.event || "-"}</td>
+                    <td>
+                        ${eventNames}
+                    </td>
 
-            <td>${vendor.contact}</td>
+                    <td>
+                        ${vendor.contact_person || "-"}
+                    </td>
 
-            <td>${vendor.phone}</td>
+                    <td>
+                        ${vendor.phone || "-"}
+                    </td>
 
-            <td>₹${Number(vendor.budget).toLocaleString("en-IN")}</td>
+                    <td>
+                        ₹${Number(
+                            vendor.cost || 0
+                        ).toLocaleString("en-IN")}
+                    </td>
 
-            <td>
+                    <td>
+                        ${vendor.status}
+                    </td>
 
-                <span class="badge ${vendor.status === "Active" ? "active" : "inactive"}">
+                    <td>
 
-                    ${vendor.status}
+                        <button
+                            type="button"
+                            onclick="editVendor(${vendor.id})"
+                        >
+                            Edit
+                        </button>
 
-                </span>
+                        <button
+                            type="button"
+                            onclick="deleteVendor(${vendor.id})"
+                        >
+                            Delete
+                        </button>
 
-            </td>
+                    </td>
 
-            <td>
-
-                <div class="action-buttons">
-
-                    <button
-
-                        class="edit-btn"
-
-                        onclick="editVendor('${vendor.id}')">
-
-                        <i class="fa-solid fa-pen"></i>
-
-                    </button>
-
-                    <button
-
-                        class="delete-btn"
-
-                        onclick="deleteVendor('${vendor.id}')">
-
-                        <i class="fa-solid fa-trash"></i>
-
-                    </button>
-
-                </div>
-
-            </td>
-
-        </tr>
-
-        `;
-
-    });
-
-    table.innerHTML = html;
-
-    loadTopVendors(vendors);
-
+                </tr>
+            `;
+        }).join("");
 }
 
-/* ==========================================
-            ADD / UPDATE VENDOR
-========================================== */
 
-const vendorForm = document.getElementById("vendorForm");
+// ======================================================
+// EDIT VENDOR
+// ======================================================
 
-if (vendorForm) {
+window.editVendor = id => {
 
-    vendorForm.addEventListener("submit", function (e) {
+    const vendor =
+        vendors.find(
+            vendor =>
+                Number(vendor.id) === Number(id)
+        );
 
-        e.preventDefault();
+    if (!vendor) return;
 
-        const vendors = getVendors();
+    editing = id;
 
-        const vendor = {
+    $("vendorName").value =
+        vendor.vendor_name;
 
-            id: editingVendorIndex === -1
-                ? "VEN" + Date.now()
-                : vendors[editingVendorIndex].id,
+    $("vendorCategory").value =
+        vendor.vendor_type;
 
-            name: document.getElementById("vendorName").value.trim(),
+    $("vendorContact").value =
+        vendor.contact_person || "";
 
-            category: document.getElementById("vendorCategory").value,
+    $("vendorPhone").value =
+        vendor.phone || "";
 
-            event: document.getElementById("vendorEvent").value,
+    $("vendorEmail").value =
+        vendor.email || "";
 
-            contact: document.getElementById("vendorContact").value.trim(),
+    $("vendorBudgetInput").value =
+        vendor.cost;
 
-            phone: document.getElementById("vendorPhone").value.trim(),
+    $("vendorStatus").value =
+        vendor.status;
 
-            email: document.getElementById("vendorEmail").value.trim(),
 
-            budget: Number(document.getElementById("vendorBudgetInput").value),
+    // Find currently assigned event
+    const assignment =
+        assignments.find(
+            item =>
+                Number(item.vendor_id) ===
+                Number(id)
+        );
 
-            status: document.getElementById("vendorStatus").value
+    $("vendorEvent").value =
+        assignment
+            ? String(assignment.event_id)
+            : "";
+};
 
-        };
 
-        if (editingVendorIndex === -1) {
+// ======================================================
+// DELETE VENDOR
+// ======================================================
 
-            vendors.push(vendor);
+window.deleteVendor = async id => {
 
-            alert("✅ Vendor added successfully.");
+    if (
+        !confirm(
+            "Are you sure you want to delete this vendor?"
+        )
+    ) {
+        return;
+    }
 
-        } else {
+    try {
 
-            vendors[editingVendorIndex] = vendor;
+        // Remove vendor-event assignments first
+        const vendorAssignments =
+            assignments.filter(
+                assignment =>
+                    Number(assignment.vendor_id) ===
+                    Number(id)
+            );
 
-            editingVendorIndex = -1;
 
-            alert("✅ Vendor updated successfully.");
+        for (const assignment of vendorAssignments) {
 
+            await Api.eventVendors.remove(
+                assignment.id
+            );
         }
 
-        saveVendors(vendors);
 
-        vendorForm.reset();
+        // Delete vendor
+        await Api.vendors.remove(id);
 
-        loadStatistics();
+        await refresh();
 
-        loadVendors();
+    } catch (error) {
 
-    });
+        console.error(
+            "Delete Vendor Error:",
+            error
+        );
 
-}
-
-/* ==========================================
-            EDIT VENDOR
-========================================== */
-
-function editVendor(vendorId) {
-
-    const vendors = getVendors();
-
-    const index = vendors.findIndex(
-
-        vendor => vendor.id === vendorId
-
-    );
-
-    if (index === -1) return;
-
-    const vendor = vendors[index];
-
-    document.getElementById("vendorName").value = vendor.name;
-
-    document.getElementById("vendorCategory").value = vendor.category;
-
-    document.getElementById("vendorEvent").value = vendor.event || "";
-
-    document.getElementById("vendorContact").value = vendor.contact;
-
-    document.getElementById("vendorPhone").value = vendor.phone;
-
-    document.getElementById("vendorEmail").value = vendor.email;
-
-    document.getElementById("vendorBudgetInput").value = vendor.budget;
-
-    editingVendorIndex = index;
-
-    window.scrollTo({
-
-        top: 0,
-
-        behavior: "smooth"
-
-    });
-
-}
-/* ==========================================
-            DELETE VENDOR
-========================================== */
-
-function deleteVendor(vendorId){
-
-    if(!confirm("Delete this vendor?")){
-
-        return;
-
+        alert(error.message);
     }
+};
 
-    let vendors = getVendors();
 
-    vendors = vendors.filter(
+// ======================================================
+// SAVE / UPDATE VENDOR
+// ======================================================
 
-        vendor => vendor.id !== vendorId
+$("vendorForm")?.addEventListener(
+    "submit",
+    async event => {
 
-    );
+        event.preventDefault();
 
-    saveVendors(vendors);
+        const selectedEventId =
+            Number(
+                $("vendorEvent").value
+            );
 
-    loadStatistics();
 
-    loadVendors();
+        const data = {
 
-}
+            vendor_name:
+                $("vendorName")
+                    .value
+                    .trim(),
 
-/* ==========================================
-            SEARCH
-========================================== */
+            vendor_type:
+                $("vendorCategory").value,
 
-const searchVendor =
+            contact_person:
+                $("vendorContact")
+                    .value
+                    .trim() || null,
 
-document.getElementById("searchVendor");
+            email:
+                $("vendorEmail")
+                    .value
+                    .trim() || null,
 
-if(searchVendor){
+            phone:
+                $("vendorPhone")
+                    .value
+                    .trim() || null,
 
-    searchVendor.addEventListener(
+            address: null,
 
-        "keyup",
+            service_description: null,
 
-        filterVendors
+            cost:
+                Number(
+                    $("vendorBudgetInput")
+                        .value || 0
+                ),
 
-    );
+            status:
+                $("vendorStatus").value
+        };
 
-}
 
-/* ==========================================
-            FILTER CATEGORY
-========================================== */
+        try {
 
-const filterCategory =
+            // =========================================
+            // CREATE NEW VENDOR
+            // =========================================
 
-document.getElementById("filterCategory");
+            if (!editing) {
 
-if(filterCategory){
+                const createdVendor =
+                    await Api.vendors.create(data);
 
-    filterCategory.addEventListener(
 
-        "change",
+                // Assign event after vendor created
+                if (selectedEventId) {
 
-        filterVendors
+                    await Api.eventVendors.create({
 
-    );
+                        event_id:
+                            selectedEventId,
 
-}
+                        vendor_id:
+                            createdVendor.id
+                    });
+                }
 
-/* ==========================================
-            FILTER FUNCTION
-========================================== */
+            }
 
-function filterVendors(){
+            // =========================================
+            // UPDATE EXISTING VENDOR
+            // =========================================
+
+            else {
+
+                await Api.vendors.update(
+                    editing,
+                    data
+                );
+
+
+                const oldAssignments =
+                    assignments.filter(
+                        assignment =>
+                            Number(
+                                assignment.vendor_id
+                            ) ===
+                            Number(editing)
+                    );
+
+
+                // -------------------------------------
+                // Selected an event
+                // -------------------------------------
+
+                if (selectedEventId) {
+
+                    const alreadyAssigned =
+                        oldAssignments.find(
+                            assignment =>
+                                Number(
+                                    assignment.event_id
+                                ) ===
+                                selectedEventId
+                        );
+
+
+                    // Remove previous assignments
+                    for (
+                        const assignment
+                        of oldAssignments
+                    ) {
+
+                        if (
+                            Number(
+                                assignment.event_id
+                            ) !==
+                            selectedEventId
+                        ) {
+
+                            await Api.eventVendors.remove(
+                                assignment.id
+                            );
+                        }
+                    }
+
+
+                    // Add new assignment
+                    if (!alreadyAssigned) {
+
+                        await Api.eventVendors.create({
+
+                            event_id:
+                                selectedEventId,
+
+                            vendor_id:
+                                Number(editing)
+                        });
+                    }
+
+                }
+
+                // -------------------------------------
+                // No event selected
+                // Remove assignments
+                // -------------------------------------
+
+                else {
+
+                    for (
+                        const assignment
+                        of oldAssignments
+                    ) {
+
+                        await Api.eventVendors.remove(
+                            assignment.id
+                        );
+                    }
+                }
+            }
+
+
+            // =========================================
+            // RESET
+            // =========================================
+
+            editing = null;
+
+            event.target.reset();
+
+            await refresh();
+
+            alert(
+                "Vendor saved successfully."
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Vendor Save Error:",
+                error
+            );
+
+            alert(error.message);
+        }
+    }
+);
+
+
+// ======================================================
+// SEARCH
+// ======================================================
+
+$("searchVendor")?.addEventListener(
+    "input",
+    event => {
+
+        applyFilters();
+    }
+);
+
+
+// ======================================================
+// CATEGORY FILTER
+// ======================================================
+
+$("filterCategory")?.addEventListener(
+    "change",
+    () => {
+
+        applyFilters();
+    }
+);
+
+
+// ======================================================
+// APPLY SEARCH + CATEGORY FILTER
+// ======================================================
+
+function applyFilters() {
 
     const search =
-
-        document.getElementById(
-
-            "searchVendor"
-
-        ).value.toLowerCase();
+        $("searchVendor")
+            ?.value
+            .trim()
+            .toLowerCase() || "";
 
     const category =
+        $("filterCategory")
+            ?.value || "All";
 
-        document.getElementById(
 
-            "filterCategory"
+    const filtered =
+        vendors.filter(vendor => {
 
-        ).value;
+            const matchesSearch =
+                vendor.vendor_name
+                    .toLowerCase()
+                    .includes(search);
 
-    let vendors = getVendors();
 
-    vendors = vendors.filter(vendor=>{
+            const matchesCategory =
+                category === "All" ||
+                vendor.vendor_type === category;
 
-        const matchSearch =
 
-            vendor.name.toLowerCase().includes(search)
+            return (
+                matchesSearch &&
+                matchesCategory
+            );
+        });
 
-            ||
 
-            vendor.contact.toLowerCase().includes(search)
-
-            ||
-
-            vendor.category.toLowerCase().includes(search)
-
-            ||
-
-            (vendor.event || "").toLowerCase().includes(search);
-
-        const matchCategory =
-
-            category === "All"
-
-            ||
-
-            vendor.category === category;
-
-        return matchSearch && matchCategory;
-
-    });
-
-    loadVendors(vendors);
-
+    render(filtered);
 }
-/* ==========================================
-            TOP VENDORS
-========================================== */
 
-function loadTopVendors(vendors = getVendors()) {
 
-    const container = document.getElementById("topVendors");
+// ======================================================
+// TOP VENDORS
+// ======================================================
+
+function renderTopVendors() {
+
+    const container =
+        $("topVendors");
 
     if (!container) return;
 
-    container.innerHTML = "";
 
-    if (vendors.length === 0) {
+    const top =
+        [...vendors]
+            .sort(
+                (a, b) =>
+                    Number(b.cost || 0) -
+                    Number(a.cost || 0)
+            )
+            .slice(0, 3);
 
-        container.innerHTML = `
 
-            <div class="no-data">
+    if (!top.length) {
 
-                No vendors available.
-
-            </div>
-
-        `;
+        container.innerHTML =
+            "<p>No vendors available.</p>";
 
         return;
-
     }
 
-    const topVendors = [...vendors]
 
-        .sort((a, b) => Number(b.budget || 0) - Number(a.budget || 0))
+    container.innerHTML =
+        top.map(vendor => `
+            <div class="card">
 
-        .slice(0, 4);
-
-    topVendors.forEach(vendor => {
-
-        container.innerHTML += `
-
-            <div class="vendor-card">
+                <i class="fa-solid fa-store"></i>
 
                 <h3>
-
-                    <i class="fa-solid fa-store"></i>
-
-                    ${vendor.name}
-
+                    ${vendor.vendor_name}
                 </h3>
 
                 <p>
-
-                    <strong>Category:</strong>
-
-                    ${vendor.category}
-
+                    ${vendor.vendor_type}
                 </p>
 
                 <p>
-
-                    <strong>Event:</strong>
-
-                    ${vendor.event || "Not Assigned"}
-
+                    ${getVendorEventNames(
+                        vendor.id
+                    )}
                 </p>
-
-                <p>
-
-                    <strong>Contact:</strong>
-
-                    ${vendor.contact}
-
-                </p>
-
-                <p>
-
-                    <strong>Phone:</strong>
-
-                    ${vendor.phone}
-
-                </p>
-
-                <p>
-
-                    <strong>Budget:</strong>
-
-                    ₹${Number(vendor.budget).toLocaleString("en-IN")}
-
-                </p>
-
-                <span class="badge ${vendor.status === "Active" ? "active" : "inactive"}">
-
-                    ${vendor.status}
-
-                </span>
 
             </div>
-
-        `;
-
-    });
-
+        `).join("");
 }
 
-/* ==========================================
-            REFRESH PAGE
-========================================== */
 
-function refreshPage(){
+// ======================================================
+// INITIALIZE PAGE
+// ======================================================
 
-    loadEvents();
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
 
-    loadStatistics();
+        if (!requireLogin()) {
+            return;
+        }
 
-    loadVendors();
 
-    loadTopVendors();
+        const loggedUser =
+            $("loggedUserName");
 
-}
+        if (loggedUser) {
 
-/* ==========================================
-            AUTO REFRESH
-========================================== */
+            loggedUser.textContent =
+                localStorage.getItem(
+                    "userName"
+                ) || "User";
+        }
 
-window.addEventListener("storage",()=>{
 
-    refreshPage();
+        try {
 
-});
+            // Load actual DB information
+            await loadEvents();
 
-/* ==========================================
-            INITIALIZE
-========================================== */
+            await loadAssignments();
 
-document.addEventListener("DOMContentLoaded",()=>{
+            await refresh();
 
-    if(currentUser.role!=="admin"){
+            renderTopVendors();
 
-        window.location.href="user-dashboard.html";
+        } catch (error) {
 
-        return;
+            console.error(
+                "Vendor Initialization Error:",
+                error
+            );
 
+            alert(error.message);
+        }
     }
-
-    document.getElementById("loggedUserName").textContent=
-
-        currentUser.name;
-
-    refreshPage();
-
-});
-
-/* ==========================================
-            DEBUG
-========================================== */
-
-console.log("================================");
-
-console.log("EventAI Vendors Loaded");
-
-console.log("Admin :",currentUser.name);
-
-console.log("Total Vendors :",getVendors().length);
-
-console.log("================================");
+);

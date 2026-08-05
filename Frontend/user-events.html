@@ -327,6 +327,35 @@
 
     </div>
 
+
+    <!-- ================= EVENT DETAILS ================= -->
+
+    <section class="recent-events" id="eventDetailsSection">
+
+        <div class="section-header">
+
+            <h2>
+
+                <i class="fa-solid fa-circle-info"></i>
+
+                Event Details
+
+            </h2>
+
+        </div>
+
+        <section
+
+            id="eventDetails"
+
+            class="recent-events"
+
+            style="display:none;margin-top:35px;">
+
+        </section>
+
+    </section>
+
     <!-- ================= EMPTY STATE ================= -->
 
     <div
@@ -351,40 +380,8 @@
     </div>
 
 </section>
-<!-- ================= VIEW EVENT MODAL ================= -->
 
-<div id="viewModal" class="modal">
 
-    <div class="modal-content">
-
-        <div class="modal-header">
-
-            <h2>
-
-                <i class="fa-solid fa-eye"></i>
-
-                Event Details
-
-            </h2>
-
-            <span class="close"
-                  onclick="closeViewModal()">
-
-                &times;
-
-            </span>
-
-        </div>
-
-        <div id="viewContent">
-
-            <!-- Filled Dynamically -->
-
-        </div>
-
-    </div>
-
-</div>
 
 <!-- ================= FOOTER ================= -->
 
@@ -410,51 +407,8 @@
 
 <script src="js/auth.js"></script>
 
+<script src="js/api.js"></script>
 <script src="js/user-events.js"></script>
-
-<script>
-
-/* ===========================
-   CLOSE VIEW MODAL
-=========================== */
-
-function closeViewModal() {
-
-    document.getElementById("viewModal").style.display = "none";
-
-}
-
-/* ===========================
-   CLOSE MODAL ON OUTSIDE CLICK
-=========================== */
-
-window.onclick = function(event) {
-
-    const modal = document.getElementById("viewModal");
-
-    if (event.target === modal) {
-
-        modal.style.display = "none";
-
-    }
-
-};
-
-/* ===========================
-   ESC KEY CLOSE
-=========================== */
-
-document.addEventListener("keydown", function(event) {
-
-    if(event.key === "Escape"){
-
-        closeViewModal();
-
-    }
-
-});
-
-</script>
 
 </body>
 

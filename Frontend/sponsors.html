@@ -265,13 +265,12 @@ Administrator
 
             <div class="input-group">
 
-                <label>Company</label>
+                <label>Contact Person</label>
 
-                <input
-                    type="text"
-                    id="companyName"
-                    placeholder="Company Name"
-                    required>
+                    <input
+                        type="text"
+                        id="contactPerson"
+                        placeholder="Contact Person">
 
             </div>
 
@@ -294,6 +293,20 @@ Administrator
                     type="text"
                     id="sponsorPhone"
                     placeholder="Phone Number">
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Assign Event</label>
+
+                <select id="sponsorEvent">
+
+                    <option value="">
+                        Select Event
+                    </option>
+
+                </select>
 
             </div>
 
@@ -326,46 +339,9 @@ Administrator
 
             </div>
 
-            <div class="input-group">
-
-                <label>Assign Event</label>
-
-                <select id="sponsorEvent">
-
-                    <option value="">Select Event</option>
-
-                </select>
-
-            </div>
-
-            <div class="input-group">
-
-                <label>Status</label>
-
-                <select id="sponsorStatus">
-
-                    <option>Active</option>
-
-                    <option>Pending</option>
-
-                    <option>Inactive</option>
-
-                </select>
-
-            </div>
 
         </div>
 
-        <div class="input-group">
-
-            <label>Notes</label>
-
-            <textarea
-                id="sponsorNotes"
-                rows="4"
-                placeholder="Additional Notes"></textarea>
-
-        </div>
 
         <button
             type="submit"
@@ -433,29 +409,18 @@ Administrator
     <table>
 
         <thead>
-
             <tr>
-
                 <th>ID</th>
-
                 <th>Sponsor</th>
-
-                <th>Company</th>
-
+                <th>Contact Person</th>
                 <th>Level</th>
-
                 <th>Event</th>
-
-                <th>Amount</th>
-
-                <th>Status</th>
-
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Contribution</th>
                 <th>Actions</th>
-
             </tr>
-
         </thead>
-
         <tbody id="sponsorTable">
 
             <!-- Dynamic -->
@@ -518,6 +483,7 @@ Administrator
 
 <script src="js/auth.js"></script>
 
+<script src="js/api.js"></script>
 <script src="js/sponsors.js"></script>
 
 <script>
