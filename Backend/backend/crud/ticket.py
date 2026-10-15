@@ -78,3 +78,21 @@ def get_tickets_by_event(
         .order_by(Ticket.id)
         .all()
     )
+
+def get_active_ticket_by_event(
+    db: Session,
+    event_id: int,
+):
+    """
+    Get first active ticket for an event.
+    """
+
+    return (
+        db.query(Ticket)
+        .filter(
+            Ticket.event_id == event_id,
+            Ticket.status == "Active",
+        )
+        .order_by(Ticket.id)
+        .first()
+    )

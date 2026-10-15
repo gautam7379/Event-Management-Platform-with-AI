@@ -1,5 +1,14 @@
-from sqlalchemy import String,  CheckConstraint,Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import (
+    String,
+    CheckConstraint,
+    Text,
+    Integer,
+)
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from backend.database.database import Base
 from backend.models.base import TimestampMixin
@@ -8,64 +17,90 @@ from backend.models.base import TimestampMixin
 class Speaker(Base, TimestampMixin):
     __tablename__ = "speakers"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True,
+    )
 
     first_name: Mapped[str] = mapped_column(
         String(100),
-        nullable=False
+        nullable=False,
     )
 
     last_name: Mapped[str] = mapped_column(
         String(100),
-        nullable=False
+        nullable=False,
     )
 
     email: Mapped[str] = mapped_column(
         String(255),
         unique=True,
-        nullable=False
+        nullable=False,
     )
 
-    phone: Mapped[str] = mapped_column(
+    phone: Mapped[str | None] = mapped_column(
         String(20),
-        nullable=True
+        nullable=True,
     )
 
-    organization: Mapped[str] = mapped_column(
+    organization: Mapped[str | None] = mapped_column(
         String(150),
-        nullable=True
+        nullable=True,
     )
 
-    designation: Mapped[str] = mapped_column(
+    designation: Mapped[str | None] = mapped_column(
         String(150),
-        nullable=True
+        nullable=True,
     )
 
-    bio: Mapped[str] = mapped_column(
-        Text,
-        nullable=True
+    # ===============================
+    # NEW SPEAKER FIELDS
+    # ===============================
+
+    experience: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
     )
 
-    profile_image: Mapped[str] = mapped_column(
+    expertise: Mapped[str | None] = mapped_column(
         String(255),
-        nullable=True
+        nullable=True,
+    )
+
+    speaker_type: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    bio: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
     )
 
     event_speakers = relationship(
         "EventSpeaker",
-        back_populates="speaker"
+        back_populates="speaker",
     )
 
     sessions = relationship(
         "Session",
-        back_populates="speaker"
+        back_populates="speaker",
     )
 
     __table_args__ = (
-            CheckConstraint("first_name <> ''", name="ck_speaker_first_name_not_empty"),
-            CheckConstraint("last_name <> ''", name="ck_speaker_last_name_not_empty"),
-            CheckConstraint("email <> ''", name="ck_speaker_email_not_empty"),
-        )
+        CheckConstraint(
+            "first_name <> ''",
+            name="ck_speaker_first_name_not_empty",
+        ),
+        CheckConstraint(
+            "last_name <> ''",
+            name="ck_speaker_last_name_not_empty",
+        ),
+        CheckConstraint(
+            "email <> ''",
+            name="ck_speaker_email_not_empty",
+        ),
+    )
 
     def __repr__(self):
         return (

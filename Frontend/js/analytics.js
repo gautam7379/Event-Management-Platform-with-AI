@@ -1,171 +1,361 @@
-/* ==========================================
-            EVENTAI ANALYTICS
-========================================== */
+// ==========================================
+// EVENTAI ANALYTICS - BACKEND CONNECTED
+// ==========================================
 
-/* ==========================================
-            LOCAL STORAGE
-========================================== */
+let events = [];
+let registrations = [];
+let ticketMap = {};
 
-function getEvents() {
+let revenueChart = null;
+let statusChart = null;
+let categoryChart = null;
+let registrationChart = null;
 
-    return JSON.parse(
+const $ = id => document.getElementById(id);
 
-        localStorage.getItem("events")
 
-    ) || [];
-
-}
-
-function getAttendees() {
-
-    return JSON.parse(
-
-        localStorage.getItem("attendees")
-
-    ) || [];
-
-}
-
-function getTickets() {
-
-    return JSON.parse(
-
-        localStorage.getItem("tickets")
-
-    ) || [];
-
-}
-
-/* ==========================================
-            CURRENT USER
-========================================== */
+// ==========================================
+// CURRENT USER
+// ==========================================
 
 const currentUser = {
 
     name:
-
         localStorage.getItem("userName") ||
-
         "Administrator",
 
     role:
-
         localStorage.getItem("userRole") ||
-
         "admin"
 
 };
 
-/* ==========================================
-            LOAD USER
-========================================== */
+
+// ==========================================
+// LOAD USER
+// ==========================================
 
 function loadUser() {
 
-    const user =
+    if ($("loggedUserName")) {
 
-        document.getElementById("loggedUserName");
-
-    if(user){
-
-        user.textContent =
-
+        $("loggedUserName").textContent =
             currentUser.name;
-
     }
-
 }
 
-/* ==========================================
-            SECURITY
-========================================== */
 
-document.addEventListener("DOMContentLoaded",()=>{
+// ==========================================
+// EVENT STATUS
+// Uses actual backend/database status
+// ==========================================
 
-    if(currentUser.role !== "admin"){
+function getEventStatus(event) {
 
-        window.location.href="user-dashboard.html";
-
-        return;
-
+    if (!event) {
+        return "Draft";
     }
 
-});
-
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
-
-function loadStatistics(){
-
-    const events = getEvents();
-
-    const attendees = getAttendees();
-
-    const tickets = getTickets();
-
-    let revenue = 0;
-
-    tickets.forEach(ticket=>{
-
-        revenue += Number(ticket.price || 0);
-
-    });
-
-    document.getElementById("analyticsEvents").textContent =
-
-        events.length;
-
-    document.getElementById("analyticsAttendees").textContent =
-
-        attendees.length;
-
-    document.getElementById("analyticsTickets").textContent =
-
-        tickets.length;
-
-    document.getElementById("analyticsRevenue").textContent =
-
-        "₹" + revenue.toLocaleString("en-IN");
-
+    return event.status || "Draft";
 }
-/* ==========================================
-            REVENUE CHART
-========================================== */
 
-let revenueChart = null;
 
-function loadRevenueChart() {
+// ==========================================
+// ACTIVE REGISTRATIONS
+// Cancelled registrations are not attendees
+// ==========================================
 
-    const events = getEvents();
+function getActiveRegistrations() {
 
-    const labels = [];
+    return registrations.filter(registration =>
 
-    const revenue = [];
+        String(registration.status || "")
+            .toLowerCase() !== "cancelled"
 
-    events.forEach(event => {
+    );
+}
 
-        labels.push(event.name);
 
-        revenue.push(
+// ==========================================
+// REGISTRATION COUNT BY EVENT
+// ==========================================
 
-            (event.registered || 0) *
+function getRegistrationCount(eventId) {
 
-            Number(event.price || 0)
+    return getActiveRegistrations()
+        .filter(registration =>
+
+            Number(registration.event_id) ===
+            Number(eventId)
+
+        )
+        .length;
+}
+
+
+// ==========================================
+// GET EVENT TICKETS
+// ==========================================
+
+function getEventTickets(eventId) {
+
+    return ticketMap[eventId] || [];
+}
+
+
+// ==========================================
+// GET MAIN TICKET
+// ==========================================
+
+function getMainTicket(eventId) {
+
+    const tickets =
+        getEventTickets(eventId);
+
+    return tickets.length
+        ? tickets[0]
+        : null;
+}
+
+
+// ==========================================
+// GET TICKET PRICE
+// ==========================================
+
+function getTicketPrice(eventId) {
+
+    const ticket =
+        getMainTicket(eventId);
+
+    return Number(
+        ticket?.price || 0
+    );
+}
+
+
+// ==========================================
+// EVENT REVENUE
+//
+// Current backend registration response does
+// not expose payment amount, so revenue is
+// estimated from active registrations *
+// current first ticket price.
+// ==========================================
+
+function getEventRevenue(eventId) {
+
+    const registrationCount =
+        getRegistrationCount(eventId);
+
+    const ticketPrice =
+        getTicketPrice(eventId);
+
+    return registrationCount * ticketPrice;
+}
+
+
+// ==========================================
+// TOTAL REVENUE
+// ==========================================
+
+function getTotalRevenue() {
+
+    return events.reduce(
+
+        (sum, event) =>
+            sum + getEventRevenue(event.id),
+
+        0
+    );
+}
+
+
+// ==========================================
+// LOAD ALL BACKEND DATA
+// ==========================================
+
+async function loadAnalyticsData() {
+
+    try {
+
+        // ----------------------------------
+        // EVENTS
+        // ----------------------------------
+
+        events =
+            await Api.events.list();
+
+
+        // ----------------------------------
+        // ALL REGISTRATIONS
+        // Admin endpoint
+        // ----------------------------------
+
+        registrations =
+            await Api.registrations.list();
+
+
+        // ----------------------------------
+        // TICKETS FOR EACH EVENT
+        // ----------------------------------
+
+        ticketMap = {};
+
+        await Promise.all(
+
+            events.map(async event => {
+
+                try {
+
+                    const tickets =
+                        await Api.tickets.event(
+                            event.id
+                        );
+
+                    ticketMap[event.id] =
+                        Array.isArray(tickets)
+                            ? tickets
+                            : [];
+
+                }
+
+                catch (error) {
+
+                    console.warn(
+                        `Failed to load tickets for event ${event.id}`,
+                        error
+                    );
+
+                    ticketMap[event.id] = [];
+                }
+
+            })
 
         );
 
-    });
+
+        console.log(
+            "ANALYTICS EVENTS:",
+            events
+        );
+
+        console.log(
+            "ANALYTICS REGISTRATIONS:",
+            registrations
+        );
+
+        console.log(
+            "ANALYTICS TICKETS:",
+            ticketMap
+        );
+
+
+        refreshAnalytics();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Analytics loading failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to load analytics."
+        );
+    }
+}
+
+
+// ==========================================
+// STATISTICS
+// ==========================================
+
+function loadStatistics() {
+
+    const activeRegistrations =
+        getActiveRegistrations();
+
+    const totalEvents =
+        events.length;
+
+    // Registration = attendee for the
+    // currently available backend data
+    const totalAttendees =
+        activeRegistrations.length;
+
+    const ticketsSold =
+        activeRegistrations.length;
+
+    const revenue =
+        getTotalRevenue();
+
+
+    if ($("analyticsEvents")) {
+
+        $("analyticsEvents").textContent =
+            totalEvents;
+    }
+
+
+    if ($("analyticsAttendees")) {
+
+        $("analyticsAttendees").textContent =
+            totalAttendees;
+    }
+
+
+    if ($("analyticsTickets")) {
+
+        $("analyticsTickets").textContent =
+            ticketsSold;
+    }
+
+
+    if ($("analyticsRevenue")) {
+
+        $("analyticsRevenue").textContent =
+            "₹" +
+            revenue.toLocaleString("en-IN");
+    }
+}
+
+
+// ==========================================
+// REVENUE CHART
+// ==========================================
+
+function loadRevenueChart() {
+
+    const canvas =
+        $("revenueChart");
+
+    if (!canvas) return;
+
+
+    const labels =
+        events.map(event =>
+            event.event_name
+        );
+
+
+    const revenueData =
+        events.map(event =>
+            getEventRevenue(event.id)
+        );
+
 
     if (revenueChart) {
 
         revenueChart.destroy();
-
     }
+
 
     revenueChart = new Chart(
 
-        document.getElementById("revenueChart"),
+        canvas,
 
         {
 
@@ -173,20 +363,23 @@ function loadRevenueChart() {
 
             data: {
 
-                labels: labels,
+                labels,
 
                 datasets: [
 
                     {
 
-                        label: "Revenue (₹)",
+                        label:
+                            "Revenue (₹)",
 
-                        data: revenue,
+                        data:
+                            revenueData,
 
-                        backgroundColor: "#2563EB",
+                        backgroundColor:
+                            "#2563EB",
 
-                        borderRadius: 8
-
+                        borderRadius:
+                            8
                     }
 
                 ]
@@ -196,6 +389,8 @@ function loadRevenueChart() {
             options: {
 
                 responsive: true,
+
+                maintainAspectRatio: true,
 
                 plugins: {
 
@@ -222,52 +417,46 @@ function loadRevenueChart() {
         }
 
     );
-
 }
 
-/* ==========================================
-            STATUS CHART
-========================================== */
 
-let statusChart = null;
+// ==========================================
+// STATUS CHART
+// Uses database event.status values
+// dynamically instead of hard-coded statuses.
+// ==========================================
 
 function loadStatusChart() {
 
-    const events = getEvents();
+    const canvas =
+        $("statusChart");
 
-    const upcoming = events.filter(
+    if (!canvas) return;
 
-        event =>
 
-            event.status === "Upcoming"
+    const statusMap = {};
 
-    ).length;
 
-    const open = events.filter(
+    events.forEach(event => {
 
-        event =>
+        const status =
+            getEventStatus(event);
 
-            event.status === "Open"
+        statusMap[status] =
+            (statusMap[status] || 0) + 1;
 
-    ).length;
+    });
 
-    const completed = events.filter(
-
-        event =>
-
-            event.status === "Completed"
-
-    ).length;
 
     if (statusChart) {
 
         statusChart.destroy();
-
     }
+
 
     statusChart = new Chart(
 
-        document.getElementById("statusChart"),
+        canvas,
 
         {
 
@@ -275,115 +464,23 @@ function loadStatusChart() {
 
             data: {
 
-                labels: [
-
-                    "Upcoming",
-
-                    "Open",
-
-                    "Completed"
-
-                ],
+                labels:
+                    Object.keys(statusMap),
 
                 datasets: [
 
                     {
 
-                        data: [
-
-                            upcoming,
-
-                            open,
-
-                            completed
-
-                        ],
+                        data:
+                            Object.values(statusMap),
 
                         backgroundColor: [
 
                             "#3B82F6",
-
-                            "#F59E0B",
-
-                            "#22C55E"
-
-                        ]
-
-                    }
-
-                ]
-
-            },
-
-            options: {
-
-                responsive: true
-
-            }
-
-        }
-
-    );
-
-}
-/* ==========================================
-            CATEGORY CHART
-========================================== */
-
-let categoryChart = null;
-
-function loadCategoryChart() {
-
-    const events = getEvents();
-
-    const categoryMap = {};
-
-    events.forEach(event => {
-
-        const category = event.category || "Other";
-
-        categoryMap[category] =
-
-            (categoryMap[category] || 0) + 1;
-
-    });
-
-    if (categoryChart) {
-
-        categoryChart.destroy();
-
-    }
-
-    categoryChart = new Chart(
-
-        document.getElementById("categoryChart"),
-
-        {
-
-            type: "doughnut",
-
-            data: {
-
-                labels: Object.keys(categoryMap),
-
-                datasets: [
-
-                    {
-
-                        data: Object.values(categoryMap),
-
-                        backgroundColor: [
-
-                            "#2563EB",
-
                             "#22C55E",
-
                             "#F59E0B",
-
                             "#EF4444",
-
                             "#8B5CF6",
-
                             "#06B6D4"
 
                         ]
@@ -413,44 +510,142 @@ function loadCategoryChart() {
         }
 
     );
-
 }
 
-/* ==========================================
-            REGISTRATION CHART
-========================================== */
 
-let registrationChart = null;
+// ==========================================
+// CATEGORY CHART
+//
+// Backend field:
+// event_type
+//
+// NOT:
+// category
+// ==========================================
 
-function loadRegistrationChart() {
+function loadCategoryChart() {
 
-    const events = getEvents();
+    const canvas =
+        $("categoryChart");
 
-    const labels = [];
+    if (!canvas) return;
 
-    const registrations = [];
+
+    const categoryMap = {};
+
 
     events.forEach(event => {
 
-        labels.push(event.name);
+        const category =
+            event.event_type ||
+            "Other";
 
-        registrations.push(
 
-            event.registered || 0
-
-        );
+        categoryMap[category] =
+            (categoryMap[category] || 0)
+            + 1;
 
     });
+
+
+    if (categoryChart) {
+
+        categoryChart.destroy();
+    }
+
+
+    categoryChart = new Chart(
+
+        canvas,
+
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels:
+                    Object.keys(categoryMap),
+
+                datasets: [
+
+                    {
+
+                        data:
+                            Object.values(categoryMap),
+
+                        backgroundColor: [
+
+                            "#2563EB",
+                            "#22C55E",
+                            "#F59E0B",
+                            "#EF4444",
+                            "#8B5CF6",
+                            "#06B6D4"
+
+                        ]
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                plugins: {
+
+                    legend: {
+
+                        position: "bottom"
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    );
+}
+
+
+// ==========================================
+// REGISTRATION CHART
+// ==========================================
+
+function loadRegistrationChart() {
+
+    const canvas =
+        $("registrationChart");
+
+    if (!canvas) return;
+
+
+    const labels =
+        events.map(event =>
+            event.event_name
+        );
+
+
+    const registrationData =
+        events.map(event =>
+            getRegistrationCount(event.id)
+        );
+
 
     if (registrationChart) {
 
         registrationChart.destroy();
-
     }
+
 
     registrationChart = new Chart(
 
-        document.getElementById("registrationChart"),
+        canvas,
 
         {
 
@@ -458,23 +653,29 @@ function loadRegistrationChart() {
 
             data: {
 
-                labels: labels,
+                labels,
 
                 datasets: [
 
                     {
 
-                        label: "Registrations",
+                        label:
+                            "Registrations",
 
-                        data: registrations,
+                        data:
+                            registrationData,
 
-                        borderColor: "#2563EB",
+                        borderColor:
+                            "#2563EB",
 
-                        backgroundColor: "rgba(37,99,235,0.2)",
+                        backgroundColor:
+                            "rgba(37,99,235,0.2)",
 
-                        fill: true,
+                        fill:
+                            true,
 
-                        tension: 0.4
+                        tension:
+                            0.4
 
                     }
 
@@ -490,7 +691,13 @@ function loadRegistrationChart() {
 
                     y: {
 
-                        beginAtZero: true
+                        beginAtZero: true,
+
+                        ticks: {
+
+                            precision: 0
+
+                        }
 
                     }
 
@@ -501,279 +708,434 @@ function loadRegistrationChart() {
         }
 
     );
-
 }
 
-/* ==========================================
-            PERFORMANCE TABLE
-========================================== */
+
+// ==========================================
+// BADGE CLASS
+// ==========================================
+
+function getBadgeClass(status) {
+
+    const value =
+        String(status || "")
+            .toLowerCase();
+
+
+    if (value === "completed") {
+
+        return "completed";
+    }
+
+
+    if (value === "published") {
+
+        return "completed";
+    }
+
+
+    if (value === "open") {
+
+        return "pending";
+    }
+
+
+    if (value === "cancelled") {
+
+        return "cancelled";
+    }
+
+
+    if (value === "draft") {
+
+        return "pending";
+    }
+
+
+    return "upcoming";
+}
+
+
+// ==========================================
+// PERFORMANCE TABLE
+// ==========================================
 
 function loadPerformanceTable() {
 
     const table =
+        $("analyticsTable");
 
-        document.getElementById("analyticsTable");
 
     if (!table) return;
 
+
     table.innerHTML = "";
 
-    const events = getEvents();
 
-    if (events.length === 0) {
+    if (!events.length) {
 
         table.innerHTML = `
 
-        <tr>
+            <tr>
 
-            <td colspan="5"
+                <td
+                    colspan="5"
+                    style="
+                        text-align:center;
+                        padding:20px;
+                    "
+                >
 
-                style="text-align:center;padding:20px;">
+                    No events available.
 
-                No events available.
+                </td>
 
-            </td>
-
-        </tr>
+            </tr>
 
         `;
 
         return;
-
     }
 
-    events.forEach(event => {
 
-        const revenue =
+    table.innerHTML =
 
-            (event.registered || 0)
+        events.map(event => {
 
-            *
 
-            Number(event.price || 0);
+            const registrationsCount =
+                getRegistrationCount(
+                    event.id
+                );
 
-        let badgeClass = "upcoming";
 
-        if (event.status === "Completed") {
+            const revenue =
+                getEventRevenue(
+                    event.id
+                );
 
-            badgeClass = "completed";
 
-        }
+            const status =
+                getEventStatus(
+                    event
+                );
 
-        else if (event.status === "Open") {
 
-            badgeClass = "pending";
+            const badgeClass =
+                getBadgeClass(status);
 
-        }
 
-        table.innerHTML += `
+            return `
 
-        <tr>
+                <tr>
 
-            <td>
+                    <td>
 
-                ${event.name}
+                        ${event.event_name || "-"}
 
-            </td>
+                    </td>
 
-            <td>
 
-                ${event.registered || 0}
+                    <td>
 
-            </td>
+                        ${registrationsCount}
 
-            <td>
+                    </td>
 
-                ${event.capacity || "-"}
 
-            </td>
+                    <td>
 
-            <td>
+                        ${event.capacity ?? "-"}
 
-                ₹${revenue.toLocaleString("en-IN")}
+                    </td>
 
-            </td>
 
-            <td>
+                    <td>
 
-                <span class="badge ${badgeClass}">
+                        ₹${revenue.toLocaleString(
+                            "en-IN"
+                        )}
 
-                    ${event.status}
+                    </td>
 
-                </span>
 
-            </td>
+                    <td>
 
-        </tr>
+                        <span
+                            class="badge ${badgeClass}"
+                        >
 
-        `;
+                            ${status}
 
-    });
+                        </span>
 
+                    </td>
+
+                </tr>
+
+            `;
+
+        }).join("");
 }
-/* ==========================================
-            TOP PERFORMING EVENTS
-========================================== */
+
+
+// ==========================================
+// TOP PERFORMING EVENTS
+// ==========================================
 
 function loadTopEvents() {
 
     const container =
+        $("topEvents");
 
-        document.getElementById("topEvents");
 
     if (!container) return;
 
+
     container.innerHTML = "";
 
-    const events = [...getEvents()]
 
-        .sort((a, b) =>
+    const topEvents =
 
-            (b.registered || 0) -
+        [...events]
 
-            (a.registered || 0)
+            .sort(
 
-        )
+                (a, b) =>
 
-        .slice(0, 5);
+                    getRegistrationCount(b.id)
 
-    if (events.length === 0) {
+                    -
+
+                    getRegistrationCount(a.id)
+
+            )
+
+            .slice(0, 5);
+
+
+    if (!topEvents.length) {
 
         container.innerHTML =
 
             "<p>No event data available.</p>";
 
         return;
-
     }
 
-    events.forEach((event, index) => {
 
-        const revenue =
+    container.innerHTML =
 
-            (event.registered || 0) *
+        topEvents.map(
 
-            Number(event.price || 0);
+            (event, index) => {
 
-        container.innerHTML += `
 
-        <div class="card"
+                const count =
+                    getRegistrationCount(
+                        event.id
+                    );
 
-             style="margin-bottom:15px;">
 
-            <h3>
+                const revenue =
+                    getEventRevenue(
+                        event.id
+                    );
 
-                #${index + 1} ${event.name}
 
-            </h3>
+                return `
 
-            <p>
+                    <div
+                        class="card"
+                        style="
+                            margin-bottom:15px;
+                        "
+                    >
 
-                👥 ${event.registered || 0} Registrations
+                        <h3>
 
-            </p>
+                            #${index + 1}
 
-            <p>
+                            ${event.event_name}
 
-                💰 ₹${revenue.toLocaleString("en-IN")}
+                        </h3>
 
-            </p>
 
-        </div>
+                        <p>
 
-        `;
+                            👥 ${count}
+                            Registrations
 
-    });
+                        </p>
 
+
+                        <p>
+
+                            💰 ₹${revenue.toLocaleString(
+                                "en-IN"
+                            )}
+
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        ).join("");
 }
 
-/* ==========================================
-            QUICK INSIGHTS
-========================================== */
+
+// ==========================================
+// QUICK INSIGHTS
+// ==========================================
 
 function loadInsights() {
 
-    const events = getEvents();
+    if (!events.length) {
 
-    if (events.length === 0) return;
+        if ($("mostPopularEvent")) {
 
-    const popular =
+            $("mostPopularEvent")
+                .textContent = "-";
+        }
+
+        if ($("highestRevenue")) {
+
+            $("highestRevenue")
+                .textContent = "₹0";
+        }
+
+        if ($("averageAttendance")) {
+
+            $("averageAttendance")
+                .textContent = "0%";
+        }
+
+        return;
+    }
+
+
+    // --------------------------------------
+    // MOST POPULAR EVENT
+    // --------------------------------------
+
+    const mostPopular =
 
         [...events].sort(
 
             (a, b) =>
 
-                (b.registered || 0)
+                getRegistrationCount(b.id)
 
                 -
 
-                (a.registered || 0)
+                getRegistrationCount(a.id)
 
         )[0];
 
-    document.getElementById(
 
-        "mostPopularEvent"
+    if ($("mostPopularEvent")) {
 
-    ).textContent =
+        $("mostPopularEvent").textContent =
 
-        popular.name;
+            mostPopular.event_name;
+    }
 
-    document.getElementById(
 
-        "highestRevenue"
+    // --------------------------------------
+    // HIGHEST REVENUE EVENT
+    // --------------------------------------
 
-    ).textContent =
+    const highestRevenueEvent =
 
-        "₹" +
+        [...events].sort(
 
-        (
+            (a, b) =>
 
-            (popular.registered || 0)
+                getEventRevenue(b.id)
 
-            *
+                -
 
-            Number(popular.price || 0)
+                getEventRevenue(a.id)
 
-        ).toLocaleString("en-IN");
+        )[0];
 
-    const attendance =
 
-        events.reduce(
+    if ($("highestRevenue")) {
 
-            (sum, event) =>
+        $("highestRevenue").textContent =
 
-                sum +
+            "₹" +
 
-                (
+            getEventRevenue(
+                highestRevenueEvent.id
+            ).toLocaleString("en-IN");
+    }
 
-                    (event.registered || 0)
 
-                    /
+    // --------------------------------------
+    // AVERAGE ATTENDANCE / CAPACITY USE
+    // --------------------------------------
 
-                    (event.capacity || 1)
+    const attendancePercentages =
 
-                ) *
+        events.map(event => {
 
-                100,
+            const capacity =
+                Number(
+                    event.capacity || 0
+                );
+
+
+            if (capacity <= 0) {
+
+                return 0;
+            }
+
+
+            return (
+
+                getRegistrationCount(event.id)
+
+                /
+
+                capacity
+
+            ) * 100;
+
+        });
+
+
+    const average =
+
+        attendancePercentages.reduce(
+
+            (sum, value) =>
+                sum + value,
 
             0
 
-        ) / events.length;
+        )
 
-    document.getElementById(
+        /
 
-        "averageAttendance"
+        attendancePercentages.length;
 
-    ).textContent =
 
-        attendance.toFixed(1) + "%";
+    if ($("averageAttendance")) {
 
+        $("averageAttendance").textContent =
+
+            average.toFixed(1) + "%";
+    }
 }
 
-/* ==========================================
-            REFRESH ANALYTICS
-========================================== */
+
+// ==========================================
+// REFRESH UI
+// ==========================================
 
 function refreshAnalytics() {
 
@@ -794,51 +1156,61 @@ function refreshAnalytics() {
     loadTopEvents();
 
     loadInsights();
-
 }
 
-/* ==========================================
-            AUTO REFRESH
-========================================== */
 
-window.addEventListener("storage", () => {
+// ==========================================
+// INITIALIZE
+// ==========================================
 
-    refreshAnalytics();
+document.addEventListener(
 
-});
+    "DOMContentLoaded",
 
-/* ==========================================
-            INITIALIZE
-========================================== */
+    async () => {
 
-document.addEventListener("DOMContentLoaded", () => {
+        if (!requireLogin()) {
 
-    if (
+            return;
+        }
 
-        currentUser.role !== "admin"
 
-    ) {
+        const role =
 
-        window.location.href =
+            String(
+                localStorage.getItem("userRole")
+                || ""
+            ).toLowerCase();
 
-            "user-dashboard.html";
 
-        return;
+        if (
+
+            role !== "admin"
+
+            &&
+
+            role !== "administrator"
+
+        ) {
+
+            window.location.href =
+                "user-dashboard.html";
+
+            return;
+        }
+
+
+        await loadAnalyticsData();
 
     }
 
-    refreshAnalytics();
+);
 
-});
 
-/* ==========================================
-            DEBUG
-========================================== */
+// ==========================================
+// DEBUG
+// ==========================================
 
-console.log("====================================");
-
-console.log("EventAI Analytics Loaded");
-
-console.log("Admin :", currentUser.name);
-
-console.log("====================================");
+console.log(
+    "EventAI Analytics Backend Version Loaded"
+);

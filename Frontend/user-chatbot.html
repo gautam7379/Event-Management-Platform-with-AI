@@ -3,455 +3,425 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-
-<title>AI Assistant | EventAI</title>
-
-
-<link rel="stylesheet" href="css/style.css">
-
-<link rel="stylesheet" href="css/dashboard.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-rel="stylesheet">
+    <title>AI Assistant | EventAI</title>
 
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Main CSS -->
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
+    <link
+        rel="stylesheet"
+        href="css/dashboard.css"
+    >
+
+    <!-- Same chatbot CSS used by Admin -->
+    <link
+        rel="stylesheet"
+        href="css/chatbot.css"
+    >
+
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
 
 </head>
-
 
 
 <body>
 
 
 <div class="dashboard">
-<!-- ================= USER SIDEBAR ================= -->
 
 
-<aside class="sidebar">
+    <!-- ==========================================
+                    USER SIDEBAR
+    =========================================== -->
+
+    <aside class="sidebar">
 
 
-<div class="logo">
+        <div class="logo">
 
-<i class="fa-solid fa-calendar-check"></i>
+            <i class="fa-solid fa-calendar-check"></i>
 
-<h2>EventAI</h2>
+            <h2>
+                EventAI
+            </h2>
+
+        </div>
+
+
+        <ul>
+
+
+            <li>
+
+                <a href="user-dashboard.html">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    Dashboard
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="user-events.html">
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                    Browse Events
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="user-tickets.html">
+
+                    <i class="fa-solid fa-ticket"></i>
+
+                    My Tickets
+
+                </a>
+
+            </li>
+
+
+            <li class="active">
+
+                <a href="user-chatbot.html">
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    AI Assistant
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a href="profile.html">
+
+                    <i class="fa-solid fa-user"></i>
+
+                    Profile
+
+                </a>
+
+            </li>
+
+
+            <li>
+
+                <a
+                    href="#"
+                    id="logoutBtn"
+                >
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    Logout
+
+                </a>
+
+            </li>
+
+
+        </ul>
+
+
+    </aside>
+
+
+
+    <!-- ==========================================
+                    MAIN CONTENT
+    =========================================== -->
+
+    <main class="main-content">
+
+
+        <!-- ======================================
+                        TOPBAR
+        ======================================= -->
+
+        <header class="topbar">
+
+
+            <div>
+
+                <h1>
+
+                    <i class="fa-solid fa-robot"></i>
+
+                    AI Assistant
+
+                </h1>
+
+
+                <p>
+
+                    Ask about events, your registrations,
+                    tickets, payments and schedules.
+
+                </p>
+
+            </div>
+
+
+            <div class="user">
+
+                <i class="fa-solid fa-user-circle"></i>
+
+                <span id="loggedUserName">
+
+                    User
+
+                </span>
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- ======================================
+                    AI ASSISTANT SECTION
+        ======================================= -->
+
+        <section class="recent-events">
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                        EventAI Assistant
+
+                    </h2>
+
+                    <p>
+
+                        AI-powered assistance using your EventAI account data.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ==================================
+                        CHAT CONTAINER
+            =================================== -->
+
+            <div
+                id="chatContainer"
+                class="chat-container"
+            >
+
+
+                <!-- ==============================
+                        WELCOME MESSAGE
+                =============================== -->
+
+                <div class="bot-message">
+
+
+                    <i class="fa-solid fa-robot"></i>
+
+
+                    <div class="message">
+
+
+                        <strong>
+
+                            👋 Hello! I'm EventAI Assistant.
+
+                        </strong>
+
+
+                        <br><br>
+
+
+                        I can help you with:
+
+
+                        <br><br>
+
+
+                        • Available events
+
+                        <br>
+
+                        • Your registrations
+
+                        <br>
+
+                        • Your tickets
+
+                        <br>
+
+                        • Your payments
+
+                        <br>
+
+                        • Your check-in status
+
+                        <br>
+
+                        • Event schedules and venues
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!--
+                    Dynamic messages from
+                    user-chatbot.js are inserted here.
+                -->
+
+                <div id="chatMessages"></div>
+
+
+            </div>
+
+
+
+            <!-- ==================================
+                        CHAT INPUT
+            =================================== -->
+
+            <div class="chat-input">
+
+
+                <input
+                    type="text"
+                    id="userMessage"
+                    placeholder="Ask about events, tickets, registrations..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    type="button"
+                    id="sendMessage"
+                >
+
+                    <i class="fa-solid fa-paper-plane"></i>
+
+                    Send
+
+                </button>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ======================================
+                        FOOTER
+        ======================================= -->
+
+        <footer
+            style="
+                text-align: center;
+                padding: 20px;
+                color: #64748B;
+                margin-top: 30px;
+            "
+        >
+
+            © 2026 EventAI |
+            AI Powered Event Management System
+
+        </footer>
+
+
+    </main>
+
 
 </div>
 
 
 
-<ul>
-
-
-
-<li>
-
-<a href="user-dashboard.html">
-
-<i class="fa-solid fa-house"></i>
-
-Dashboard
-
-</a>
-
-</li>
-
-
-
-
-
-<li>
-
-<a href="user-events.html">
-
-<i class="fa-solid fa-calendar-days"></i>
-
-Browse Events
-
-</a>
-
-</li>
-
-
-
-
-
-<li>
-
-<a href="user-tickets.html">
-
-<i class="fa-solid fa-ticket"></i>
-
-My Tickets
-
-</a>
-
-</li>
-
-
-
-
-
-<li class="active">
-
-<a href="user-chatbot.html">
-
-<i class="fa-solid fa-robot"></i>
-
-AI Assistant
-
-</a>
-
-</li>
-
-
-
-
-
-<li>
-
-<a href="profile.html">
-
-<i class="fa-solid fa-user"></i>
-
-Profile
-
-</a>
-
-</li>
-
-
-
-
-
-<li>
-
-<a href="#" id="logoutBtn">
-
-<i class="fa-solid fa-right-from-bracket"></i>
-
-Logout
-
-</a>
-
-</li>
-
-
-
-</ul>
-
-
-</aside>
-<!-- ================= MAIN CONTENT ================= -->
-
-
-<main class="main-content">
-
-
-
-<!-- ================= TOPBAR ================= -->
-
-
-<header class="topbar">
-
-
-<div>
-
-
-<h1>
-
-<i class="fa-solid fa-robot"></i>
-
-AI Assistant
-
-</h1>
-
-
-<p>
-
-Ask anything about events, registrations and tickets.
-
-</p>
-
-
-</div>
-
-
-
-<div class="user">
-
-
-<i class="fa-solid fa-user-circle"></i>
-
-
-<span id="loggedUserName">
-
-User
-
-</span>
-
-
-</div>
-
-
-</header>
-
-
-
-
-
-
-
-<!-- ================= CHAT CONTAINER ================= -->
-
-
-<section class="recent-events">
-
-
-
-<div class="chat-container">
-
-
-
-
-
-<!-- CHAT HEADER -->
-
-
-<div class="chat-header">
-
-
-<i class="fa-solid fa-robot"></i>
-
-
-<h2>
-
-EventAI Assistant
-
-</h2>
-
-
-</div>
-
-
-
-
-
-
-
-<!-- CHAT MESSAGES -->
-
-
-<div id="chatMessages"
-
-class="chat-messages">
-
-
-
-<div class="bot-message">
-
-
-<p>
-
-Hello! 👋
-
-</p>
-
-
-<p>
-
-I am your EventAI assistant.
-
-I can help you with:
-
-</p>
-
-
-<ul>
-
-<li>
-
-Available events
-
-</li>
-
-
-<li>
-
-Registration details
-
-</li>
-
-
-<li>
-
-Ticket information
-
-</li>
-
-
-<li>
-
-Event schedules
-
-</li>
-
-
-</ul>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-<!-- INPUT AREA -->
-
-
-<div class="chat-input-area">
-
-
-
-<input
-
-type="text"
-
-id="userMessage"
-
-placeholder="Ask about events..."
-
-autocomplete="off">
-
-
-
-
-
-<button
-
-id="sendMessage">
-
-
-<i class="fa-solid fa-paper-plane"></i>
-
-
-Send
-
-
-</button>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-</section>
-<!-- ================= FOOTER ================= -->
-
-
-<footer
-
-style="
-text-align:center;
-padding:20px;
-color:#64748B;
-margin-top:30px;
-">
-
-
-© 2026 EventAI |
-
-AI Powered Event Management System
-
-
-</footer>
-
-
-
-
-
-</main>
-
-</div>
-
-
-
-
-
-
-
-<!-- ================= JAVASCRIPT ================= -->
-
+<!-- ==========================================
+                    JAVASCRIPT
+=========================================== -->
 
 <script src="js/auth.js"></script>
 
+<script src="js/api.js"></script>
 
 <script src="js/user-chatbot.js"></script>
 
 
-
-
-
 <script>
 
-
-const logoutBtn =
-
-document.getElementById("logoutBtn");
-
-
-
-if(logoutBtn){
+    const logoutBtn =
+        document.getElementById(
+            "logoutBtn"
+        );
 
 
-logoutBtn.addEventListener(
+    if (logoutBtn) {
 
-"click",
+        logoutBtn.addEventListener(
+            "click",
+            function (event) {
 
-function(e){
+                event.preventDefault();
 
+                logout();
 
-e.preventDefault();
+            }
+        );
 
-
-logout();
-
-
-}
-
-);
-
-
-}
-
-
+    }
 
 </script>
 
 
-
-
-
 </body>
-
 
 </html>

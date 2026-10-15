@@ -1,607 +1,704 @@
 /* ==========================================
-            EVENTAI PROFILE
+              EVENTAI PROFILE
 ========================================== */
+
+let currentProfile = null;
+let registrations = [];
+let events = [];
+let tickets = [];
+
+const $ = id => document.getElementById(id);
+
 
 /* ==========================================
-            CURRENT USER
+              INITIALIZE
 ========================================== */
 
-const currentUser = {
+document.addEventListener("DOMContentLoaded", async () => {
 
-    name: localStorage.getItem("userName") || "User",
+    if (!requireLogin()) return;
 
-    email: localStorage.getItem("userEmail") || "",
+    try {
 
-    role: localStorage.getItem("userRole") || "user"
+        await loadProfile();
+        await loadProfileData();
 
-};
+    } catch (error) {
 
-/* ==========================================
-            LOAD PROFILE
-========================================== */
+        console.error("PROFILE ERROR:", error);
 
-function loadProfile() {
-
-    const savedProfile = JSON.parse(
-
-        localStorage.getItem("profile_" + currentUser.email)
-
-    ) || {};
-
-    document.getElementById("loggedUserName").textContent =
-        currentUser.name;
-
-    document.getElementById("profileName").textContent =
-        savedProfile.name || currentUser.name;
-
-    document.getElementById("profileRole").textContent =
-        savedProfile.designation || "Event Participant";
-
-    document.getElementById("name").value =
-        savedProfile.name || currentUser.name;
-
-    document.getElementById("email").value =
-        currentUser.email;
-
-    document.getElementById("phone").value =
-        savedProfile.phone || "";
-
-    document.getElementById("organization").value =
-        savedProfile.organization || "";
-
-    document.getElementById("designation").value =
-        savedProfile.designation || "";
-
-    document.getElementById("location").value =
-        savedProfile.location || "";
-
-    document.getElementById("bio").value =
-        savedProfile.bio || "";
-
-    if(savedProfile.photo){
-
-        document.getElementById("profilePhoto").src =
-            savedProfile.photo;
-
+        alert(
+            error.message ||
+            "Failed to load profile"
+        );
     }
-
-}
-
-/* ==========================================
-            SECURITY
-========================================== */
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-    if(currentUser.role!=="user"){
-
-        window.location.href="dashboard.html";
-
-        return;
-
-    }
-
-    loadProfile();
 
 });
+
+
+/* ==========================================
+        LOAD PROFILE FROM BACKEND
+========================================== */
+
+async function loadProfile() {
+
+    currentProfile = await Api.me();
+
+    console.log(
+        "PROFILE FROM DATABASE:",
+        currentProfile
+    );
+
+    const fullName = [
+        currentProfile.first_name,
+        currentProfile.last_name
+    ]
+    .filter(Boolean)
+    .join(" ");
+
+    // Top bar
+    $("loggedUserName").textContent =
+        fullName || "User";
+
+    // Left card
+    $("profileName").textContent =
+        fullName || "User";
+
+    $("profileRole").textContent =
+        currentProfile.designation ||
+        "Event Participant";
+
+    // Form
+    $("name").value =
+        fullName;
+
+    $("email").value =
+        currentProfile.email || "";
+
+    $("phone").value =
+        currentProfile.phone || "";
+
+    $("organization").value =
+        currentProfile.organization || "";
+
+    $("designation").value =
+        currentProfile.designation || "";
+
+    $("location").value =
+        currentProfile.location || "";
+
+    $("bio").value =
+        currentProfile.bio || "";
+
+    // Profile image
+    setProfileImage(
+        currentProfile.profile_image,
+        fullName
+    );
+
+    // Only keep basic login/session display data locally
+    localStorage.setItem(
+        "userName",
+        fullName
+    );
+
+    localStorage.setItem(
+        "userEmail",
+        currentProfile.email || ""
+    );
+}
+
+
+/* ==========================================
+             PROFILE IMAGE
+========================================== */
+
+function setProfileImage(image, name) {
+
+    const profilePhoto =
+        $("profilePhoto");
+
+    if (!profilePhoto) return;
+
+    if (image) {
+
+        profilePhoto.src = image;
+
+    } else {
+
+        profilePhoto.src =
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                name || "User"
+            )}&background=2563EB&color=fff&size=200`;
+    }
+}
+
+
 /* ==========================================
             SAVE PROFILE
 ========================================== */
 
-const profileForm =
+$("profileForm")?.addEventListener(
+    "submit",
+    async event => {
 
-document.getElementById("profileForm");
+        event.preventDefault();
 
-if(profileForm){
+        try {
 
-    profileForm.addEventListener("submit",function(e){
+            const fullName =
+                $("name").value.trim();
 
-        e.preventDefault();
+            if (!fullName) {
 
-        const profile = {
+                alert("Full name is required.");
+                return;
+            }
 
-            name:
+            const parts =
+                fullName.split(/\s+/);
 
-                document.getElementById("name").value.trim(),
+            const firstName =
+                parts.shift();
 
-            email:
+            const lastName =
+                parts.join(" ");
 
-                currentUser.email,
+            const payload = {
 
-            phone:
+                first_name:
+                    firstName,
 
-                document.getElementById("phone").value.trim(),
+                last_name:
+                    lastName || "",
 
-            organization:
+                phone:
+                    $("phone").value.trim() || null,
 
-                document.getElementById("organization").value.trim(),
+                organization:
+                    $("organization").value.trim() || null,
 
-            designation:
+                designation:
+                    $("designation").value.trim() || null,
 
-                document.getElementById("designation").value.trim(),
+                location:
+                    $("location").value.trim() || null,
 
-            location:
+                bio:
+                    $("bio").value.trim() || null
+            };
 
-                document.getElementById("location").value.trim(),
-
-            bio:
-
-                document.getElementById("bio").value.trim()
-
-        };
-
-        // Preserve existing photo if available
-        const oldProfile = JSON.parse(
-
-            localStorage.getItem(
-
-                "profile_" + currentUser.email
-
-            )
-
-        ) || {};
-
-        if(oldProfile.photo){
-
-            profile.photo = oldProfile.photo;
-
-        }
-
-        localStorage.setItem(
-
-            "profile_" + currentUser.email,
-
-            JSON.stringify(profile)
-
-        );
-
-        // Update current session name
-        localStorage.setItem(
-
-            "userName",
-
-            profile.name
-
-        );
-
-        // Update page immediately
-        document.getElementById("profileName").textContent =
-
-            profile.name;
-
-        document.getElementById("profileRole").textContent =
-
-            profile.designation ||
-
-            "Event Participant";
-
-        document.getElementById("loggedUserName").textContent =
-
-            profile.name;
-
-        alert("✅ Profile updated successfully.");
-
-    });
-
-}
-/* ==========================================
-            PROFILE PHOTO
-========================================== */
-
-const uploadPhoto =
-
-document.getElementById("uploadPhoto");
-
-if(uploadPhoto){
-
-    uploadPhoto.addEventListener("change",function(e){
-
-        const file = e.target.files[0];
-
-        if(!file) return;
-
-        const reader = new FileReader();
-
-        reader.onload = function(event){
-
-            const image = event.target.result;
-
-            document.getElementById("profilePhoto").src = image;
-
-            const profile = JSON.parse(
-
-                localStorage.getItem(
-
-                    "profile_" + currentUser.email
-
-                )
-
-            ) || {};
-
-            profile.photo = image;
-
-            localStorage.setItem(
-
-                "profile_" + currentUser.email,
-
-                JSON.stringify(profile)
-
+            console.log(
+                "SENDING PROFILE UPDATE:",
+                payload
             );
 
-        };
+            const updated =
+                await Api.updateMe(payload);
 
-        reader.readAsDataURL(file);
+            console.log(
+                "UPDATED PROFILE:",
+                updated
+            );
 
-    });
+            currentProfile = updated;
 
-}
+            await loadProfile();
+
+            alert(
+                "Profile updated successfully."
+            );
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE PROFILE ERROR:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Profile update failed"
+            );
+        }
+    }
+);
+
 
 /* ==========================================
-            PROFILE STATISTICS
+             PROFILE PHOTO
 ========================================== */
 
-function loadStatistics(){
+$("uploadPhoto")?.addEventListener(
+    "change",
+    event => {
 
-    const attendees = JSON.parse(
+        const file =
+            event.target.files[0];
 
-        localStorage.getItem("attendees")
+        if (!file) return;
 
-    ) || [];
 
-    const tickets = JSON.parse(
+        if (file.size > 2 * 1024 * 1024) {
 
-        localStorage.getItem("tickets")
+            alert(
+                "Image must be smaller than 2 MB."
+            );
 
-    ) || [];
+            event.target.value = "";
 
-    const events = JSON.parse(
+            return;
+        }
 
-        localStorage.getItem("events")
 
-    ) || [];
+        const reader =
+            new FileReader();
 
-    const myAttendees = attendees.filter(
 
-        attendee =>
+        reader.onload =
+            async readerEvent => {
 
-        attendee.email === currentUser.email
+                try {
 
+                    const image =
+                        readerEvent.target.result;
+
+                    // Preview
+                    $("profilePhoto").src =
+                        image;
+
+                    const updated =
+                        await Api.updateMe({
+
+                            profile_image:
+                                image
+
+                        });
+
+                    currentProfile =
+                        updated;
+
+                    console.log(
+                        "PROFILE PHOTO SAVED:",
+                        updated
+                    );
+
+                    alert(
+                        "Profile photo updated successfully."
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "PHOTO ERROR:",
+                        error
+                    );
+
+                    setProfileImage(
+                        currentProfile?.profile_image,
+                        $("name").value
+                    );
+
+                    alert(
+                        error.message ||
+                        "Profile photo update failed"
+                    );
+                }
+            };
+
+
+        reader.readAsDataURL(file);
+    }
+);
+
+
+/* ==========================================
+      LOAD REGISTRATION / EVENT DATA
+========================================== */
+
+async function loadProfileData() {
+
+    // -------------------------------
+    // Registrations
+    // -------------------------------
+
+    try {
+
+        registrations =
+            await Api.registrations.mine();
+
+    } catch (error) {
+
+        console.error(
+            "Registration loading error:",
+            error
+        );
+
+        registrations = [];
+    }
+
+
+    // -------------------------------
+    // Events
+    // -------------------------------
+
+    try {
+
+        events =
+            await Api.events.list();
+
+    } catch (error) {
+
+        console.error(
+            "Event loading error:",
+            error
+        );
+
+        events = [];
+    }
+
+
+    // -------------------------------
+    // Tickets
+    // -------------------------------
+
+    tickets = [];
+
+    for (const event of events) {
+
+        try {
+
+            const eventTickets =
+                await Api.tickets.event(
+                    event.id
+                );
+
+            tickets.push(
+                ...eventTickets
+            );
+
+        } catch (error) {
+
+            console.warn(
+                `Tickets unavailable for event ${event.id}`
+            );
+        }
+    }
+
+
+    console.log(
+        "REGISTRATIONS:",
+        registrations
     );
 
-    const myTickets = tickets.filter(
-
-        ticket =>
-
-        ticket.email === currentUser.email
-
+    console.log(
+        "EVENTS:",
+        events
     );
 
-    document.getElementById("registeredEvents").textContent =
+    console.log(
+        "TICKETS:",
+        tickets
+    );
 
-        myAttendees.length;
 
-    document.getElementById("ticketCount").textContent =
+    loadStatistics();
+    loadRecentTickets();
+    loadRecentActivity();
+    loadAchievements();
+}
 
-        myTickets.length;
 
-    let completed = 0;
+/* ==========================================
+             STATISTICS
+========================================== */
 
-    myAttendees.forEach(attendee=>{
+function loadStatistics() {
 
-        const event = events.find(
+    const activeRegistrations =
+        registrations.filter(registration =>
 
-            e=>e.id==attendee.eventId
+            String(
+                registration.status
+            ).toLowerCase() !== "cancelled"
 
         );
 
-        if(
 
-            event &&
+    const completed =
+        activeRegistrations.filter(registration => {
 
-            event.status==="Completed"
+            const event =
+                events.find(
+                    event =>
+                        Number(event.id) ===
+                        Number(registration.event_id)
+                );
 
-        ){
+            if (!event) return false;
 
-            completed++;
+            return String(
+                event.status
+            ).toLowerCase() === "completed";
 
-        }
+        });
 
-    });
 
-    document.getElementById("completedEvents").textContent =
+    $("registeredEvents").textContent =
+        activeRegistrations.length;
 
-        completed;
+    $("ticketCount").textContent =
+        activeRegistrations.length;
 
+    $("completedEvents").textContent =
+        completed.length;
 }
 
+
 /* ==========================================
-            RECENT TICKETS
+             RECENT TICKETS
 ========================================== */
 
-function loadRecentTickets(){
+function loadRecentTickets() {
 
     const table =
+        $("recentTickets");
 
-        document.getElementById("recentTickets");
+    if (!table) return;
 
-    if(!table) return;
 
-    table.innerHTML = "";
+    const activeRegistrations =
+        registrations
+            .filter(registration =>
 
-    const tickets = JSON.parse(
+                String(
+                    registration.status
+                ).toLowerCase() !== "cancelled"
 
-        localStorage.getItem("tickets")
+            )
+            .sort((a, b) =>
 
-    ) || [];
+                new Date(
+                    b.registration_date || 0
+                ) -
+                new Date(
+                    a.registration_date || 0
+                )
 
-    const myTickets = tickets.filter(
+            )
+            .slice(0, 5);
 
-        ticket=>ticket.email===currentUser.email
 
-    );
+    if (!activeRegistrations.length) {
 
-    if(myTickets.length===0){
+        table.innerHTML = `
 
-        table.innerHTML=`
+            <tr>
 
-        <tr>
+                <td colspan="4"
+                    style="text-align:center;padding:20px;">
 
-            <td colspan="4"
+                    No tickets available.
 
-                style="text-align:center;padding:20px;">
+                </td>
 
-                No tickets available.
-
-            </td>
-
-        </tr>
-
+            </tr>
         `;
 
         return;
-
     }
 
-    myTickets.slice(-5).reverse().forEach(ticket=>{
 
-        table.innerHTML+=`
+    table.innerHTML =
+        activeRegistrations.map(
+            registration => {
 
-        <tr>
+                const event =
+                    events.find(
+                        event =>
+                            Number(event.id) ===
+                            Number(registration.event_id)
+                    );
 
-            <td>
 
-                ${ticket.ticketId}
+                const date =
+                    registration.registration_date
+                        ? new Date(
+                            registration.registration_date
+                        ).toLocaleDateString("en-IN")
+                        : "-";
 
-            </td>
 
-            <td>
+                return `
 
-                ${ticket.eventName}
+                    <tr>
 
-            </td>
+                        <td>
+                            ${registration.id}
+                        </td>
 
-            <td>
+                        <td>
+                            ${event?.event_name || "-"}
+                        </td>
 
-                ${new Date(ticket.date).toLocaleDateString("en-IN")}
+                        <td>
+                            ${date}
+                        </td>
 
-            </td>
+                        <td>
 
-            <td>
+                            <span class="badge">
 
-                <span class="badge completed">
+                                ${registration.status || "-"}
 
-                    ${ticket.status}
+                            </span>
 
-                </span>
+                        </td>
 
-            </td>
-
-        </tr>
-
-        `;
-
-    });
-
+                    </tr>
+                `;
+            }
+        ).join("");
 }
+
+
 /* ==========================================
-            RECENT ACTIVITY
+             RECENT ACTIVITY
 ========================================== */
 
 function loadRecentActivity() {
 
-    const activityList =
+    const list =
+        $("activityTimeline");
 
-        document.getElementById("activityTimeline");
+    if (!list) return;
 
-    if (!activityList) return;
 
-    activityList.innerHTML = "";
+    const recent =
+        [...registrations]
+            .sort((a, b) =>
 
-    const attendees = JSON.parse(
+                new Date(
+                    b.registration_date || 0
+                ) -
+                new Date(
+                    a.registration_date || 0
+                )
 
-        localStorage.getItem("attendees")
+            )
+            .slice(0, 5);
 
-    ) || [];
 
-    const myActivities = attendees.filter(
+    if (!recent.length) {
 
-        attendee =>
-
-        attendee.email === currentUser.email
-
-    );
-
-    if (myActivities.length === 0) {
-
-        activityList.innerHTML = `
-
-            <li>
-
-                <strong>No recent activity.</strong>
-
-                <small>Register for an event to see activity.</small>
-
-            </li>
-
-        `;
-
-        return;
-
-    }
-
-    myActivities.slice(-5).reverse().forEach(activity => {
-
-        activityList.innerHTML += `
+        list.innerHTML = `
 
             <li>
 
                 <strong>
-
-                    Registered for
-
-                    ${activity.eventName}
-
+                    No recent activity.
                 </strong>
 
                 <small>
-
-                    ${new Date(activity.registrationDate || Date.now())
-                        .toLocaleDateString("en-IN")}
-
+                    Register for an event to see activity.
                 </small>
 
             </li>
-
         `;
 
-    });
+        return;
+    }
 
+
+    list.innerHTML =
+        recent.map(registration => {
+
+            const event =
+                events.find(
+                    event =>
+                        Number(event.id) ===
+                        Number(registration.event_id)
+                );
+
+
+            const date =
+                registration.registration_date
+                    ? new Date(
+                        registration.registration_date
+                    ).toLocaleDateString("en-IN")
+                    : "-";
+
+
+            return `
+
+                <li>
+
+                    <strong>
+
+                        ${registration.status === "Cancelled"
+                            ? "Cancelled registration for"
+                            : "Registered for"}
+
+                        ${event?.event_name || "event"}
+
+                    </strong>
+
+                    <small>
+                        ${date}
+                    </small>
+
+                </li>
+            `;
+
+        }).join("");
 }
 
+
 /* ==========================================
-            ACHIEVEMENTS
+             ACHIEVEMENTS
 ========================================== */
 
 function loadAchievements() {
 
-    const attendees = JSON.parse(
+    const active =
+        registrations.filter(registration =>
 
-        localStorage.getItem("attendees")
+            String(
+                registration.status
+            ).toLowerCase() !== "cancelled"
 
-    ) || [];
+        );
 
-    const tickets = JSON.parse(
 
-        localStorage.getItem("tickets")
+    const count =
+        active.length;
 
-    ) || [];
 
-    const myEvents = attendees.filter(
+    $("badgeEvents").textContent =
+        count;
 
-        attendee =>
+    $("badgeTickets").textContent =
+        count;
 
-        attendee.email === currentUser.email
 
-    ).length;
+    let level =
+        "Beginner";
 
-    const myTickets = tickets.filter(
-
-        ticket =>
-
-        ticket.email === currentUser.email
-
-    ).length;
-
-    document.getElementById("badgeEvents").textContent =
-
-        myEvents;
-
-    document.getElementById("badgeTickets").textContent =
-
-        myTickets;
-
-    let level = "Beginner";
-
-    if (myEvents >= 5) {
-
+    if (count >= 5)
         level = "Explorer";
 
-    }
-
-    if (myEvents >= 10) {
-
+    if (count >= 10)
         level = "Expert";
 
-    }
-
-    if (myEvents >= 20) {
-
+    if (count >= 20)
         level = "Champion";
 
-    }
 
-    document.getElementById("badgeParticipation").textContent =
-
+    $("badgeParticipation").textContent =
         level;
-
 }
 
-/* ==========================================
-            REFRESH PROFILE
-========================================== */
 
-function refreshProfile() {
-
-    loadProfile();
-
-    loadStatistics();
-
-    loadRecentTickets();
-
-    loadRecentActivity();
-
-    loadAchievements();
-
-}
-
-/* ==========================================
-            AUTO REFRESH
-========================================== */
-
-window.addEventListener("storage", () => {
-
-    refreshProfile();
-
-});
-
-/* ==========================================
-            INITIALIZE
-========================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    if (currentUser.role !== "user") {
-
-        window.location.href = "dashboard.html";
-
-        return;
-
-    }
-
-    refreshProfile();
-
-});
-
-/* ==========================================
-            DEBUG
-========================================== */
-
-console.log("===================================");
-
-console.log("EventAI Profile Loaded");
-
-console.log("User :", currentUser.name);
-
-console.log("Email :", currentUser.email);
-
-console.log("===================================");
+console.log(
+    "EventAI backend profile module loaded"
+);

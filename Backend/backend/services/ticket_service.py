@@ -13,6 +13,10 @@ from backend.crud.event import (
 
 from backend.models.ticket import Ticket
 from backend.schemas.ticket import TicketCreate
+from backend.models.registration import Registration
+from backend.models.event import Event
+from backend.models.user import User
+from backend.crud.registration import get_registration_by_id
 
 
 def create_new_ticket(
@@ -92,3 +96,63 @@ def get_event_tickets(
         db=db,
         event_id=event_id,
     )
+
+
+def get_ticket_view(
+    db: Session,
+    registration_id: int,
+):
+    """
+    Return complete ticket details for a registration.
+    """
+
+    registration = get_registration_by_id(
+        db=db,
+        registration_id=registration_id,
+    )
+
+    if registration is None:
+        raise ValueError("Registration not found.")
+
+    event = registration.event
+    user = registration.user
+    ticket = registration.ticket
+
+    return {
+
+        "registration_id": registration.id,
+
+        "registration_number":
+            registration.registration_number,
+
+        "holder_name":
+            f"{user.first_name} {user.last_name}",
+
+        "email":
+            user.email,
+
+        "event_name":
+            event.event_name,
+
+        "venue":
+            event.venue.venue_name
+            if event.venue else "-",
+
+        "date":
+            str(event.start_date),
+
+        "ticket_category":
+            ticket.ticket_category
+            if ticket else "General",
+
+        "price":
+            float(ticket.price)
+            if ticket else 0,
+
+        "status":
+            registration.status,
+
+        "qr_code":
+            registration.qr_code
+
+    }

@@ -88,38 +88,44 @@ class Event(Base, TimestampMixin):
 
     event_speakers = relationship(
         "EventSpeaker",
-        back_populates="event"
+        back_populates="event",
+        cascade="all, delete-orphan",
     )
 
     event_sponsors = relationship(
-       "EventSponsor",
-       back_populates="event"
+        "EventSponsor",
+        back_populates="event",
+        cascade="all, delete-orphan",
     )
 
     sessions = relationship(
         "Session",
-        back_populates="event"
+        back_populates="event",
+        cascade="all, delete-orphan",
     )
 
     event_vendors = relationship(
         "EventVendor",
-        back_populates="event"
+        back_populates="event",
+        cascade="all, delete-orphan",
     )
 
     tickets = relationship(
         "Ticket",
-        back_populates="event"
-    )
-
-    registrations = relationship(
-        "Registration",
         back_populates="event",
+        cascade="all, delete-orphan",
     )
 
     feedbacks = relationship(
         "Feedback",
         back_populates="event",
+        cascade="all, delete-orphan",
     )
+
+    registrations = relationship(
+            "Registration",
+            back_populates="event",
+        )
 
     CheckConstraint(
         "capacity > 0",

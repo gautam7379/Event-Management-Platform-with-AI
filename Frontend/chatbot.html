@@ -183,6 +183,54 @@
 
     <!-- ================= CHAT AREA ================= -->
 
+
+    <!-- ================= AI SCOPE ================= -->
+
+<div
+    class="chat-scope"
+    style="
+        display:flex;
+        gap:15px;
+        align-items:center;
+        flex-wrap:wrap;
+        margin-bottom:20px;
+    "
+>
+
+    <div>
+        <label for="chatScope">
+            <strong>Ask About:</strong>
+        </label>
+
+        <select id="chatScope">
+            <option value="platform">
+                All Events / Platform
+            </option>
+
+            <option value="event">
+                Specific Event
+            </option>
+        </select>
+    </div>
+
+
+    <div id="eventSelectorWrapper" style="display:none;">
+
+            <label for="eventSelect">
+                <strong>Event:</strong>
+            </label>
+
+            <select id="eventSelect">
+
+                <option value="">
+                    Select Event
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
     <div id="chatContainer" class="chat-container">
 
         <div class="bot-message">
@@ -401,6 +449,7 @@
 
 <script src="js/auth.js"></script>
 
+<script src="js/api.js"></script>
 <script src="js/chatbot.js"></script>
 
 <script>

@@ -1,818 +1,730 @@
-/* ==========================================
-            EVENTAI SPEAKERS
-========================================== */
+let speakers = [];
+let events = [];
+let assignments = [];
+let editId = null;
 
-/* ==========================================
-            LOCAL STORAGE
-========================================== */
+const $ = id => document.getElementById(id);
 
-function getSpeakers() {
 
-    return JSON.parse(
+// =====================================================
+// LOAD EVENTS
+// =====================================================
 
-        localStorage.getItem("speakers")
+async function loadEvents() {
 
-    ) || [];
+    events = await Api.events.list();
 
-}
-
-function saveSpeakers(speakers) {
-
-    localStorage.setItem(
-
-        "speakers",
-
-        JSON.stringify(speakers)
-
-    );
-
-}
-
-function getEvents() {
-
-    return JSON.parse(
-
-        localStorage.getItem("events")
-
-    ) || [];
-
-}
-
-/* ==========================================
-            CURRENT USER
-========================================== */
-
-const currentUser = {
-
-    name:
-
-        localStorage.getItem("userName") ||
-
-        "Administrator",
-
-    role:
-
-        localStorage.getItem("userRole") ||
-
-        "admin"
-
-};
-
-/* ==========================================
-            SECURITY
-========================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    if (currentUser.role !== "admin") {
-
-        window.location.href =
-
-            "user-dashboard.html";
-
-        return;
-
-    }
-
-    document.getElementById(
-
-        "loggedUserName"
-
-    ).textContent =
-
-        currentUser.name;
-
-    loadEvents();
-
-    loadStatistics();
-
-    loadSpeakers();
-
-});
-
-/* ==========================================
-            LOAD EVENTS
-========================================== */
-
-function loadEvents() {
-
-    const select =
-
-        document.getElementById(
-
-            "speakerEvent"
-
-        );
+    const select = $("speakerEvent");
 
     if (!select) return;
 
-    const events = getEvents();
-
     select.innerHTML =
-
-        `<option value="">Select Event</option>`;
-
-    events.forEach(event => {
-
-        select.innerHTML += `
-
-            <option value="${event.name}">
-
-                ${event.name}
-
+        `<option value="">Select Event</option>` +
+        events.map(event => `
+            <option value="${event.id}">
+                ${event.event_name}
             </option>
-
-        `;
-
-    });
-
+        `).join("");
 }
 
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
 
-function loadStatistics() {
+// =====================================================
+// LOAD EVENT-SPEAKER ASSIGNMENTS
+// =====================================================
 
-    const speakers =
+async function loadAssignments() {
 
-        getSpeakers();
-
-    document.getElementById(
-
-        "totalSpeakers"
-
-    ).textContent =
-
-        speakers.length;
-
-    document.getElementById(
-
-        "keynoteSpeakers"
-
-    ).textContent =
-
-        speakers.filter(
-
-            speaker =>
-
-            speaker.type === "Keynote"
-
-        ).length;
-
-    document.getElementById(
-
-        "assignedSpeakers"
-
-    ).textContent =
-
-        speakers.filter(
-
-            speaker =>
-
-            speaker.event !== ""
-
-        ).length;
-
-    const organizations = [
-
-        ...new Set(
-
-            speakers.map(
-
-                speaker =>
-
-                speaker.organization
-
-            )
-
-        )
-
-    ];
-
-    document.getElementById(
-
-        "organizations"
-
-    ).textContent =
-
-        organizations.length;
-
+    assignments =
+        await Api.eventSpeakers.list();
 }
-/* ==========================================
-            LOAD SPEAKERS
-========================================== */
 
-function loadSpeakers(filteredSpeakers = null) {
+
+// =====================================================
+// GET ASSIGNED EVENT NAME
+// =====================================================
+
+function getSpeakerEventNames(speakerId) {
+
+    const speakerAssignments =
+        assignments.filter(
+            assignment =>
+                Number(assignment.speaker_id) ===
+                Number(speakerId)
+        );
+
+    const names =
+        speakerAssignments
+            .map(assignment => {
+
+                const event =
+                    events.find(
+                        event =>
+                            Number(event.id) ===
+                            Number(assignment.event_id)
+                    );
+
+                return event
+                    ? event.event_name
+                    : null;
+            })
+            .filter(Boolean);
+
+    return names.length
+        ? names.join(", ")
+        : "—";
+}
+
+
+// =====================================================
+// LOAD SPEAKERS
+// =====================================================
+
+async function load() {
+
+    speakers =
+        await Api.speakers.list();
+
+    await loadAssignments();
+
+    renderSpeakers(speakers);
+
+    updateStatistics();
+}
+
+
+// =====================================================
+// RENDER TABLE
+// =====================================================
+
+function renderSpeakers(list) {
 
     const table =
-
-        document.getElementById("speakerTable");
+        $("speakerTable");
 
     if (!table) return;
 
-    table.innerHTML = "";
+    table.innerHTML =
+        list.map(speaker => {
 
-    const speakers = filteredSpeakers || getSpeakers();
+            const eventNames =
+                getSpeakerEventNames(
+                    speaker.id
+                );
 
-    if (speakers.length === 0) {
+            return `
+                <tr>
+
+                    <td>
+                        ${speaker.id}
+                    </td>
+
+                    <td>
+                        ${speaker.first_name}
+                        ${speaker.last_name}
+                    </td>
+
+                    <td>
+                        ${speaker.expertise || "—"}
+                    </td>
+
+                    <td>
+                        ${speaker.organization || "—"}
+                    </td>
+
+                    <td>
+                        ${eventNames}
+                    </td>
+
+                    <td>
+                        ${
+                            speaker.experience !== null &&
+                            speaker.experience !== undefined
+                                ? `${speaker.experience} Years`
+                                : "—"
+                        }
+                    </td>
+
+                    <td>
+                        ${speaker.speaker_type || "—"}
+                    </td>
+
+                    <td class="speaker-actions">
+
+                        <button
+                            type="button"
+                            class="edit-btn"
+                            onclick="editSpeaker(${speaker.id})">
+
+                            <i class="fa-solid fa-pen"></i>
+                            Edit
+
+                        </button>
+
+                        <button
+                            type="button"
+                            class="delete-btn"
+                            onclick="deleteSpeaker(${speaker.id})">
+
+                            <i class="fa-solid fa-trash"></i>
+                            Delete
+
+                        </button>
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+
+    if (!list.length) {
 
         table.innerHTML = `
-
-        <tr>
-
-            <td colspan="8"
-
-                style="text-align:center;padding:20px;">
-
-                No speakers available.
-
-            </td>
-
-        </tr>
-
+            <tr>
+                <td colspan="8">
+                    No speakers available.
+                </td>
+            </tr>
         `;
+    }
+}
 
-        loadFeaturedSpeakers([]);
 
-        return;
+// =====================================================
+// STATISTICS
+// =====================================================
 
+function updateStatistics() {
+
+    if ($("totalSpeakers")) {
+        $("totalSpeakers").textContent =
+            speakers.length;
     }
 
-    speakers.forEach((speaker, index) => {
-
-        let badgeClass = "guest";
-
-        if (speaker.type === "Keynote") {
-
-            badgeClass = "keynote";
-
-        }
-
-        else if (speaker.type === "Panelist") {
-
-            badgeClass = "panelist";
-
-        }
-
-        else if (speaker.type === "Workshop") {
-
-            badgeClass = "workshop";
-
-        }
-
-        table.innerHTML += `
-
-        <tr>
-
-            <td>
-
-                ${speaker.id}
-
-            </td>
-
-            <td>
-
-                ${speaker.name}
-
-            </td>
-
-            <td>
-
-                ${speaker.expertise}
-
-            </td>
-
-            <td>
-
-                ${speaker.organization}
-
-            </td>
-
-            <td>
-
-                ${speaker.event || "-"}
-
-            </td>
-
-            <td>
-
-                ${speaker.experience} Years
-
-            </td>
-
-            <td>
-
-                <span class="badge ${badgeClass}">
-
-                    ${speaker.type}
-
-                </span>
-
-            </td>
-
-            <td>
-
-                <div class="action-buttons">
-
-                    <button
-
-                        class="edit-btn"
-
-                        onclick="editSpeaker(${index})">
-
-                        <i class="fa-solid fa-pen"></i>
-
-                    </button>
-
-                    <button
-
-                        class="delete-btn"
-
-                        onclick="deleteSpeaker(${index})">
-
-                        <i class="fa-solid fa-trash"></i>
-
-                    </button>
-
-                </div>
-
-            </td>
-
-        </tr>
-
-        `;
-
-    });
-
-    loadFeaturedSpeakers(speakers);
-
-}
-
-/* ==========================================
-            ADD SPEAKER
-========================================== */
-
-const speakerForm =
-
-document.getElementById("speakerForm");
-
-if(speakerForm){
-
-    speakerForm.addEventListener("submit",function(e){
-
-        e.preventDefault();
-
-        const speakers = getSpeakers();
-
-        const speaker = {
-
-            id:
-
-                "SPK" + Date.now(),
-
-            name:
-
-                document.getElementById(
-
-                    "speakerName"
-
-                ).value.trim(),
-
-            email:
-
-                document.getElementById(
-
-                    "speakerEmail"
-
-                ).value.trim(),
-
-            phone:
-
-                document.getElementById(
-
-                    "speakerPhone"
-
-                ).value.trim(),
-
-            organization:
-
-                document.getElementById(
-
-                    "speakerOrganization"
-
-                ).value.trim(),
-
-            expertise:
-
-                document.getElementById(
-
-                    "speakerExpertise"
-
-                ).value,
-
-            type:
-
-                document.getElementById(
-
-                    "speakerType"
-
-                ).value,
-
-            event:
-
-                document.getElementById(
-
-                    "speakerEvent"
-
-                ).value,
-
-            experience:
-
-                document.getElementById(
-
-                    "speakerExperience"
-
-                ).value,
-
-            bio:
-
-                document.getElementById(
-
-                    "speakerBio"
-
-                ).value.trim()
-
-        };
-
-        speakers.push(speaker);
-
-        saveSpeakers(speakers);
-
-        speakerForm.reset();
-
-        loadStatistics();
-
-        loadSpeakers();
-
-        alert("✅ Speaker added successfully.");
-
-    });
-
-}
-/* ==========================================
-            EDIT SPEAKER
-========================================== */
-
-function editSpeaker(index){
-
-    const speakers = getSpeakers();
-
-    const speaker = speakers[index];
-
-    if(!speaker) return;
-
-    document.getElementById("speakerName").value = speaker.name;
-
-    document.getElementById("speakerEmail").value = speaker.email;
-
-    document.getElementById("speakerPhone").value = speaker.phone;
-
-    document.getElementById("speakerOrganization").value = speaker.organization;
-
-    document.getElementById("speakerExpertise").value = speaker.expertise;
-
-    document.getElementById("speakerType").value = speaker.type;
-
-    document.getElementById("speakerEvent").value = speaker.event;
-
-    document.getElementById("speakerExperience").value = speaker.experience;
-
-    document.getElementById("speakerBio").value = speaker.bio;
-
-    speakers.splice(index,1);
-
-    saveSpeakers(speakers);
-
-    loadStatistics();
-
-    loadSpeakers();
-
-}
-
-/* ==========================================
-            DELETE SPEAKER
-========================================== */
-
-function deleteSpeaker(index){
-
-    if(!confirm("Delete this speaker?")){
-
-        return;
-
+    if ($("assignedSpeakers")) {
+
+        const assigned =
+            new Set(
+                assignments.map(
+                    item => item.speaker_id
+                )
+            );
+
+        $("assignedSpeakers").textContent =
+            assigned.size;
     }
 
-    const speakers = getSpeakers();
+    if ($("organizations")) {
 
-    speakers.splice(index,1);
+        const organizations =
+            new Set(
+                speakers
+                    .map(s => s.organization)
+                    .filter(Boolean)
+            );
 
-    saveSpeakers(speakers);
+        $("organizations").textContent =
+            organizations.size;
+    }
 
-    loadStatistics();
+    if ($("keynoteSpeakers")) {
 
-    loadSpeakers();
+        const keynoteCount =
+            speakers.filter(
+                speaker =>
+                    speaker.speaker_type ===
+                    "Keynote"
+            ).length;
 
+        $("keynoteSpeakers").textContent =
+            keynoteCount;
+    }
 }
 
-/* ==========================================
-            SEARCH
-========================================== */
 
-const searchSpeaker =
+// =====================================================
+// CREATE / UPDATE SPEAKER
+// =====================================================
 
-document.getElementById("searchSpeaker");
+$("speakerForm")?.addEventListener(
+    "submit",
+    async event => {
 
-if(searchSpeaker){
+        event.preventDefault();
 
-    searchSpeaker.addEventListener(
+        try {
 
-        "keyup",
+            const name =
+                ($("speakerName").value || "")
+                    .trim();
 
-        filterSpeakers
+            if (!name) {
+                alert("Speaker name is required.");
+                return;
+            }
 
-    );
+            const parts =
+                name.split(/\s+/);
 
-}
+            const firstName =
+                parts.shift();
 
-/* ==========================================
-            FILTER
-========================================== */
+            const lastName =
+                parts.join(" ") || "User";
 
-const filterExpertise =
+            const experienceValue =
+                $("speakerExperience").value.trim();
 
-document.getElementById("filterExpertise");
+            const data = {
 
-if(filterExpertise){
+                first_name: firstName,
 
-    filterExpertise.addEventListener(
+                last_name: lastName,
 
-        "change",
+                email:
+                    $("speakerEmail").value.trim(),
 
-        filterSpeakers
+                phone:
+                    $("speakerPhone").value.trim()
+                    || null,
 
-    );
+                organization:
+                    $("speakerOrganization").value.trim()
+                    || null,
 
-}
+                // No separate designation input exists in your form
+                designation: null,
 
-/* ==========================================
-            FILTER FUNCTION
-========================================== */
+                expertise:
+                    $("speakerExpertise").value
+                    || null,
 
-function filterSpeakers(){
+                speaker_type:
+                    $("speakerType").value
+                    || null,
+
+                experience:
+                    experienceValue !== ""
+                        ? Number(experienceValue)
+                        : null,
+
+                bio:
+                    $("speakerBio").value.trim()
+                    || null
+            };
+
+
+            // ==========================================
+            // UPDATE
+            // ==========================================
+
+            if (editId) {
+
+                // Update speaker details
+                await Api.speakers.update(
+                    editId,
+                    data
+                );
+
+
+                // Selected event from form
+                const selectedEventId =
+                    $("speakerEvent").value
+                        ? Number($("speakerEvent").value)
+                        : null;
+
+
+                // Find existing speaker-event assignments
+                const existingAssignments =
+                    assignments.filter(
+                        item =>
+                            Number(item.speaker_id) ===
+                            Number(editId)
+                    );
+
+
+                // Remove assignments that are no longer selected
+                for (const assignment of existingAssignments) {
+
+                    if (
+                        !selectedEventId ||
+                        Number(assignment.event_id) !==
+                        selectedEventId
+                    ) {
+
+                        await Api.eventSpeakers.remove(
+                            assignment.id
+                        );
+                    }
+                }
+
+
+                // Check whether selected assignment already exists
+                const alreadyAssigned =
+                    existingAssignments.some(
+                        assignment =>
+                            Number(assignment.event_id) ===
+                            selectedEventId
+                    );
+
+
+                // Create new assignment if required
+                if (
+                    selectedEventId &&
+                    !alreadyAssigned
+                ) {
+
+                    await Api.eventSpeakers.create({
+
+                        event_id:
+                            selectedEventId,
+
+                        speaker_id:
+                            Number(editId)
+
+                    });
+                }
+
+
+                alert(
+                    "Speaker updated successfully."
+                );
+            }
+
+
+            // ==========================================
+            // CREATE
+            // ==========================================
+
+            else {
+
+                const speaker =
+                    await Api.speakers.create(
+                        data
+                    );
+
+                const eventId =
+                    $("speakerEvent").value;
+
+                // Assign event after speaker creation
+                if (eventId) {
+
+                    await Api.eventSpeakers.create({
+
+                        event_id:
+                            Number(eventId),
+
+                        speaker_id:
+                            Number(speaker.id)
+
+                    });
+                }
+
+                alert(
+                    "Speaker created successfully."
+                );
+            }
+
+
+            editId = null;
+
+            event.target.reset();
+
+
+            const submitButton =
+                $("speakerForm").querySelector(
+                    'button[type="submit"]'
+                );
+
+            if (submitButton) {
+
+                submitButton.innerHTML = `
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Save Speaker
+                `;
+            }
+
+            await load();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Speaker Error:",
+                error
+            );
+
+            alert(error.message);
+        }
+    }
+);
+
+
+// =====================================================
+// EDIT SPEAKER
+// =====================================================
+
+window.editSpeaker =
+    function(id) {
+
+        const speaker =
+            speakers.find(
+                item =>
+                    Number(item.id) ===
+                    Number(id)
+            );
+
+        if (!speaker) {
+            return;
+        }
+
+
+        editId = Number(id);
+
+
+        // ==========================================
+        // BASIC DETAILS
+        // ==========================================
+
+        $("speakerName").value =
+            `${speaker.first_name || ""} ${speaker.last_name || ""}`
+                .trim();
+
+        $("speakerEmail").value =
+            speaker.email || "";
+
+        $("speakerPhone").value =
+            speaker.phone || "";
+
+        $("speakerOrganization").value =
+            speaker.organization || "";
+
+
+        // ==========================================
+        // EXPERTISE
+        // ==========================================
+
+        $("speakerExpertise").value =
+            speaker.expertise || "Other";
+
+
+        // ==========================================
+        // SPEAKER TYPE
+        // ==========================================
+
+        $("speakerType").value =
+            speaker.speaker_type || "Guest";
+
+
+        // ==========================================
+        // EXPERIENCE
+        // ==========================================
+
+        $("speakerExperience").value =
+            speaker.experience !== null &&
+            speaker.experience !== undefined
+                ? speaker.experience
+                : "";
+
+
+        // ==========================================
+        // BIO
+        // ==========================================
+
+        $("speakerBio").value =
+            speaker.bio || "";
+
+
+        // ==========================================
+        // EVENT ASSIGNMENT
+        // ==========================================
+
+        const assignment =
+            assignments.find(
+                item =>
+                    Number(item.speaker_id) ===
+                    Number(id)
+            );
+
+        $("speakerEvent").value =
+            assignment
+                ? String(assignment.event_id)
+                : "";
+
+
+        // ==========================================
+        // CHANGE BUTTON TEXT
+        // ==========================================
+
+        const submitButton =
+            $("speakerForm").querySelector(
+                'button[type="submit"]'
+            );
+
+        if (submitButton) {
+
+            submitButton.innerHTML = `
+                <i class="fa-solid fa-floppy-disk"></i>
+                Update Speaker
+            `;
+        }
+
+
+        // ==========================================
+        // SCROLL TO FORM
+        // ==========================================
+
+        $("speakerForm").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    };
+
+
+// =====================================================
+// DELETE SPEAKER
+// =====================================================
+
+window.deleteSpeaker =
+    async function(id) {
+
+        if (!confirm(
+            "Delete this speaker?"
+        )) {
+            return;
+        }
+
+        try {
+
+            // Remove assignments first
+            const speakerAssignments =
+                assignments.filter(
+                    item =>
+                        Number(item.speaker_id) ===
+                        Number(id)
+                );
+
+            for (
+                const assignment
+                of speakerAssignments
+            ) {
+
+                await Api.eventSpeakers.remove(
+                    assignment.id
+                );
+            }
+
+            // Then speaker
+            await Api.speakers.remove(id);
+
+            await load();
+
+        }
+        catch (error) {
+
+            alert(error.message);
+        }
+    };
+
+
+// =====================================================
+// SEARCH
+// =====================================================
+
+$("searchSpeaker")?.addEventListener(
+    "input",
+    applyFilters
+);
+
+$("filterExpertise")?.addEventListener(
+    "change",
+    applyFilters
+);
+
+// =====================================================
+// INITIALIZE
+// =====================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        if (!requireLogin()) {
+            return;
+        }
+
+        try {
+
+            if ($("loggedUserName")) {
+
+                $("loggedUserName").textContent =
+                    localStorage.getItem(
+                        "userName"
+                    ) || "User";
+            }
+
+            await loadEvents();
+
+            await load();
+
+        }
+        catch (error) {
+
+            console.error(
+                "Speaker initialization error:",
+                error
+            );
+
+            alert(error.message);
+        }
+    }
+);
+
+function applyFilters() {
 
     const search =
-
-        document.getElementById(
-
-            "searchSpeaker"
-
-        ).value.toLowerCase();
+        ($("searchSpeaker")?.value || "")
+            .trim()
+            .toLowerCase();
 
     const expertise =
+        $("filterExpertise")?.value || "All";
 
-        document.getElementById(
 
-            "filterExpertise"
+    const filtered =
+        speakers.filter(speaker => {
 
-        ).value;
+            const fullName =
+                `${speaker.first_name || ""} ${speaker.last_name || ""}`
+                    .toLowerCase();
 
-    let speakers = getSpeakers();
+            const organization =
+                (speaker.organization || "")
+                    .toLowerCase();
 
-    speakers = speakers.filter(speaker=>{
+            const speakerExpertise =
+                (speaker.expertise || "")
+                    .toLowerCase();
 
-        const matchSearch =
 
-            speaker.name.toLowerCase().includes(search)
+            const matchesSearch =
+                !search ||
+                fullName.includes(search) ||
+                organization.includes(search) ||
+                speakerExpertise.includes(search);
 
-            ||
 
-            speaker.organization.toLowerCase().includes(search)
+            const matchesExpertise =
+                expertise === "All" ||
+                speaker.expertise === expertise;
 
-            ||
 
-            speaker.expertise.toLowerCase().includes(search)
+            return (
+                matchesSearch &&
+                matchesExpertise
+            );
+        });
 
-            ||
 
-            (speaker.event || "").toLowerCase().includes(search);
-
-        const matchExpertise =
-
-            expertise === "All"
-
-            ||
-
-            speaker.expertise === expertise;
-
-        return matchSearch && matchExpertise;
-
-    });
-
-    loadSpeakers(speakers);
-
+    renderSpeakers(filtered);
 }
-/* ==========================================
-            FEATURED SPEAKERS
-========================================== */
-
-function loadFeaturedSpeakers(speakers = getSpeakers()) {
-
-    const container = document.getElementById("featuredSpeakers");
-
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (speakers.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="no-data">
-
-                No speakers available.
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-    const featured = [...speakers]
-
-        .sort((a, b) =>
-
-            Number(b.experience || 0) -
-
-            Number(a.experience || 0)
-
-        )
-
-        .slice(0, 4);
-
-    featured.forEach(speaker => {
-
-        const initials = speaker.name
-
-            .split(" ")
-
-            .map(word => word[0])
-
-            .join("")
-
-            .substring(0, 2)
-
-            .toUpperCase();
-
-        let badgeClass = "guest";
-
-        if (speaker.type === "Keynote") {
-
-            badgeClass = "keynote";
-
-        }
-
-        else if (speaker.type === "Panelist") {
-
-            badgeClass = "panelist";
-
-        }
-
-        else if (speaker.type === "Workshop") {
-
-            badgeClass = "workshop";
-
-        }
-
-        container.innerHTML += `
-
-            <div class="speaker-card">
-
-                <div class="speaker-avatar">
-
-                    ${initials}
-
-                </div>
-
-                <h3>
-
-                    ${speaker.name}
-
-                </h3>
-
-                <p>
-
-                    <strong>Organization:</strong>
-
-                    ${speaker.organization}
-
-                </p>
-
-                <p>
-
-                    <strong>Expertise:</strong>
-
-                    ${speaker.expertise}
-
-                </p>
-
-                <p>
-
-                    <strong>Experience:</strong>
-
-                    ${speaker.experience} Years
-
-                </p>
-
-                <p>
-
-                    <strong>Event:</strong>
-
-                    ${speaker.event || "Not Assigned"}
-
-                </p>
-
-                <span class="badge ${badgeClass}">
-
-                    ${speaker.type}
-
-                </span>
-
-            </div>
-
-        `;
-
-    });
-
-}
-
-/* ==========================================
-            REFRESH PAGE
-========================================== */
-
-function refreshPage() {
-
-    loadEvents();
-
-    loadStatistics();
-
-    loadSpeakers();
-
-    loadFeaturedSpeakers();
-
-}
-
-/* ==========================================
-            AUTO REFRESH
-========================================== */
-
-window.addEventListener("storage", () => {
-
-    refreshPage();
-
-});
-
-/* ==========================================
-            INITIALIZE
-========================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    if (currentUser.role !== "admin") {
-
-        window.location.href = "user-dashboard.html";
-
-        return;
-
-    }
-
-    document.getElementById("loggedUserName").textContent =
-
-        currentUser.name;
-
-    refreshPage();
-
-});
-
-/* ==========================================
-            DEBUG
-========================================== */
-
-console.log("================================");
-
-console.log("EventAI Speakers Loaded");
-
-console.log("Admin :", currentUser.name);
-
-console.log("================================");

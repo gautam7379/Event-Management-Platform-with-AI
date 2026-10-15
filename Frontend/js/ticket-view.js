@@ -2,74 +2,134 @@
             EVENTAI TICKET VIEW
 ========================================== */
 
-// Get selected ticket from localStorage
-const ticket = JSON.parse(localStorage.getItem("selectedTicket"));
+if (!requireLogin()) {
+    location.href = "login.html";
+}
 
-// If no ticket exists
-if (!ticket) {
+/* ==========================================
+        GET REGISTRATION ID
+========================================== */
 
-    alert("Ticket not found!");
+const registrationId =
+    new URLSearchParams(window.location.search).get("id");
 
-    window.location.href = "tickets.html";
+if (!registrationId) {
+
+    alert("Invalid ticket.");
+
+    location.href = "user-tickets.html";
 
 }
 
 /* ==========================================
-            LOAD TICKET DETAILS
+        LOAD TICKET
 ========================================== */
 
-document.getElementById("eventName").textContent =
-    ticket.eventName || "Event";
+let ticket = null;
 
-document.getElementById("ticketHolder").textContent =
-    ticket.name || "-";
+async function loadTicket() {
 
-document.getElementById("ticketEmail").textContent =
-    ticket.email || "-";
+    try {
 
-document.getElementById("ticketDate").textContent =
-    ticket.date || "-";
+        ticket =
+            await Api.tickets.view(registrationId);
 
-document.getElementById("ticketVenue").textContent =
-    ticket.venue || "-";
+        renderTicket();
 
-document.getElementById("ticketId").textContent =
-    ticket.ticketId || "-";
+    }
+
+    catch (err) {
+
+        alert(err.message);
+
+        location.href = "user-tickets.html";
+
+    }
+
+}
 
 /* ==========================================
-            GENERATE QR CODE
+        RENDER TICKET
 ========================================== */
 
-new QRCode(document.getElementById("qrcode"), {
+function renderTicket() {
 
-    text: JSON.stringify({
+    document.getElementById("eventName").textContent =
+        ticket.event_name;
 
-        ticketId: ticket.ticketId,
+    document.getElementById("ticketHolder").textContent =
+        ticket.holder_name;
 
-        name: ticket.name,
+    document.getElementById("ticketEmail").textContent =
+        ticket.email;
 
-        event: ticket.eventName,
+    document.getElementById("ticketDate").textContent =
+        ticket.date;
 
-        email: ticket.email,
+    document.getElementById("ticketVenue").textContent =
+        ticket.venue;
 
-        date: ticket.date
+    document.getElementById("ticketId").textContent =
+        ticket.registration_number;
 
-    }),
+    generateQRCode();
 
-    width: 180,
-
-    height: 180,
-
-    colorDark: "#000000",
-
-    colorLight: "#ffffff",
-
-    correctLevel: QRCode.CorrectLevel.H
-
-});
+}
 
 /* ==========================================
-            PRINT TICKET
+        QR CODE
+========================================== */
+
+function generateQRCode() {
+
+    document.getElementById("qrcode").innerHTML = "";
+
+    new QRCode(
+
+        document.getElementById("qrcode"),
+
+        {
+
+            text: JSON.stringify({
+
+                registration_number:
+                    ticket.registration_number,
+
+                holder:
+                    ticket.holder_name,
+
+                event:
+                    ticket.event_name,
+
+                email:
+                    ticket.email,
+
+                venue:
+                    ticket.venue,
+
+                date:
+                    ticket.date
+
+            }),
+
+            width: 180,
+
+            height: 180,
+
+            colorDark: "#000000",
+
+            colorLight: "#ffffff",
+
+            correctLevel: QRCode.CorrectLevel.H
+
+        }
+
+    );
+
+}
+
+/* ==========================================
+        PRINT
 ========================================== */
 
 function printTicket() {
@@ -79,73 +139,101 @@ function printTicket() {
 }
 
 /* ==========================================
-            DOWNLOAD PDF
+        DOWNLOAD PDF
 ========================================== */
 
-document.getElementById("downloadPDF").addEventListener("click", async function () {
+document
+.getElementById("downloadPDF")
+.addEventListener(
+    "click",
+    async function () {
 
-    const ticketElement = document.querySelector(".ticket");
+        const ticketElement =
+            document.querySelector(".ticket");
 
-    const canvas = await html2canvas(ticketElement, {
+        const canvas =
+            await html2canvas(ticketElement, {
 
-        scale: 2,
+                scale: 2,
 
-        useCORS: true
+                useCORS: true
 
-    });
+            });
 
-    const imgData = canvas.toDataURL("image/png");
+        const imgData =
+            canvas.toDataURL("image/png");
 
-    const { jsPDF } = window.jspdf;
+        const { jsPDF } =
+            window.jspdf;
 
-    const pdf = new jsPDF("p", "mm", "a4");
+        const pdf =
+            new jsPDF("p", "mm", "a4");
 
-    const pdfWidth = 190;
+        const pdfWidth = 190;
 
-    const pdfHeight = canvas.height * pdfWidth / canvas.width;
+        const pdfHeight =
+            canvas.height *
+            pdfWidth /
+            canvas.width;
 
-    pdf.addImage(
+        pdf.addImage(
 
-        imgData,
+            imgData,
 
-        "PNG",
+            "PNG",
 
-        10,
+            10,
 
-        10,
+            10,
 
-        pdfWidth,
+            pdfWidth,
 
-        pdfHeight
+            pdfHeight
 
-    );
+        );
 
-    pdf.save(
+        pdf.save(
 
-        `${ticket.ticketId}.pdf`
+            `${ticket.registration_number}.pdf`
 
-    );
+        );
 
-});
+    }
+
+);
 
 /* ==========================================
-            BACK BUTTON
+        BACK
 ========================================== */
 
 function goBack() {
 
-    window.location.href = "tickets.html";
+    location.href =
+        "user-tickets.html";
 
 }
 
 /* ==========================================
-            DEBUG
+        INIT
 ========================================== */
 
-console.log("================================");
+document.addEventListener("DOMContentLoaded", async () => {
 
-console.log("Ticket Loaded");
+    await loadTicket();
 
-console.log(ticket);
+    const params =
+        new URLSearchParams(location.search);
 
-console.log("================================");
+    if (params.get("download") === "1") {
+
+        setTimeout(() => {
+
+            document
+                .getElementById("downloadPDF")
+                .click();
+
+        }, 800);
+
+    }
+
+});

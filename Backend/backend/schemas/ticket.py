@@ -36,3 +36,21 @@ class TicketResponse(BaseModel):
     model_config = ConfigDict(
         from_attributes=True
     )
+
+class TicketViewResponse(BaseModel):
+
+    registration_id: int
+    registration_number: str
+    holder_name: str
+    email: str
+    event_name: str
+    venue: str
+    date: str
+    ticket_category: str
+    price: float
+    status: str
+    qr_code: str | None
+
+    model_config = ConfigDict(
+        from_attributes=True
+    )    

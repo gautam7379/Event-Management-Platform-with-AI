@@ -1,1155 +1,1205 @@
-/* ==========================================
-            EVENTAI EVENTS
-========================================== */
+// ==========================================
+// ADMIN EVENT MANAGEMENT
+// ==========================================
 
-/* ==========================================
-            LOCAL STORAGE
-========================================== */
+let events = [];
+let venues = [];
+let registrations = [];
+let ticketMap = {};
 
-function getEvents() {
+const $ = id => document.getElementById(id);
 
-    return JSON.parse(
 
-        localStorage.getItem("events")
+// ==========================================
+// DATE HELPERS
+// ==========================================
 
-    ) || [];
+function formatDate(date) {
 
+    if (!date) return "-";
+
+    return new Date(
+        date + "T00:00:00"
+    ).toLocaleDateString("en-IN");
 }
 
-function saveEvents(events) {
 
-    localStorage.setItem(
+function todayDate() {
 
-        "events",
+    const now = new Date();
 
-        JSON.stringify(events)
-
+    return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
     );
-
 }
 
-function getAttendees() {
 
-    return JSON.parse(
+    // ==========================================
+    // GET EVENT STATUS FROM DATABASE
+    // ==========================================
 
-        localStorage.getItem("attendees")
+    function getEventStatus(event) {
 
-    ) || [];
-
-}
-
-function getTickets() {
-
-    return JSON.parse(
-
-        localStorage.getItem("tickets")
-
-    ) || [];
-
-}
-
-/* ==========================================
-            GLOBAL DATA
-========================================== */
-
-let events = getEvents();
-
-/* ==========================================
-            ELEMENTS
-========================================== */
-
-const tableBody =
-document.getElementById("eventTable");
-
-const emptyMessage =
-document.getElementById("emptyMessage");
-
-const searchBox =
-document.getElementById("searchEvent");
-
-const statusFilter =
-document.getElementById("statusFilter");
-
-/* ==========================================
-            FORMAT DATE
-========================================== */
-
-function formatDate(date){
-
-    if(!date) return "—";
-
-    return new Date(date).toLocaleDateString(
-
-        "en-IN",
-
-        {
-
-            day:"2-digit",
-
-            month:"short",
-
-            year:"numeric"
-
+        if (!event) {
+            return "Draft";
         }
 
-    );
+        return event.status || "Draft";
+    }
 
+
+// ==========================================
+// LOAD ALL BACKEND DATA
+// ==========================================
+
+async function load() {
+
+    try {
+
+        // -------------------------------
+        // Events
+        // -------------------------------
+
+        events =
+            await Api.events.list();
+
+
+        // -------------------------------
+        // Venues
+        // -------------------------------
+
+        venues =
+            await Api.venues.list();
+
+        
+        populateEditVenues();
+
+
+        // -------------------------------
+        // Registrations
+        // -------------------------------
+
+        try {
+
+            registrations =
+                await Api.registrations.list();
+
+        } catch (error) {
+
+            console.warn(
+                "Could not load registrations:",
+                error
+            );
+
+            registrations = [];
+        }
+
+
+        // -------------------------------
+        // Tickets for every event
+        // -------------------------------
+
+        ticketMap = {};
+
+        await Promise.all(
+
+            events.map(async event => {
+
+                try {
+
+                    const eventTickets =
+                        await Api.tickets.event(
+                            event.id
+                        );
+
+                    ticketMap[event.id] =
+                        eventTickets || [];
+
+                } catch (error) {
+
+                    console.warn(
+                        `Tickets failed for event ${event.id}`,
+                        error
+                    );
+
+                    ticketMap[event.id] = [];
+                }
+
+            })
+
+        );
+
+
+        console.log(
+            "EVENTS:",
+            events
+        );
+
+        console.log(
+            "VENUES:",
+            venues
+        );
+
+        console.log(
+            "REGISTRATIONS:",
+            registrations
+        );
+
+        console.log(
+            "TICKETS:",
+            ticketMap
+        );
+
+
+        updateStatistics();
+
+        applyFilters();
+
+    } catch (error) {
+
+        console.error(
+            "Event loading failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to load events."
+        );
+    }
 }
 
-/* ==========================================
-            GET REGISTRATION COUNT
-========================================== */
 
-function getRegistrationCount(eventId){
+// ==========================================
+// STATISTICS
+// ==========================================
 
-    return getAttendees().filter(
+function updateStatistics() {
 
-        attendee => attendee.eventId === eventId
+    const total =
+        events.length;
+
+    
+    const today =
+        todayDate();
+
+    const upcoming =
+        events.filter(event => {
+
+            if (!event.start_date) {
+                return false;
+            }
+
+            const eventDate =
+                new Date(
+                    event.start_date +
+                    "T00:00:00"
+                );
+
+            const status =
+                String(
+                    event.status || ""
+                ).toLowerCase();
+
+            return (
+                eventDate >= today
+                &&
+                status !== "completed"
+                &&
+                status !== "cancelled"
+            );
+        }).length;
+
+
+    const completed =
+        events.filter(event =>
+            getEventStatus(event) === "Completed"
+        ).length;
+
+
+    // Don't count cancelled registrations
+    const totalRegistrations =
+        registrations.filter(registration =>
+
+            String(registration.status)
+                .toLowerCase() !== "cancelled"
+
+        ).length;
+
+
+    if ($("totalEvents")) {
+
+        $("totalEvents").textContent =
+            total;
+    }
+
+
+    if ($("upcomingEvents")) {
+
+        $("upcomingEvents").textContent =
+            upcoming;
+    }
+
+
+    if ($("completedEvents")) {
+
+        $("completedEvents").textContent =
+            completed;
+    }
+
+
+    if ($("totalRegistrations")) {
+
+        $("totalRegistrations").textContent =
+            totalRegistrations;
+    }
+}
+
+
+// ==========================================
+// REGISTRATION COUNT FOR EVENT
+// ==========================================
+
+function getRegistrationCount(eventId) {
+
+    return registrations.filter(registration =>
+
+        Number(registration.event_id)
+            === Number(eventId)
+
+        &&
+
+        String(registration.status)
+            .toLowerCase() !== "cancelled"
 
     ).length;
-
 }
 
-/* ==========================================
-            RENDER EVENTS
-========================================== */
 
-function renderEvents(eventList = events){
+// ==========================================
+// GET VENUE
+// ==========================================
 
-    if(!tableBody) return;
+function getVenue(event) {
 
-    tableBody.innerHTML = "";
+    return venues.find(
+        venue =>
+            Number(venue.id) ===
+            Number(event.venue_id)
+    );
+}
 
-    if(eventList.length===0){
 
-        if(emptyMessage){
+// ==========================================
+// GET EVENT TICKET
+// ==========================================
 
-            emptyMessage.style.display="block";
+function getTicket(eventId) {
 
+    const eventTickets =
+        ticketMap[eventId] || [];
+
+    return eventTickets[0] || null;
+}
+
+
+// ==========================================
+// SAFE HTML
+// ==========================================
+
+function escapeHtml(value) {
+
+    if (value === null ||
+        value === undefined) {
+
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+// ==========================================
+// RENDER TABLE
+// ==========================================
+
+function render(list) {
+
+    const table =
+        $("eventTable");
+
+    const emptyMessage =
+        $("emptyMessage");
+
+
+    if (!table) return;
+
+
+    if (!list.length) {
+
+        table.innerHTML = "";
+
+        if (emptyMessage) {
+
+            emptyMessage.style.display =
+                "block";
         }
 
         return;
-
     }
 
-    emptyMessage.style.display="none";
 
-    eventList.forEach(event=>{
+    if (emptyMessage) {
 
-        const registered =
+        emptyMessage.style.display =
+            "none";
+    }
 
-            getRegistrationCount(event.id);
 
-        let badgeClass="upcoming";
+    table.innerHTML =
+        list.map(event => {
 
-        if(event.status==="Completed"){
+            const venue =
+                getVenue(event);
 
-            badgeClass="completed";
+            const ticket =
+                getTicket(event.id);
 
-        }
+            const registered =
+                getRegistrationCount(
+                    event.id
+                );
 
-        else if(event.status==="Open"){
+            const status =
+                getEventStatus(event);
 
-            badgeClass="pending";
 
-        }
+            // --------------------------
+            // Banner
+            // --------------------------
 
-        tableBody.innerHTML += `
+            let bannerHtml;
 
-<tr>
+            if (event.banner_image) {
 
-<td>
+                bannerHtml = `
 
-#${event.id}
+                    <img
+                        src="${escapeHtml(event.banner_image)}"
+                        alt="${escapeHtml(event.event_name)}"
+                        style="
+                            width:70px;
+                            height:45px;
+                            object-fit:cover;
+                            border-radius:6px;
+                        "
+                        onerror="
+                            this.style.display='none';
+                            this.nextElementSibling.style.display='inline-block';
+                        "
+                    >
 
-</td>
+                    <span style="display:none;">
+                        No Image
+                    </span>
+                `;
 
-<td>
+            } else {
 
-<img
+                bannerHtml = `
+                    <span>No Image</span>
+                `;
+            }
 
-src="${event.banner || ""}"
 
-width="80"
+            // --------------------------
+            // Price
+            // --------------------------
 
-height="50"
+            let price = "-";
 
-style="border-radius:8px;object-fit:cover;">
+            if (ticket) {
 
-</td>
+                const numericPrice =
+                    Number(ticket.price || 0);
 
-<td>
+                price =
+                    numericPrice === 0
+                        ? "Free"
+                        : `₹${numericPrice}`;
+            }
 
-<strong>
 
-${event.name}
+            // --------------------------
+            // Venue
+            // --------------------------
 
-</strong>
+            const venueName =
+                venue
+                    ? venue.venue_name
+                    : `Venue #${event.venue_id}`;
 
-</td>
 
-<td>
+            return `
 
-${event.category || "General"}
+                <tr>
 
-</td>
+                    <td>
+                        ${event.id}
+                    </td>
 
-<td>
 
-${formatDate(event.date)}
+                    <td>
+                        ${bannerHtml}
+                    </td>
 
-<br>
 
-<small>
+                    <td>
+                        ${escapeHtml(
+                            event.event_name
+                        )}
+                    </td>
 
-${event.time || ""}
 
-</small>
+                    <td>
+                        ${escapeHtml(
+                            event.event_type ||
+                            "General"
+                        )}
+                    </td>
 
-</td>
 
-<td>
+                    <td>
 
-${event.venue}
+                        ${formatDate(
+                            event.start_date
+                        )}
 
-</td>
+                    </td>
 
-<td>
 
-${event.price>0 ? "₹"+event.price : "Free"}
+                    <td>
+                        ${escapeHtml(
+                            venueName
+                        )}
+                    </td>
 
-</td>
 
-<td>
+                    <td>
+                        ${price}
+                    </td>
 
-${registered}/${event.capacity || 0}
 
-</td>
+                    <td>
 
-<td>
+                        <strong>
+                            ${registered}
+                        </strong>
 
-<span class="badge ${badgeClass}">
+                        /
 
-${event.status}
+                        ${event.capacity ?? "-"}
 
-</span>
+                    </td>
 
-</td>
 
-<td>
+                    <td>
 
-<button
+                        <span
+                            class="badge ${status.toLowerCase()}">
 
-class="action-btn view"
+                            ${status}
 
-onclick="viewEvent(${event.id})">
+                        </span>
 
-<i class="fa-solid fa-eye"></i>
+                    </td>
 
-</button>
 
-<button
+                    <td>
 
-class="action-btn edit"
+                        <button
+                            type="button"
+                            onclick="viewEvent(${event.id})">
 
-onclick="editEvent(${event.id})">
+                            View
 
-<i class="fa-solid fa-pen"></i>
+                        </button>
 
-</button>
 
-<button
+                        <button
+                            type="button"
+                            onclick="editEvent(${event.id})">
 
-class="action-btn delete"
+                            Edit
 
-onclick="deleteEvent(${event.id})">
+                        </button>
 
-<i class="fa-solid fa-trash"></i>
 
-</button>
+                        <button
+                            type="button"
+                            onclick="deleteEvent(${event.id})">
 
-</td>
+                            Delete
 
-<td>
+                        </button>
 
-${event.status==="Completed"
+                    </td>
 
-? `<button class="primary-btn" disabled>
+                </tr>
 
-Completed
+            `;
 
-</button>`
-
-: `<button
-
-class="primary-btn"
-
-onclick="registerEvent(${event.id})">
-
-Register
-
-</button>`
-
+        }).join("");
 }
 
-</td>
 
-</tr>
-
-`;
-
-    });
-
-}
-/* ==========================================
-            LOAD STATISTICS
-========================================== */
-
-function loadStatistics(){
-
-    const events = getEvents();
-
-    const attendees = getAttendees();
-
-    const tickets = getTickets();
-
-    /* ==============================
-            TOTAL EVENTS
-    ============================== */
-
-    const totalEvents =
-        document.getElementById("totalEvents");
-
-    if(totalEvents){
-
-        totalEvents.textContent =
-            events.length;
-
-    }
-
-    /* ==============================
-            TOTAL REGISTRATIONS
-    ============================== */
-
-    const totalRegistrations =
-        document.getElementById("totalRegistrations");
-
-    if(totalRegistrations){
-
-        totalRegistrations.textContent =
-            attendees.length;
-
-    }
-
-    /* ==============================
-            UPCOMING EVENTS
-    ============================== */
-
-    const upcomingEvents =
-        document.getElementById("upcomingEvents");
-
-    if(upcomingEvents){
-
-        upcomingEvents.textContent =
-
-            events.filter(event =>
-
-                event.status === "Upcoming"
-
-            ).length;
-
-    }
-
-    /* ==============================
-            COMPLETED EVENTS
-    ============================== */
-
-    const completedEvents =
-        document.getElementById("completedEvents");
-
-    if(completedEvents){
-
-        completedEvents.textContent =
-
-            events.filter(event =>
-
-                event.status === "Completed"
-
-            ).length;
-
-    }
-
-    /* ==============================
-            TOTAL TICKETS
-    ============================== */
-
-    const totalTickets =
-        document.getElementById("totalTickets");
-
-    if(totalTickets){
-
-        totalTickets.textContent =
-            tickets.length;
-
-    }
-
-    /* ==============================
-            TOTAL REVENUE
-    ============================== */
-
-    let revenue = 0;
-
-    tickets.forEach(ticket=>{
-
-        revenue += Number(ticket.price || 0);
-
-    });
-
-    const totalRevenue =
-        document.getElementById("totalRevenue");
-
-    if(totalRevenue){
-
-        totalRevenue.textContent =
-
-            "₹" +
-
-            revenue.toLocaleString("en-IN");
-
-    }
-
-    /* ==============================
-            CHECKED IN
-    ============================== */
-
-    const checkedInCount =
-        document.getElementById("checkedInCount");
-
-    if(checkedInCount){
-
-        checkedInCount.textContent =
-
-            attendees.filter(attendee =>
-
-                attendee.status === "Checked In"
-
-            ).length;
-
-    }
-
-    /* ==============================
-            REGISTRATION RATE
-    ============================== */
-
-    let totalCapacity = 0;
-
-    events.forEach(event=>{
-
-        totalCapacity += Number(
-
-            event.capacity || 0
-
+// ==========================================
+// VIEW EVENT
+// ==========================================
+
+window.viewEvent =
+function (id) {
+
+    const event =
+        events.find(
+            event =>
+                Number(event.id) ===
+                Number(id)
         );
 
-    });
 
-    let rate = 0;
-
-    if(totalCapacity > 0){
-
-        rate = Math.round(
-
-            (attendees.length / totalCapacity) * 100
-
-        );
-
-    }
-
-    const registrationRate =
-        document.getElementById("registrationRate");
-
-    if(registrationRate){
-
-        registrationRate.textContent =
-
-            rate + "%";
-
-    }
-
-}
-/* ==========================================
-            REFRESH EVENTS
-========================================== */
-
-function refreshEvents(){
-
-    events = getEvents();
-
-    renderEvents(events);
-
-    loadStatistics();
-
-}
-
-/* ==========================================
-            SEARCH & FILTER
-========================================== */
-
-function filterEvents(){
-
-    const search =
-
-        searchBox
-
-        ? searchBox.value
-
-            .trim()
-
-            .toLowerCase()
-
-        : "";
-
-    const status =
-
-        statusFilter
-
-        ? statusFilter.value
-
-        : "All";
-
-    const filtered = events.filter(event=>{
-
-        const matchesSearch =
-
-            event.name.toLowerCase().includes(search)
-
-            ||
-
-            (event.category || "")
-
-            .toLowerCase()
-
-            .includes(search)
-
-            ||
-
-            (event.venue || "")
-
-            .toLowerCase()
-
-            .includes(search);
-
-        const matchesStatus =
-
-            status === "All"
-
-            ||
-
-            event.status === status;
-
-        return matchesSearch && matchesStatus;
-
-    });
-
-    renderEvents(filtered);
-
-}
-
-/* ==========================================
-            SEARCH BOX
-========================================== */
-
-if(searchBox){
-
-    searchBox.addEventListener(
-
-        "input",
-
-        filterEvents
-
-    );
-
-}
-
-/* ==========================================
-            STATUS FILTER
-========================================== */
-
-if(statusFilter){
-
-    statusFilter.addEventListener(
-
-        "change",
-
-        filterEvents
-
-    );
-
-}
-
-/* ==========================================
-            STORAGE REFRESH
-========================================== */
-
-window.addEventListener(
-
-    "storage",
-
-    function(){
-
-        refreshEvents();
-
-    }
-
-);
-/* ==========================================
-            VIEW EVENT
-========================================== */
-
-function viewEvent(id){
-
-    const event = events.find(
-
-        e => e.id === id
-
-    );
-
-    if(!event) return;
-
-    const registered = getRegistrationCount(event.id);
-
-    const viewContent =
-
-        document.getElementById("viewContent");
-
-    if(!viewContent) return;
-
-    viewContent.innerHTML = `
-
-        <img
-
-            src="${event.banner || ''}"
-
-            alt="${event.name}"
-
-            style="
-
-                width:100%;
-
-                height:250px;
-
-                object-fit:cover;
-
-                border-radius:12px;
-
-                margin-bottom:20px;
-
-            ">
-
-        <h2>${event.name}</h2>
-
-        <hr>
-
-        <p>
-
-            <strong>Category:</strong>
-
-            ${event.category}
-
-        </p>
-
-        <p>
-
-            <strong>Date:</strong>
-
-            ${formatDate(event.date)}
-
-        </p>
-
-        <p>
-
-            <strong>Time:</strong>
-
-            ${event.time}
-
-        </p>
-
-        <p>
-
-            <strong>Venue:</strong>
-
-            ${event.venue}
-
-        </p>
-
-        <p>
-
-            <strong>Ticket Price:</strong>
-
-            ${event.price > 0 ? "₹" + event.price : "Free"}
-
-        </p>
-
-        <p>
-
-            <strong>Registrations:</strong>
-
-            ${registered}/${event.capacity}
-
-        </p>
-
-        <p>
-
-            <strong>Status:</strong>
-
-            ${event.status}
-
-        </p>
-
-        <hr>
-
-        <h3>Description</h3>
-
-        <p>
-
-            ${event.description || "No description available."}
-
-        </p>
-
-    `;
-
-    document.getElementById("viewModal").style.display = "block";
-
-}
-
-/* ==========================================
-            EDIT EVENT
-========================================== */
-
-function editEvent(id){
-
-    const event = events.find(
-
-        e => e.id === id
-
-    );
-
-    if(!event) return;
-
-    document.getElementById("editId").value = event.id;
-
-    document.getElementById("editName").value = event.name;
-
-    document.getElementById("editCategory").value = event.category;
-
-    document.getElementById("editDate").value = event.date;
-
-    document.getElementById("editTime").value = event.time;
-
-    document.getElementById("editVenue").value = event.venue;
-
-    document.getElementById("editPrice").value = event.price;
-
-    document.getElementById("editCapacity").value = event.capacity;
-
-    document.getElementById("editStatus").value = event.status;
-
-    document.getElementById("editDescription").value =
-
-        event.description || "";
-
-    document.getElementById("editModal").style.display = "block";
-
-}
-/* ==========================================
-        SAVE EDITED EVENT
-========================================== */
-
-const editForm = document.getElementById("editForm");
-
-if(editForm){
-
-    editForm.addEventListener("submit",function(e){
-
-        e.preventDefault();
-
-        const id = Number(
-
-            document.getElementById("editId").value
-
-        );
-
-        const index = events.findIndex(
-
-            event => event.id === id
-
-        );
-
-        if(index === -1){
-
-            alert("Event not found.");
-
-            return;
-
-        }
-
-        // Preserve existing registration count
-        const registered =
-            events[index].registered || 0;
-
-        events[index] = {
-
-            ...events[index],
-
-            id: id,
-
-            name:
-                document.getElementById("editName").value.trim(),
-
-            category:
-                document.getElementById("editCategory").value,
-
-            date:
-                document.getElementById("editDate").value,
-
-            time:
-                document.getElementById("editTime").value,
-
-            venue:
-                document.getElementById("editVenue").value.trim(),
-
-            price:
-                Number(
-                    document.getElementById("editPrice").value
-                ),
-
-            capacity:
-                Number(
-                    document.getElementById("editCapacity").value
-                ),
-
-            status:
-                document.getElementById("editStatus").value,
-
-            description:
-                document.getElementById("editDescription").value.trim(),
-
-            registered: registered
-
-        };
-
-        saveEvents(events);
-
-        document.getElementById("editModal").style.display = "none";
-
-        refreshEvents();
-
-        alert("✅ Event updated successfully.");
-
-    });
-
-}
-
-/* ==========================================
-            DELETE EVENT
-========================================== */
-
-function deleteEvent(id){
-
-    const event = events.find(
-
-        event => event.id === id
-
-    );
-
-    if(!event) return;
-
-    const confirmDelete = confirm(
-
-        `Delete "${event.name}" ?`
-
-    );
-
-    if(!confirmDelete) return;
-
-    events = events.filter(
-
-        event => event.id !== id
-
-    );
-
-    saveEvents(events);
-
-    refreshEvents();
-
-    alert("✅ Event deleted successfully.");
-
-}
-/* ==========================================
-            REGISTER EVENT
-========================================== */
-
-function registerEvent(eventId){
-
-    /* ---------- LOGIN CHECK ---------- */
-
-    if(localStorage.getItem("isLoggedIn") !== "true"){
-
-        alert("Please login first.");
-
-        window.location.href = "login.html";
-
-        return;
-
-    }
-
-    /* ---------- USER ROLE CHECK ---------- */
-
-    if(localStorage.getItem("userRole") !== "user"){
-
-        alert("Only users can register for events.");
-
-        return;
-
-    }
-
-    const event = events.find(
-
-        e => e.id === eventId
-
-    );
-
-    if(!event){
+    if (!event) {
 
         alert("Event not found.");
 
         return;
-
     }
 
-    /* ---------- EVENT STATUS ---------- */
 
-    if(event.status === "Completed"){
+    const venue =
+        getVenue(event);
 
-        alert("Registration is closed for this event.");
+    const ticket =
+        getTicket(event.id);
+
+    const registered =
+        getRegistrationCount(
+            event.id
+        );
+
+    const status =
+        getEventStatus(event);
+
+
+    const content =
+        $("viewContent");
+
+
+    content.innerHTML = `
+
+        <div class="event-view-details">
+
+            ${
+                event.banner_image
+                ? `
+                    <img
+                        src="${escapeHtml(event.banner_image)}"
+                        alt="${escapeHtml(event.event_name)}"
+                        style="
+                            width:100%;
+                            max-height:300px;
+                            object-fit:cover;
+                            border-radius:10px;
+                            margin-bottom:20px;
+                        "
+                    >
+                `
+                : ""
+            }
+
+
+            <h2>
+                ${escapeHtml(event.event_name)}
+            </h2>
+
+
+            <p>
+                <strong>Category:</strong>
+                ${escapeHtml(
+                    event.event_type ||
+                    "General"
+                )}
+            </p>
+
+
+            <p>
+                <strong>Status:</strong>
+                ${status}
+            </p>
+
+
+            <p>
+                <strong>Start Date:</strong>
+                ${formatDate(event.start_date)}
+            </p>
+
+
+            <p>
+                <strong>Start Time:</strong>
+                ${event.start_time || "-"}
+            </p>
+
+
+            <p>
+                <strong>End Date:</strong>
+                ${formatDate(event.end_date)}
+            </p>
+
+
+            <p>
+                <strong>End Time:</strong>
+                ${event.end_time || "-"}
+            </p>
+
+
+            <p>
+                <strong>Venue:</strong>
+                ${
+                    venue
+                    ? escapeHtml(venue.venue_name)
+                    : "-"
+                }
+            </p>
+
+
+            <p>
+                <strong>City:</strong>
+                ${
+                    venue
+                    ? escapeHtml(venue.city)
+                    : "-"
+                }
+            </p>
+
+
+            <p>
+                <strong>Price:</strong>
+
+                ${
+                    ticket
+                    ? Number(ticket.price) === 0
+                        ? "Free"
+                        : `₹${ticket.price}`
+                    : "-"
+                }
+
+            </p>
+
+
+            <p>
+                <strong>Capacity:</strong>
+                ${event.capacity ?? "-"}
+            </p>
+
+
+            <p>
+                <strong>Registered:</strong>
+                ${registered}
+            </p>
+
+
+            <p>
+                <strong>Available Seats:</strong>
+
+                ${
+                    event.capacity != null
+                    ? Math.max(
+                        0,
+                        Number(event.capacity) -
+                        registered
+                    )
+                    : "-"
+                }
+
+            </p>
+
+
+            <p>
+                <strong>Description:</strong>
+            </p>
+
+            <p>
+                ${
+                    escapeHtml(
+                        event.description ||
+                        "No description available."
+                    )
+                }
+            </p>
+
+        </div>
+    `;
+
+
+    $("viewModal").style.display =
+        "block";
+};
+
+
+// ==========================================
+// EDIT EVENT
+// ==========================================
+
+window.editEvent =
+function (id) {
+
+    const event =
+        events.find(
+            event =>
+                Number(event.id) ===
+                Number(id)
+        );
+
+    if (!event) {
+
+        alert(
+            "Event not found."
+        );
 
         return;
-
     }
 
-    /* ---------- CAPACITY CHECK ---------- */
+    const ticket =
+        getTicket(
+            event.id
+        );
 
-    const attendees = getAttendees();
+    $("editId").value =
+        event.id;
 
-    const registered = attendees.filter(
+    $("editName").value =
+        event.event_name || "";
 
-        attendee => attendee.eventId === event.id
+    $("editCategory").value =
+        event.event_type || "";
 
-    ).length;
+    $("editDate").value =
+        event.start_date || "";
 
-    if(registered >= Number(event.capacity)){
+    $("editEndDate").value =
+        event.end_date || "";
 
-        alert("This event is already full.");
+    $("editTime").value =
+        event.start_time
+            ? event.start_time.slice(
+                0,
+                5
+            )
+            : "";
+
+    $("editEndTime").value =
+        event.end_time
+            ? event.end_time.slice(
+                0,
+                5
+            )
+            : "";
+
+    $("editVenue").value =
+        String(
+            event.venue_id || ""
+        );
+
+    $("editPrice").value =
+        ticket?.price ?? 0;
+
+    $("editCapacity").value =
+        event.capacity ?? 0;
+
+    $("editStatus").value =
+        event.status || "Draft";
+
+    $("editDescription").value =
+        event.description || "";
+
+    $("editAgenda").value =
+        event.agenda || "";
+
+    $("editModal").style.display =
+        "block";
+
+    $("editBannerImage").value =
+        event.banner_image || "";
+
+    const bannerPreview =
+        $("editBannerPreview");
+
+    const bannerContainer =
+        $("editBannerPreviewContainer");
+
+    if (event.banner_image) {
+
+        bannerPreview.src =
+            event.banner_image;
+
+        bannerContainer.style.display =
+            "block";
+
+    } else {
+
+        bannerPreview.src = "";
+
+        bannerContainer.style.display =
+            "none";
+    }
+};
+
+
+// ==========================================
+// SAVE EDITED EVENT
+// ==========================================
+
+$("editForm")
+?.addEventListener(
+    "submit",
+    async function (eventObject) {
+
+        eventObject.preventDefault();
+
+
+        const id =
+            Number(
+                $("editId").value
+            );
+
+
+        const originalEvent =
+            events.find(
+                event =>
+                    Number(event.id) === id
+            );
+
+
+        if (!originalEvent) {
+
+            alert("Event not found.");
+
+            return;
+        }
+
+
+        try {
+
+            const payload = {
+
+                organizer_id:
+                    originalEvent.organizer_id,
+
+                venue_id:
+                    Number(
+                        $("editVenue").value
+                    ),
+
+                event_name:
+                    $("editName")
+                        .value
+                        .trim(),
+
+                event_type:
+                    $("editCategory")
+                        .value
+                        .trim(),
+
+                description:
+                    $("editDescription")
+                        .value
+                        .trim()
+                    || null,
+
+                agenda:
+                    $("editAgenda")
+                        .value
+                        .trim()
+                    || null,
+
+                start_date:
+                    $("editDate").value,
+
+                end_date:
+                    $("editEndDate").value,
+
+                start_time:
+                    $("editTime").value,
+
+                end_time:
+                    $("editEndTime").value,
+
+                capacity:
+                    Number(
+                        $("editCapacity").value
+                    ),
+
+                banner_image:
+                    $("editBannerImage")
+                        .value
+                        .trim()
+                    || null,
+
+                status:
+                    $("editStatus").value
+            };
+
+
+            console.log(
+                "Updating event:",
+                payload
+            );
+
+
+            await Api.events.update(
+                id,
+                payload
+            );
+
+
+            $("editModal").style.display =
+                "none";
+
+
+            alert(
+                "Event updated successfully."
+            );
+
+
+            await load();
+
+        } catch (error) {
+
+            console.error(
+                "Update event error:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Failed to update event."
+            );
+        }
+    }
+);
+
+
+// ==========================================
+// DELETE EVENT
+// ==========================================
+
+window.deleteEvent =
+async function (id) {
+
+    const event =
+        events.find(
+            event =>
+                Number(event.id) ===
+                Number(id)
+        );
+
+
+    if (!event) {
 
         return;
-
     }
 
-    const email =
 
-        localStorage.getItem("userEmail");
+    const confirmed =
+        confirm(
+            `Delete "${event.event_name}"?`
+        );
 
-    const name =
 
-        localStorage.getItem("userName");
-
-    /* ---------- DUPLICATE CHECK ---------- */
-
-    const alreadyRegistered = attendees.find(
-
-        attendee =>
-
-            attendee.eventId === event.id &&
-
-            attendee.email === email
-
-    );
-
-    if(alreadyRegistered){
-
-        alert("You have already registered for this event.");
+    if (!confirmed) {
 
         return;
-
     }
 
-    /* ---------- CREATE ATTENDEE ---------- */
 
-    const attendee = {
+    try {
 
-        id:
+        await Api.events.remove(id);
 
-            attendees.length
+        alert(
+            "Event deleted successfully."
+        );
 
-            ? Math.max(...attendees.map(a => a.id || 0)) + 1
+        await load();
 
-            : 1,
+    } catch (error) {
 
-        eventId: event.id,
+        console.error(
+            "Delete event error:",
+            error
+        );
 
-        eventName: event.name,
+        alert(
+            error.message ||
+            "Failed to delete event."
+        );
+    }
+};
 
-        name: name,
 
-        email: email,
+// ==========================================
+// SEARCH + STATUS FILTER
+// ==========================================
 
-        phone: "-",
+function applyFilters() {
 
-        status: "Registered",
+    const search =
+        $("searchEvent")
+            ?.value
+            .trim()
+            .toLowerCase()
+        || "";
 
-        registrationDate:
 
-            new Date().toLocaleDateString("en-IN")
+    const selectedStatus =
+        $("statusFilter")
+            ?.value
+        || "All";
 
-    };
 
-    attendees.push(attendee);
+    const filtered =
+        events.filter(event => {
 
-    localStorage.setItem(
+            const venue =
+                getVenue(event);
 
-        "attendees",
 
-        JSON.stringify(attendees)
+            const matchesSearch =
 
-    );
+                !search ||
 
-    /* ---------- UPDATE EVENT ---------- */
+                event.event_name
+                    ?.toLowerCase()
+                    .includes(search)
 
-    event.registered = registered + 1;
+                ||
 
-    saveEvents(events);
+                event.event_type
+                    ?.toLowerCase()
+                    .includes(search)
 
-    /* ---------- CREATE TICKET ---------- */
+                ||
 
-    const tickets = getTickets();
+                venue?.venue_name
+                    ?.toLowerCase()
+                    .includes(search);
 
-    const ticket = {
 
-        id:
+            const calculatedStatus =
+                getEventStatus(event);
 
-            tickets.length
 
-            ? Math.max(...tickets.map(t => t.id || 0)) + 1
+            const matchesStatus =
 
-            : 1,
+                selectedStatus === "All"
 
-        ticketId:
+                ||
 
-            "EVT-" +
+                calculatedStatus ===
+                selectedStatus;
 
-            Date.now().toString().slice(-6),
 
-        attendeeId:
+            return (
+                matchesSearch &&
+                matchesStatus
+            );
+        });
 
-            attendee.id,
 
-        eventId:
-
-            event.id,
-
-        eventName:
-
-            event.name,
-
-        name:
-
-            attendee.name,
-
-        email:
-
-            attendee.email,
-
-        date:
-
-            event.date,
-
-        time:
-
-            event.time,
-
-        venue:
-
-            event.venue,
-
-        price:
-
-            event.price,
-
-        status:
-
-            "Confirmed",
-
-        issuedOn:
-
-            new Date().toLocaleDateString("en-IN")
-
-    };
-
-    tickets.push(ticket);
-
-    localStorage.setItem(
-
-        "tickets",
-
-        JSON.stringify(tickets)
-
-    );
-
-    refreshEvents();
-
-    alert(
-
-        "Registration Successful!\n\n" +
-
-        "Ticket ID: " +
-
-        ticket.ticketId
-
-    );
-
+    render(filtered);
 }
-/* ==========================================
-            INITIALIZE
-========================================== */
 
-document.addEventListener("DOMContentLoaded", () => {
 
-    refreshEvents();
+// ==========================================
+// SEARCH EVENT
+// ==========================================
 
-});
+$("searchEvent")
+?.addEventListener(
+    "input",
+    applyFilters
+);
 
-/* ==========================================
-            AUTO REFRESH
-========================================== */
 
-window.addEventListener("storage", () => {
+// ==========================================
+// STATUS FILTER
+// ==========================================
 
-    refreshEvents();
+$("statusFilter")
+?.addEventListener(
+    "change",
+    applyFilters
+);
 
-});
 
-/* ==========================================
-            DEBUG
-========================================== */
+// ==========================================
+// INITIALIZE
+// ==========================================
 
-console.log("====================================");
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-console.log("EventAI Events Loaded");
+        load().catch(error => {
 
-console.log("Total Events :", getEvents().length);
+            console.error(error);
 
-console.log("Total Attendees :", getAttendees().length);
+            alert(
+                error.message ||
+                "Failed to load event data."
+            );
+        });
+    }
+);
 
-console.log("Total Tickets :", getTickets().length);
 
-console.log("====================================");
+function populateEditVenues() {
+
+    const select =
+        $("editVenue");
+
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML = `
+        <option value="">
+            Select Venue
+        </option>
+    `;
+
+    venues.forEach(venue => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            venue.id;
+
+        option.textContent =
+            venue.venue_name;
+
+        select.appendChild(
+            option
+        );
+    });
+}

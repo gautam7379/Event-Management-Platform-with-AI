@@ -14,3 +14,4 @@ from backend.models.registration import Registration
 from backend.models.payment import Payment
 from backend.models.check_in import CheckIn
 from backend.models.feedback import Feedback
+from backend.models.event_vendor import EventVendor

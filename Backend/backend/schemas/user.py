@@ -10,17 +10,42 @@ class UserRegister(BaseModel):
     role_id: int
 
 
+class UserUpdate(BaseModel):
+    first_name: str | None = Field(
+        default=None,
+        max_length=100
+    )
+
+    last_name: str | None = Field(
+        default=None,
+        max_length=100
+    )
+
+    phone: str | None = None
+    organization: str | None = None
+    designation: str | None = None
+    location: str | None = None
+    bio: str | None = None
+    profile_image: str | None = None
+
+
 class UserResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
     email: EmailStr
+
     phone: str | None = None
+
+    organization: str | None = None
+    designation: str | None = None
+    location: str | None = None
+    bio: str | None = None
+    profile_image: str | None = None
+
     role_id: int
     is_active: bool
 
     model_config = {
         "from_attributes": True
     }
-
-    

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Payment | EventAI</title>
+
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+rel="stylesheet">
+
+<style>
+
+.container{
+max-width:900px;
+margin:40px auto;
+background:#fff;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.row{
+display:flex;
+gap:30px;
+flex-wrap:wrap;
+}
+
+.left,
+.right{
+flex:1;
+min-width:320px;
+}
+
+.card{
+border:1px solid #ddd;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+.card h3{
+margin-bottom:20px;
+}
+
+.input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+font-size:15px;
+}
+
+button{
+
+width:100%;
+
+padding:14px;
+
+background:#2563eb;
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+font-size:17px;
+
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:#1d4ed8;
+
+}
+
+.qr{
+
+width:220px;
+
+display:block;
+
+margin:auto;
+
+}
+
+.amount{
+
+font-size:30px;
+
+font-weight:bold;
+
+color:#16a34a;
+
+margin:15px 0;
+
+}
+
+.radio{
+
+margin-bottom:15px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>
+
+Payment
+
+</h1>
+
+<p>
+
+Complete your booking.
+
+</p>
+
+<div class="row">
+
+<div class="left">
+
+<div class="card">
+
+<h3>
+
+Event Details
+
+</h3>
+
+<p>
+
+<b>Event :</b>
+
+<span id="eventName"></span>
+
+</p>
+
+<p>
+
+<b>Category :</b>
+
+<span id="ticketCategory"></span>
+
+</p>
+
+<div class="amount">
+
+₹<span id="amount"></span>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>
+
+Payment Method
+
+</h3>
+
+<div class="radio">
+
+<label>
+
+<input
+type="radio"
+name="method"
+value="Card"
+checked>
+
+Debit / Credit Card
+
+</label>
+
+</div>
+
+<div class="radio">
+
+<label>
+
+<input
+type="radio"
+name="method"
+value="UPI">
+
+UPI QR
+
+</label>
+
+</div>
+
+<div id="cardSection">
+
+<input
+id="cardNumber"
+class="input"
+placeholder="Card Number">
+
+<input
+id="cardName"
+class="input"
+placeholder="Card Holder">
+
+<div style="display:flex;gap:10px;">
+
+<input
+id="expiry"
+class="input"
+placeholder="MM/YY">
+
+<input
+id="cvv"
+class="input"
+placeholder="CVV">
+
+</div>
+
+</div>
+
+<div
+id="qrSection"
+style="display:none;">
+
+<img
+
+class="qr"
+
+src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=EventAIPayment"
+
+>
+
+<p
+style="text-align:center;">
+
+Scan to Pay
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="right">
+
+<div class="card">
+
+<h3>
+
+Order Summary
+
+</h3>
+
+<table
+style="width:100%;">
+
+<tr>
+
+<td>
+
+Ticket
+
+</td>
+
+<td
+id="ticketCategory2">
+
+General
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+Price
+
+</td>
+
+<td>
+
+₹<span id="payAmount"></span>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+Convenience Fee
+
+</td>
+
+<td>
+
+₹0
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Total
+
+</th>
+
+<th>
+
+₹<span id="payAmount2"></span>
+
+</th>
+
+</tr>
+
+</table>
+
+<br>
+
+<button
+id="payBtn">
+
+Pay Now
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/api.js"></script>
+<script src="js/payment.js"></script>
+
+</body>
+
+</html>
